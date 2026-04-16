@@ -4,9 +4,9 @@
     {
       "type": "npm",
       "script": "compile",
-      "path": "packages/cloude-code-toolbox",
+      "path": "packages/claude-code-toolbox",
       "group": "build",
-      "label": "npm: compile - cloude-code-toolbox",
+      "label": "npm: compile - claude-code-toolbox",
       "problemMatcher": ["$tsc"]
     }
   ]

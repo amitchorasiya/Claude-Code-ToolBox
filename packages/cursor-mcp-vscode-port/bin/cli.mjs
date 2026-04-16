@@ -111,6 +111,11 @@ Examples:
   }
 
   const cursorJson = await readJson(sourcePath);
+  if (values.force) {
+    console.error(
+      '[cursor-mcp-vscode-port] "--force" is deprecated and ignored; merge-only behavior is always enforced.'
+    );
+  }
   const { mcp: converted, nameMap } = convertCursorMcpToVsCode(cursorJson, {
     sanitizeNames: !values["no-sanitize-names"],
     fixSnykIde: !values["no-fix-snyk"],

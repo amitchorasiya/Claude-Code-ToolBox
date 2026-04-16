@@ -4,12 +4,12 @@ name: Extension CI
 on:
   push:
     paths:
-      - "packages/cloude-code-toolbox/**"
+      - "packages/claude-code-toolbox/**"
       - "package.json"
       - ".github/workflows/extension-ci.yml"
   pull_request:
     paths:
-      - "packages/cloude-code-toolbox/**"
+      - "packages/claude-code-toolbox/**"
       - "package.json"
       - ".github/workflows/extension-ci.yml"
 
@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: packages/cloude-code-toolbox
+        working-directory: packages/claude-code-toolbox
     steps:
       - uses: actions/checkout@v4
 

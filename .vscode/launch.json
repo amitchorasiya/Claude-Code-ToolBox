@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension: Cloude Code ToolBox",
+      "name": "Run Extension: Claude Code ToolBox",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/cloude-code-toolbox"],
-      "outFiles": ["${workspaceFolder}/packages/cloude-code-toolbox/out/**/*.js"],
-      "preLaunchTask": "npm: compile - cloude-code-toolbox"
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/claude-code-toolbox"],
+      "outFiles": ["${workspaceFolder}/packages/claude-code-toolbox/out/**/*.js"],
+      "preLaunchTask": "npm: compile - claude-code-toolbox"
     }
   ]
 }

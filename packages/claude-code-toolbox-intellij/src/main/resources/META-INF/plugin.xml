@@ -1,0 +1,69 @@
+<idea-plugin url="https://github.com/amitchorasiya/Claude-Code-ToolBox">
+    <!-- Marketplace listing pulls name, description, change notes, vendor, and compatibility from this file and Gradle. -->
+    <!-- Marketplace: plugin id must not contain the word "intellij" (JetBrains validation). -->
+    <id>com.amitchorasiya.claude.code.toolbox</id>
+    <name>Claude Code ToolBox</name>
+    <vendor url="https://github.com/amitchorasiya/Claude-Code-ToolBox">amitchorasiya</vendor>
+
+    <!-- First ~40 characters: English summary for Marketplace preview card (listing best practices). -->
+    <description><![CDATA[
+Claude Code toolbox - JetBrains preview.
+<br/><br/>
+<b>What you get today</b>
+<ul>
+<li><b>JCEF</b>: the same <b>hub UI</b> as VS Code (exported HTML) with a Kotlin bridge.</li>
+<li><b>MCP &amp; skills hub</b>: registry and skills.sh search, MCP install from registry into workspace <code>mcp.json</code>, turn off/on/delete servers (stash files), local skills scan, skill hub toggles, skills CLI install (<code>npx skills add</code>), kit snapshot, <code>.claude/toolbox-settings.json</code> for auto-scan and Thinking Machine flags.</li>
+<li><b>Open / reveal</b> paths from the hub via the IDE.</li>
+<li><b>Settings</b>: <b>Settings → Tools → Claude Code ToolBox</b> edits <code>.claude/toolbox-settings.json</code> (hub flags, npx tag, Insiders paths, optional Node path).</li>
+<li><b>VS Code command parity</b>: every <code>ClaudeCodeToolBox.*</code> command maps to a JetBrains implementation — hub + MCP list/add, bundled MCP recipes, Copilot/cursorrules merges, instruction picker, translate @-mentions, config scan, notepad → memory-bank, skill stub, verification checklist, first test task (<code>gradlew</code>/<code>npm</code>), <code>npx</code> CLIs, skills migrations (Cursor + Copilot), <code>.vscode/settings.json</code> toggles, browsers; remaining gaps are called out in notifications.</li>
+</ul>
+<b>What ships first in VS Code</b>
+<ul>
+<li>Full <b>MCP &amp; skills hub</b>, <b>One Click Setup</b>, <b>Intelligence</b> flows, and bundled bridge CLIs.</li>
+</ul>
+<b>Resources</b>
+<ul>
+<li><a href="https://github.com/amitchorasiya/Claude-Code-ToolBox">Source code</a></li>
+<li><a href="https://github.com/amitchorasiya/Claude-Code-ToolBox/issues">Issue tracker</a></li>
+</ul>
+    ]]></description>
+
+    <change-notes><![CDATA[
+<ul>
+<li>0.6.10: Point release — docs and repo README/static site highlight both the VS Code Marketplace and JetBrains plugin install; no functional change from 0.6.9.</li>
+<li>0.6.9: <b>Merge-only parity</b> — MCP port, memory bank, Cursor rules, and skills migration match VS Code merge-only behavior; One Click / hub bridge argv and settings normalization updated.</li>
+<li>0.6.8: <b>Plugin Verifier</b> — hub command bridge runs actions via <code>ActionManager.tryToExecute</code> (no <code>AnAction.update</code>, <code>AnActionEvent.createFromAnAction</code>, or <code>ActionUtil.performActionDumbAwareWithCallbacks</code>).</li>
+<li>0.6.7: <b>Plugin Verifier</b> — replace deprecated <code>Messages.showChooseDialog</code> / <code>showOkCancelDialog</code> with <code>DialogWrapper</code> list picker and <code>MessageDialogBuilder</code>; hub &quot;reveal in file manager&quot; uses <code>RevealFileAction</code> instead of <code>ShowFilePathAction.openFile(File)</code>.</li>
+<li>0.6.6: <b>Plugin ID</b> — <code>com.amitchorasiya.cloude.code.toolbox</code> (JetBrains Marketplace forbids &quot;intellij&quot; in the id). If you installed an older build from disk, uninstall the previous plugin entry then install this version.</li>
+<li>0.6.5: <b>Hub width</b> — hub body fills the tool window again (removed fixed max-width that caused a narrow centered column on wide panels).</li>
+<li>0.6.4: <b>Hub layout</b> — max-width column (720px) so the hub doesn’t stretch empty on wide tool windows; slightly larger type; hero cards get a light shadow; bridge primary buttons use the same short labels on VS Code and JetBrains (npx vs bundled explained in the description text).</li>
+<li>0.6.3: <b>Hub UX</b> — <code>hubHost</code> from the IDE; JetBrains hub hides duplicate &quot;npx vs bundled&quot; bridge buttons, clearer One Click copy, Thinking Machine checkbox alignment, slightly roomier section cards.</li>
+<li>0.6.2: <b>Bridge CLIs in-plugin</b> — Cursor MCP port, Cursor rules → CLAUDE.md, and memory bank run via <strong>bundled</strong> monorepo CLIs (<code>node …/cli.mjs</code>) like the VS Code extension, not <code>npx</code> from the public npm registry. Build requires <code>npm</code> once to vendor <code>cursor-rules-to-claude</code> deps. Optional absolute <code>node</code> path still in Settings.</li>
+<li>0.6.1: <b>One Click Setup</b> — stepped wizard (<code>runOneClickSetup</code> / workspace wizard) matching VS Code order; choices persisted under <code>oneClickSetup</code> in <code>.cloude/toolbox-settings.json</code>; runs npx bridges, merges, awareness/readiness/scans.</li>
+<li>0.6.0: Full palette parity pass — MCP list/add (table + JSON paste), Copilot/GitHub skills → <code>.agents</code>, merge Copilot instructions &amp; append <code>.cursorrules</code>, instruction file picker, translate @-mentions, config secret scan, notepad → memory-bank, SKILL.md stub, verification checklist, bundled MCP recipe, first test task (<code>gradlew</code>/<code>npm</code>); previews under <code>.claude/</code>.</li>
+<li>0.5.0: Broad VS Code parity layer — <code>ToolboxParityDispatcher</code> for all extension commands (npx CLIs, skills migration, hub refresh, kit open with args, Insiders user mcp path); <code>CloudeHubBridge</code> for hub refresh after CLI runs; expanded toolbox settings JSON.</li>
+<li>0.4.0: Settings page (Tools) for toolbox JSON; <code>npx skills add</code> in Run tool window; all hub <code>CloudeCodeToolBox.*</code> command ids registered (stubs + open workspace/user <code>mcp.json</code>, Claude user settings, settings dialog); JUnit tests for MCP JSON parsing.</li>
+<li>0.3.0: Hub parity pass — MCP registry/skills.sh HTTP search, MCP stash and mutations, registry install, skills CLI install, toolbox settings file, open/reveal paths, skill folder delete with root checks; <code>runCommand</code> tries IDE actions by ID.</li>
+<li>0.2.0: JCEF hub (exported VS Code HTML), JS–Kotlin bridge, partial hub state from project folder; notifications for unimplemented actions.</li>
+<li>0.1.0: Initial preview tool window.</li>
+</ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="CloudeCodeToolBox" displayType="BALLOON" displayName="Cloude Code ToolBox"/>
+        <projectActivity implementation="com.amitchorasiya.cloude.toolbox.intellij.CloudeToolboxRegisterActivity"/>
+        <projectService serviceImplementation="com.amitchorasiya.cloude.toolbox.intellij.hub.CloudeHubBridge"/>
+        <projectConfigurable
+            parentId="tools"
+            instance="com.amitchorasiya.cloude.toolbox.intellij.settings.ToolboxSettingsConfigurable"
+            id="com.amitchorasiya.cloude.toolbox.settings"
+            displayName="Cloude Code ToolBox"/>
+        <toolWindow
+            id="CloudeCodeToolBox"
+            anchor="right"
+            secondary="true"
+            factoryClass="com.amitchorasiya.cloude.toolbox.intellij.CloudeToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

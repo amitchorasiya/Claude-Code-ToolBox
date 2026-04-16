@@ -4,11 +4,11 @@ name: IntelliJ plugin CI
 on:
   push:
     paths:
-      - "packages/cloude-code-toolbox-intellij/**"
+      - "packages/claude-code-toolbox-intellij/**"
       - ".github/workflows/intellij-ci.yml"
   pull_request:
     paths:
-      - "packages/cloude-code-toolbox-intellij/**"
+      - "packages/claude-code-toolbox-intellij/**"
       - ".github/workflows/intellij-ci.yml"
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/cloude-code-toolbox-intellij
+        working-directory: packages/claude-code-toolbox-intellij
     steps:
       - uses: actions/checkout@v4
 

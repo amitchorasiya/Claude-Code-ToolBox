@@ -1,15 +1,15 @@
-# Cloude Code ToolBox
+# Claude Code ToolBox
 
-**VS Code extension + monorepo:** [`Cloude-Code-ToolBox`](https://github.com/amitchorasiya/Cloude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.cloude-code-toolbox-vscode` · **Listing title:** *Cloude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.9`** · JetBrains plugin **`0.6.10`** (plugin id `com.amitchorasiya.cloude.code.toolbox`)
+**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.9`** · JetBrains plugin **`0.6.10`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
 
-**Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.cloude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.cloude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox) · [IntelliJ sources & build](packages/cloude-code-toolbox-intellij/)
+**Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 
 ## IDE support
 
 | IDE | Status | Install |
 |-----|--------|---------|
 | **Visual Studio Code** | **Shipping** — full MCP & skills hub | [Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.cloude-code-toolbox-vscode) · id **`amitchorasiya.cloude-code-toolbox-vscode`** |
-| **JetBrains (IntelliJ IDEA, PyCharm, …)** | **Preview** — JCEF hub + parity work in [`packages/cloude-code-toolbox-intellij/`](packages/cloude-code-toolbox-intellij/); build with `./gradlew buildPlugin` (JDK 21) or install from Marketplace / ZIP | [Marketplace search](https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox) · [`jetbrains://`…](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox) |
+| **JetBrains (IntelliJ IDEA, PyCharm, …)** | **Preview** — JCEF hub + parity work in [`packages/claude-code-toolbox-intellij/`](packages/claude-code-toolbox-intellij/); build with `./gradlew buildPlugin` (JDK 21) or install from Marketplace / ZIP | [Marketplace search](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://…`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) |
 
 See also: [IntelliJ package README](packages/cloude-code-toolbox-intellij/README.md).
 

@@ -1,0 +1,9 @@
+{
+  "name": "claude-code-toolbox-intellij",
+  "private": true,
+  "description": "Gradle IntelliJ Platform plugin — use ./gradlew buildPlugin (requires JDK 21).",
+  "scripts": {
+    "build": "./gradlew buildPlugin",
+    "run:ide": "./gradlew runIde"
+  }
+}

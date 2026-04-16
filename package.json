@@ -1,16 +1,16 @@
 {
-  "name": "cloude-code-toolbox-monorepo",
+  "name": "claude-code-toolbox-monorepo",
   "private": true,
-  "description": "Monorepo: Cloude Code ToolBox for VS Code (primary), preview JetBrains plugin (packages/cloude-code-toolbox-intellij), and Cursor→Claude helpers. Build VSIX: npm run package. Build IntelliJ ZIP: npm run package:intellij. Do not run npx vsce from the repo root — that manifest is not the extension.",
+  "description": "Monorepo: Claude Code ToolBox for VS Code (primary), preview JetBrains plugin (packages/claude-code-toolbox-intellij), and Cursor→Claude helpers. Build VSIX: npm run package. Build IntelliJ ZIP: npm run package:intellij. Do not run npx vsce from the repo root — that manifest is not the extension.",
   "license": "MIT",
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
-    "compile": "npm run compile --prefix packages/cloude-code-toolbox",
-    "test": "npm test --prefix packages/cloude-code-toolbox",
-    "package": "npm run package --prefix packages/cloude-code-toolbox",
-    "package:intellij": "npm run build --prefix packages/cloude-code-toolbox-intellij",
+    "compile": "npm run compile --prefix packages/claude-code-toolbox",
+    "test": "npm test --prefix packages/claude-code-toolbox",
+    "package": "npm run package --prefix packages/claude-code-toolbox",
+    "package:intellij": "npm run build --prefix packages/claude-code-toolbox-intellij",
     "rebuild:extensions": "bash scripts/rebuild-extensions.sh",
     "package:extension": "npm run package",
     "serve:site": "npx --yes serve docs -l 5173"
