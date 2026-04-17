@@ -5,7 +5,7 @@
     <script>
       (function () {
         try {
-          var k = "cloude-docs-theme";
+          var k = "claude-docs-theme";
           var v = localStorage.getItem(k);
           document.documentElement.setAttribute("data-theme", v === "dark" || v === "light" ? v : "light");
         } catch (e) {
@@ -30,7 +30,7 @@
   <body>
     <header class="site-header">
       <div class="wrap">
-        <a class="logo" href="#">Cloude <span>Code ToolBox</span></a>
+        <a class="logo" href="#">Claude <span>Code ToolBox</span></a>
         <div class="header-actions">
           <div class="theme-switch" role="group" aria-label="Color theme">
             <button type="button" class="btn btn-theme" id="theme-btn-light" data-theme-pick="light" aria-pressed="true">
@@ -83,7 +83,7 @@
             </div>
             <div class="plain">
               <strong>JetBrains (IntelliJ IDEA, PyCharm, …):</strong> install <strong>Claude Code ToolBox</strong> from the
-              <a href="https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox">JetBrains Marketplace</a>,
+              <a href="https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox">JetBrains Marketplace</a>,
               <a href="jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox">open in your IDE</a>, or read the
               <a href="https://github.com/amitchorasiya/Cloude-Code-ToolBox/blob/main/packages/claude-code-toolbox-intellij/README.md">IntelliJ plugin readme</a> (preview; hub parity is ongoing).
             </div>
@@ -347,7 +347,7 @@
           <p class="mono-hint">code --install-extension amitchorasiya.cloude-code-toolbox-vscode</p>
           <p>
             <strong>JetBrains (IntelliJ IDEA, PyCharm, …):</strong> install <strong>Claude Code ToolBox</strong> from the
-            <a href="https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox">JetBrains Marketplace</a> or use
+            <a href="https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox">JetBrains Marketplace</a> or use
             <a href="jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox">jetbrains://…</a> to open your IDE’s plugin dialog (plugin id
             <code>com.amitchorasiya.claude.code.toolbox</code>). Preview builds: <a href="https://github.com/amitchorasiya/Cloude-Code-ToolBox/tree/main/packages/claude-code-toolbox-intellij">sources &amp; Gradle</a>.
           </p>
@@ -393,7 +393,7 @@
     </footer>
     <script>
       (function () {
-        var THEME_KEY = "cloude-docs-theme";
+        var THEME_KEY = "claude-docs-theme";
         var btnLight = document.getElementById("theme-btn-light");
         var btnDark = document.getElementById("theme-btn-dark");
         function syncThemeButtons() {

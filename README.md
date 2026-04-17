@@ -9,26 +9,26 @@
 | IDE | Status | Install |
 |-----|--------|---------|
 | **Visual Studio Code** | **Shipping** — full MCP & skills hub | [Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.cloude-code-toolbox-vscode) · id **`amitchorasiya.cloude-code-toolbox-vscode`** |
-| **JetBrains (IntelliJ IDEA, PyCharm, …)** | **Preview** — JCEF hub + parity work in [`packages/claude-code-toolbox-intellij/`](packages/claude-code-toolbox-intellij/); build with `./gradlew buildPlugin` (JDK 21) or install from Marketplace / ZIP | [Marketplace search](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://…`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) |
+| **JetBrains (IntelliJ IDEA, PyCharm, …)** | **Shipping** — full MCP & skills hub with feature parity to VS Code; build with `./gradlew buildPlugin` (JDK 21) or install from Marketplace / ZIP | [Marketplace search](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://…`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) |
 
-See also: [IntelliJ package README](packages/cloude-code-toolbox-intellij/README.md).
+See also: [IntelliJ package README](packages/claude-code-toolbox-intellij/README.md).
 
-## After install: open Cloude Code ToolBox (VS Code)
+## After install: open Claude Code ToolBox (VS Code)
 
-**There is no separate desktop app for the VS Code experience**—that extension runs **inside Visual Studio Code**. The JetBrains build is a separate plugin install (preview); see the table above.
+**There is no separate desktop app for the VS Code experience**—that extension runs **inside Visual Studio Code**. The JetBrains build is a separate plugin install; see the table above.
 
-1. **Install** from the Marketplace (search for the listing title **Cloude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)**) or from a `.vsix`. If VS Code prompts you, **reload the window** (**Developer: Reload Window**).
+1. **Install** from the Marketplace (search for the listing title **Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)**) or from a `.vsix`. If VS Code prompts you, **reload the window** (**Developer: Reload Window**).
 2. Find the **Activity Bar**: the **narrow column of icons on the far left** of the VS Code window (Explorer, Search, Source Control, …).
-3. Click the **Cloude Code ToolBox** icon added by this extension. The **Side Bar** opens next to it.
+3. Click the **Claude Code ToolBox** icon added by this extension. The **Side Bar** opens next to it.
 4. In the Side Bar, click **MCP & skills**. That opens the **hub** (webview) with tabs **Intelligence**, **MCP**, **Skills**, and **Workspace**—that is the main surface for MCP, skills, and setup flows.
 
-**Don’t see the icon?** Press **Ctrl+Shift+P** (Windows/Linux) or **⌘⇧P** (macOS), type **Cloude Code ToolBox**, run any listed command (that wakes the extension UI), or run **Developer: Reload Window**, then repeat steps 2–4.
+**Don’t see the icon?** Press **Ctrl+Shift+P** (Windows/Linux) or **⌘⇧P** (macOS), type **Claude Code ToolBox**, run any listed command (that wakes the extension UI), or run **Developer: Reload Window**, then repeat steps 2–4.
 
-![Activity Bar → Cloude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Cloude-Code-ToolBox/main/screenshots/00-toolbox-access.png)
+![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Cloude-Code-ToolBox/main/screenshots/00-toolbox-access.png)
 
 ## One place for Claude Code-related setup
 
-**In plain terms:** Claude Code only works as well as the setup around it—but that setup is usually scattered across files, machines, and habits. **Cloude Code ToolBox** is **one dedicated toolbox in VS Code** (and a **preview [JetBrains plugin](packages/cloude-code-toolbox-intellij/README.md)** with ongoing hub parity): you can **see** what’s configured, **standardize** how teams adopt Claude Code (including from **Cursor** and optional **GitHub Copilot → Claude Code** migration), and **give Claude Code better context** while each developer still **chooses** what to share.
+**In plain terms:** Claude Code only works as well as the setup around it—but that setup is usually scattered across files, machines, and habits. **Claude Code ToolBox** is **one dedicated toolbox in VS Code** (and a **[JetBrains plugin](packages/claude-code-toolbox-intellij/README.md)** with full feature parity): you can **see** what’s configured, **standardize** how teams adopt Claude Code (including from **Cursor** and optional **GitHub Copilot → Claude Code** migration), and **give Claude Code better context** while each developer still **chooses** what to share.
 
 **For engineering teams, that means:**
 
@@ -45,7 +45,7 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 
 ### One Click Setup
 
-**What it does:** After you accept the responsibility warning, it runs the automated sequence you configured under **Settings → Cloude Code ToolBox → One Click Setup** (migration tracks: **Cursor → Claude Code** and optional **GitHub Copilot → Claude Code**, each toggled separately). That usually includes **porting Cursor MCP** into VS Code `mcp.json`, **Claude-oriented memory bank** init, **Cursor rules → `CLAUDE.md`**, optional merge of **`.github/copilot-instructions.md`** into **`CLAUDE.md`**, optional **Copilot skills → `.agents`**, optional **`.cursorrules`** merge, **skills** `.cursor` → `.agents` migration, **MCP & Skills awareness** (under **`.claude/`**) with optional block in **`CLAUDE.md`**, **readiness** summary, **Claude Code / MCP config scan**, optional **Claude Code** settings check, and optional **auto-scan** enablement. Bridge steps run via **bundled `node …/cli.mjs`** inside the extension (no `npx` network fetch for that path).
+**What it does:** After you accept the responsibility warning, it runs the automated sequence you configured under **Settings → Claude Code ToolBox → One Click Setup** (migration tracks: **Cursor → Claude Code** and optional **GitHub Copilot → Claude Code**, each toggled separately). That usually includes **porting Cursor MCP** into VS Code `mcp.json`, **Claude-oriented memory bank** init, **Cursor rules → `CLAUDE.md`**, optional merge of **`.github/copilot-instructions.md`** into **`CLAUDE.md`**, optional **Copilot skills → `.agents`**, optional **`.cursorrules`** merge, **skills** `.cursor` → `.agents` migration, **MCP & Skills awareness** (under **`.claude/`**) with optional block in **`CLAUDE.md`**, **readiness** summary, **Claude Code / MCP config scan**, optional **Claude Code** settings check, and optional **auto-scan** enablement. Bridge steps run via **bundled `node …/cli.mjs`** inside the extension (no `npx` network fetch for that path).
 
 **Why it matters:** “Make this repo Claude-ready” shouldn’t depend on who read which doc. One Click encodes your team’s playbook once; anyone can run the same steps and review the same terminals and file changes.
 
@@ -60,7 +60,7 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 ## Table of contents
 
 - [IDE support](#ide-support)
-- [After install: open Cloude Code ToolBox (VS Code)](#after-install-open-cloude-code-toolbox-vs-code)
+- [After install: open Claude Code ToolBox (VS Code)](#after-install-open-claude-code-toolbox-vs-code)
 - [One place for Claude Code-related setup](#one-place-for-claude-code-related-setup)
 - [One Click Setup and Thinking Machine Mode](#one-click-setup-and-thinking-machine-mode)
 - [What’s in this repo](#whats-in-this-repo)
@@ -85,16 +85,16 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 
 | Deliverable | Purpose |
 |-------------|---------|
-| **[Cloude Code ToolBox](packages/cloude-code-toolbox/)** | VS Code extension: **MCP & skills** hub, **workspace kit**, **Intelligence** (context packs, readiness, MCP/Skills awareness under `.claude/`, optional **`CLAUDE.md`** merge, auto-scan on folder open, `.cursor`→`.agents` skill migration), **bundled bridge CLIs** and optional **`npx`** from the hub |
-| **[cloude-code-toolbox-intellij](packages/cloude-code-toolbox-intellij/)** | **Preview** JetBrains Platform plugin (Tool Window placeholder); full hub features remain VS Code–first for now |
+| **[Claude Code ToolBox](packages/claude-code-toolbox/)** | VS Code extension: **MCP & skills** hub, **workspace kit**, **Intelligence** (context packs, readiness, MCP/Skills awareness under `.claude/`, optional **`CLAUDE.md`** merge, auto-scan on folder open, `.cursor`→`.agents` skill migration), **bundled bridge CLIs** and optional **`npx`** from the hub |
+| **[claude-code-toolbox-intellij](packages/claude-code-toolbox-intellij/)** | JetBrains Platform plugin with full feature parity to VS Code extension |
 | **[memory-bank/](memory-bank/)** | Optional project memory files for you and Claude Code (not required to build the extension) |
 | **[packages/cursor-mcp-vscode-port/](packages/cursor-mcp-vscode-port/)** | Placeholder README for the MCP port CLI layout; the CLI is published separately on npm |
 
-The extension does **not** replace Claude Code or Cursor; it helps you **align configs** and **see** what’s configured (MCP servers, local `SKILL.md` trees, instructions files). Deeper settings, keybindings, and troubleshooting: **[packages/cloude-code-toolbox/README.md](packages/cloude-code-toolbox/README.md)**.
+The extension does **not** replace Claude Code or Cursor; it helps you **align configs** and **see** what’s configured (MCP servers, local `SKILL.md` trees, instructions files). Deeper settings, keybindings, and troubleshooting: **[packages/claude-code-toolbox/README.md](packages/claude-code-toolbox/README.md)**.
 
 ### See the real UI (screenshots)
 
-These are **actual VS Code UI captures** from the extension—what users see on screen. **How to open the hub** (Activity Bar → Cloude Code ToolBox → **MCP & skills**) is at the top: [After install: open Cloude Code ToolBox (VS Code)](#after-install-open-cloude-code-toolbox-vs-code). Most hub shots below are **high-resolution** (~2.5k width) so labels stay readable in README and on the [static site sources in `/docs`](https://github.com/amitchorasiya/Cloude-Code-ToolBox/tree/main/docs) (GitHub Pages from that folder; gallery images load from **`raw.githubusercontent.com`** on `main`, same pattern as [Github-Copilot-ToolBox](https://github.com/amitchorasiya/Github-Copilot-ToolBox)). See [Pages setup](docs/PAGES-SETUP.md) for the public URL and optional custom domain.
+These are **actual VS Code UI captures** from the extension—what users see on screen. **How to open the hub** (Activity Bar → Claude Code ToolBox → **MCP & skills**) is at the top: [After install: open Claude Code ToolBox (VS Code)](#after-install-open-claude-code-toolbox-vs-code). Most hub shots below are **high-resolution** (~2.5k width) so labels stay readable in README and on the [static site sources in `/docs`](https://github.com/amitchorasiya/Cloude-Code-ToolBox/tree/main/docs) (GitHub Pages from that folder; gallery images load from **`raw.githubusercontent.com`** on `main`, same pattern as [Github-Copilot-ToolBox](https://github.com/amitchorasiya/Github-Copilot-ToolBox)). See [Pages setup](docs/PAGES-SETUP.md) for the public URL and optional custom domain.
 
 **Intelligence** (hub): **Port Cursor → VS Code + Claude Code** (MCP, rules, memory bank), then broader bridges, context pack, readiness, MCP & Skills scan.
 
@@ -128,7 +128,7 @@ These are **actual VS Code UI captures** from the extension—what users see on 
 
 ## MCP & skills hub: every tab, toggle, and button
 
-Open the **MCP & skills** hub from the **Side Bar** after you click **Cloude Code ToolBox** in the **Activity Bar** (see [After install: open Cloude Code ToolBox (VS Code)](#after-install-open-cloude-code-toolbox-vs-code) at the top of this README). The hub is organized into **tabs**, a **Browse / Installed** switch (where applicable), a **search** field, optional **MCP chips**, and a **footer** legend.
+Open the **MCP & skills** hub from the **Side Bar** after you click **Claude Code ToolBox** in the **Activity Bar** (see [After install: open Claude Code ToolBox (VS Code)](#after-install-open-claude-code-toolbox-vs-code) at the top of this README). The hub is organized into **tabs**, a **Browse / Installed** switch (where applicable), a **search** field, optional **MCP chips**, and a **footer** legend.
 
 ### Main tabs (top)
 
@@ -157,14 +157,14 @@ Open the **MCP & skills** hub from the **Side Bar** after you click **Cloude Cod
 
 | Control | What it does |
 |---------|----------------|
-| **Checkbox** | Toggles **`cloude-code-toolbox.thinkingMachineMode.enabled`** (Workspace when a folder is open, else User). First enable per cycle shows **Engage**; unchecking clears acknowledgment so **Engage** can appear again. |
+| **Checkbox** | Toggles **`claude-code-toolbox.thinkingMachineMode.enabled`** (Workspace when a folder is open, else User). First enable per cycle shows **Engage**; unchecking clears acknowledgment so **Engage** can appear again. |
 | **⚙** | Opens **Settings** filtered to **`cloude-code-toolbox.thinkingMachineMode`**. |
 
 ### Background MCP & Skills auto-scan (Intelligence tab, bottom bar)
 
 | Control | What it does |
 |---------|----------------|
-| **Checkbox** (long label about workspace open) | Toggles **`cloude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen`**. When on: after a workspace opens (debounced), writes **MCP & Skills awareness** under `.claude/`, refreshes the hub, and updates the replaceable MCP/skills block in **`CLAUDE.md`**. Persists to **Workspace** when a folder is open, otherwise **User**. |
+| **Checkbox** (long label about workspace open) | Toggles **`claude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen`**. When on: after a workspace opens (debounced), writes **MCP & Skills awareness** under `.claude/`, refreshes the hub, and updates the replaceable MCP/skills block in **`CLAUDE.md`**. Persists to **Workspace** when a folder is open, otherwise **User**. |
 | **Scan now** | Runs the awareness flow immediately and refreshes the hub. |
 
 ### Search box
@@ -197,7 +197,7 @@ Hidden on **Intelligence**. On other tabs it filters: **registry / skills.sh res
 
 | Card / button | What it does |
 |---------------|----------------|
-| **Run npx port** (Port Cursor MCP) | Runs **`CloudeCodeToolBox.portCursorMcp`** → `npx` **cursor-mcp-vscode-port**. |
+| **Run npx port** (Port Cursor MCP) | Runs **`ClaudeCodeToolBox.portCursorMcp`** → `npx` **cursor-mcp-vscode-port**. |
 | **GitHub** (same card) | Opens the port CLI repo in the browser. |
 | **Run npx init** (Claude-oriented memory bank) | Runs **`initMemoryBank`** → `npx` **cloude-code-memory-bank** (scaffold `memory-bank/`, merge instructions). |
 | **GitHub** | Memory bank repo. |
@@ -209,7 +209,7 @@ Hidden on **Intelligence**. On other tabs it filters: **registry / skills.sh res
 
 | Button | What it does |
 |--------|----------------|
-| **Run scan** | **MCP & Skills awareness:** saves **`.claude/cloude-code-toolbox-mcp-skills-awareness.md`**, prompts with **Open report** / shortcuts, and updates the replaceable MCP/skills block in **`CLAUDE.md`** when merge rules apply (interactive hub run, workspace auto-scan, or One Click–forced merge). |
+| **Run scan** | **MCP & Skills awareness:** saves **`.claude/claude-code-toolbox-mcp-skills-awareness.md`**, prompts with **Open report** / shortcuts, and updates the replaceable MCP/skills block in **`CLAUDE.md`** when merge rules apply (interactive hub run, workspace auto-scan, or One Click–forced merge). |
 | **Build pack** | **Context pack** quick picks → markdown for Claude Code (files, optional git/diagnostics, etc.). |
 | **Run readiness** | Markdown **readiness** summary (instructions, rules, MCP, suggested next steps). |
 | **Open settings** | Filtered **Intelligence-related** settings (`cloude-code-toolbox.intelligence.*`). |
@@ -293,7 +293,7 @@ The **MCP & skills** and **Workspace kit** views expose a **Refresh** action in 
 
 ```bash
 git clone https://github.com/amitchorasiya/Cloude-Code-ToolBox.git
-cd Cloude-Code-ToolBox/packages/cloude-code-toolbox
+cd Cloude-Code-ToolBox/packages/claude-code-toolbox
 npm install
 npm run compile
 ```
@@ -301,19 +301,19 @@ npm run compile
 From the **monorepo root** (after dependencies are installed under the package above):
 
 ```bash
-npm run compile    # same as npm run compile --prefix packages/cloude-code-toolbox
+npm run compile    # same as npm run compile --prefix packages/claude-code-toolbox
 npm test
 ```
 
-**Run in VS Code:** open this repository → **Run and Debug** → **Run Extension: Cloude Code ToolBox** (see [`.vscode/launch.json`](.vscode/launch.json)).
+**Run in VS Code:** open this repository → **Run and Debug** → **Run Extension: Claude Code ToolBox** (see [`.vscode/launch.json`](.vscode/launch.json)).
 
 ---
 
 ## Install the extension
 
-- **Marketplace:** search for **Cloude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)** (the public listing name) or install by id:  
+- **Marketplace:** search for **Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)** (the public listing name) or install by id:  
   `code --install-extension amitchorasiya.cloude-code-toolbox-vscode`
-- **In VS Code after install:** the **Activity Bar** and commands still show **Cloude Code ToolBox** (short UI label).
+- **In VS Code after install:** the **Activity Bar** and commands still show **Claude Code ToolBox** (short UI label).
 - **From VSIX:** build with `npm run package` inside `packages/cloude-code-toolbox/`, then **Install from VSIX…** in VS Code.
 
 **If you had the old Marketplace id `amitchorasiya.cloude-code-toolbox`:** that slug is **permanently reserved** after the listing was removed; this repo now publishes as **`amitchorasiya.cloude-code-toolbox-vscode`** (install the new id above—your **settings** under `cloude-code-toolbox.*` are unchanged).
@@ -328,9 +328,9 @@ These work alongside the extension; the **Intelligence** hub links to their repo
 
 | npm package | Role | GitHub |
 |-------------|------|--------|
-| `cursor-mcp-vscode-port` | Port Cursor `mcp.json` → VS Code `mcp.json` | [Cloude-Code-ToolBox](https://github.com/amitchorasiya/Cloude-Code-ToolBox) |
-| `cloude-code-memory-bank` | Scaffold `memory-bank/` + merge into `CLAUDE.md` | [Cloude-Code-ToolBox](https://github.com/amitchorasiya/Cloude-Code-ToolBox) |
-| `cursor-rules-to-claude` | Generate `CLAUDE.md` + `.claude/rules` from `.cursor/rules` | [Cloude-Code-ToolBox](https://github.com/amitchorasiya/Cloude-Code-ToolBox) |
+| `cursor-mcp-vscode-port` | Port Cursor `mcp.json` → VS Code `mcp.json` | [Claude-Code-ToolBox](https://github.com/amitchorasiya/Cloude-Code-ToolBox) |
+| `claude-code-memory-bank` | Scaffold `memory-bank/` + merge into `CLAUDE.md` | [Claude-Code-ToolBox](https://github.com/amitchorasiya/Cloude-Code-ToolBox) |
+| `cursor-rules-to-claude` | Generate `CLAUDE.md` + `.claude/rules` from `.cursor/rules` | [Claude-Code-ToolBox](https://github.com/amitchorasiya/Cloude-Code-ToolBox) |
 
 ---
 
@@ -344,15 +344,15 @@ These work alongside the extension; the **Intelligence** hub links to their repo
 ├── scripts/
 │   └── rebuild-extensions.sh        # One-shot: VSIX + IntelliJ ZIP (see npm run rebuild:extensions)
 ├── packages/
-│   ├── cloude-code-toolbox/         # VS Code extension — publish VSIX / Marketplace from HERE
+│   ├── claude-code-toolbox/         # VS Code extension — publish VSIX / Marketplace from HERE
 │   │   ├── LICENSE                  # MIT (bundled in .vsix)
 │   │   ├── package.json
 │   │   ├── src/
 │   │   └── README.md
-│   ├── cloude-code-toolbox-intellij/  # JetBrains plugin (preview) — Gradle; ./gradlew buildPlugin → ZIP under build/distributions/
+│   ├── claude-code-toolbox-intellij/  # JetBrains plugin — Gradle; ./gradlew buildPlugin → ZIP under build/distributions/
 │   ├── cursor-mcp-vscode-port/      # Vendored MCP port CLI (`npx` name: cursor-mcp-vscode-port)
 │   ├── cursor-mcp-to-github-copilot-port/  # Legacy folder name only; use cursor-mcp-vscode-port
-│   ├── cloude-code-memory-bank/     # Vendored memory-bank + `CLAUDE.md` merge CLI
+│   ├── claude-code-memory-bank/     # Vendored memory-bank + `CLAUDE.md` merge CLI
 │   └── cursor-rules-to-claude/      # Vendored Cursor rules → `CLAUDE.md` CLI
 ├── memory-bank/                     # Project docs for agents / Claude Code
 ├── docs/                            # Static landing site for GitHub Pages (`npm run serve:site`)
@@ -364,64 +364,64 @@ These work alongside the extension; the **Intelligence** hub links to their repo
 
 ## Development
 
-1. `cd packages/cloude-code-toolbox && npm install`
+1. `cd packages/claude-code-toolbox && npm install`
 2. `npm run compile` — TypeScript → `out/`
 3. `npm test` — Vitest (unit tests for Intelligence helpers, skills, etc.)
 4. F5 — extension host
 
 **Rebuild both artifacts (`.vsix` + IntelliJ `.zip`):** from the monorepo root, `npm run rebuild:extensions` (runs [scripts/rebuild-extensions.sh](scripts/rebuild-extensions.sh): compile, tests, export hub HTML for IntelliJ, `npm run package`, `npm run package:intellij`). Set `REBUILD_SKIP_TESTS=1` for a faster run without Vitest.
 
-**Tech stack (extension):** TypeScript, VS Code API `^1.99`, Vitest. See [packages/cloude-code-toolbox/README.md](packages/cloude-code-toolbox/README.md) for settings, keybindings, and caveats (`#file:` vs Add context, etc.).
+**Tech stack (extension):** TypeScript, VS Code API `^1.99`, Vitest. See [packages/claude-code-toolbox/README.md](packages/claude-code-toolbox/README.md) for settings, keybindings, and caveats (`#file:` vs Add context, etc.).
 
 ---
 
 ## CI
 
-- **VS Code extension:** [`.github/workflows/extension-ci.yml`](.github/workflows/extension-ci.yml) — triggers on `packages/cloude-code-toolbox/**`, root `package.json`, or that workflow file.
-- **IntelliJ plugin (preview):** [`.github/workflows/intellij-ci.yml`](.github/workflows/intellij-ci.yml) — triggers on `packages/cloude-code-toolbox-intellij/**` or that workflow file; runs `./gradlew buildPlugin` on Ubuntu with JDK 21.
+- **VS Code extension:** [`.github/workflows/extension-ci.yml`](.github/workflows/extension-ci.yml) — triggers on `packages/claude-code-toolbox/**`, root `package.json`, or that workflow file.
+- **IntelliJ plugin:** [`.github/workflows/intellij-ci.yml`](.github/workflows/intellij-ci.yml) — triggers on `packages/claude-code-toolbox-intellij/**` or that workflow file; runs `./gradlew buildPlugin` on Ubuntu with JDK 21.
 - **Matrix:** Ubuntu, Windows, macOS — `npm install`, `npm run compile`, `npm test`, verifies `out/extension.js` exists.
 
 ---
 
 ## Publishing (VSIX / Marketplace)
 
-Always use **`packages/cloude-code-toolbox/`** as the extension root (matches `repository.directory` in that `package.json`).
+Always use **`packages/claude-code-toolbox/`** as the extension root (matches `repository.directory` in that `package.json`).
 
 ```bash
-cd packages/cloude-code-toolbox
+cd packages/claude-code-toolbox
 npm install
 npm run compile
 npm run package          # stages monorepo README (+ screenshot URLs) for Marketplace, then vsce package
 # npx vsce publish       # when you are logged in to the publisher (from this directory)
 ```
 
-The `.vsix` **README** is the **monorepo root** [`README.md`](README.md) (same content as on GitHub). Screenshot images use absolute **`raw.githubusercontent.com/.../main/screenshots/…`** URLs so they render on GitHub, the Marketplace, and anywhere else the README is shown; **`npm run package`** appends a cache-busting **`?v=`** (from the extension version) to those image URLs for the packed `.vsix`. Other relative repo links in the staged README are turned into absolute GitHub URLs before packaging. [`packages/cloude-code-toolbox/README.md`](packages/cloude-code-toolbox/README.md) is restored after each package run. Do not use **`package:extension-readme-only`** for a real publish—that skips this flow and README images break.
+The `.vsix` **README** is the **monorepo root** [`README.md`](README.md) (same content as on GitHub). Screenshot images use absolute **`raw.githubusercontent.com/.../main/screenshots/…`** URLs so they render on GitHub, the Marketplace, and anywhere else the README is shown; **`npm run package`** appends a cache-busting **`?v=`** (from the extension version) to those image URLs for the packed `.vsix`. Other relative repo links in the staged README are turned into absolute GitHub URLs before packaging. [`packages/claude-code-toolbox/README.md`](packages/claude-code-toolbox/README.md) is restored after each package run. Do not use **`package:extension-readme-only`** for a real publish—that skips this flow and README images break.
 
 From monorepo root: `npm run package:extension` (after `npm install` in the package directory).
 
-The **`LICENSE`** file in `packages/cloude-code-toolbox/` is included in the VSIX for Marketplace compliance.
+The **`LICENSE`** file in `packages/claude-code-toolbox/` is included in the VSIX for Marketplace compliance.
 
 ---
 
 ## Configuration & commands
 
-**Commands** use **`CloudeCodeToolBox.*`**. **Settings** use **`cloude-code-toolbox.*`** (stable namespace in VS Code Settings). On first load after upgrade, legacy **`CloudeCodeToolBox.*`** setting values migrate into **`cloude-code-toolbox.*`**.
+**Commands** use **`ClaudeCodeToolBox.*`**. **Settings** use **`claude-code-toolbox.*`** (stable namespace in VS Code Settings). On first load after upgrade, legacy **`ClaudeCodeToolBox.*`** setting values migrate into **`claude-code-toolbox.*`**.
 
-Notable settings (see [extension README](packages/cloude-code-toolbox/README.md#settings) for a concise table):
+Notable settings (see [extension README](packages/claude-code-toolbox/README.md#settings) for a concise table):
 
-- `cloude-code-toolbox.npxTag`, **`embeddedBridgeNodeExecutable`**, `useInsidersPaths`
-- `cloude-code-toolbox.intelligence.*` (context pack defaults, **auto-scan MCP & Skills on workspace open**, session notepad / open Claude Code after pack, etc.)
-- `cloude-code-toolbox.oneClickSetup.*` (**One Click Setup** — includes **Migration tracks** `migrateFromCursor` / `migrateFromGitHubCopilot`, plus Memory Bank, Rules, Skills, MCP, Follow-ups, and optional Copilot instruction/skills merge settings)
-- `cloude-code-toolbox.thinkingMachineMode.*` (**Engage** dialog, priming, awareness, context pack when the mode is on)
-- `cloude-code-toolbox.translateWrapMultilineInFence`
+- `claude-code-toolbox.npxTag`, **`embeddedBridgeNodeExecutable`**, `useInsidersPaths`
+- `claude-code-toolbox.intelligence.*` (context pack defaults, **auto-scan MCP & Skills on workspace open**, session notepad / open Claude Code after pack, etc.)
+- `claude-code-toolbox.oneClickSetup.*` (**One Click Setup** — includes **Migration tracks** `migrateFromCursor` / `migrateFromGitHubCopilot`, plus Memory Bank, Rules, Skills, MCP, Follow-ups, and optional Copilot instruction/skills merge settings)
+- `claude-code-toolbox.thinkingMachineMode.*` (**Engage** dialog, priming, awareness, context pack when the mode is on)
+- `claude-code-toolbox.translateWrapMultilineInFence`
 
 **Open filtered settings from the Command Palette** (titles match VS Code exactly):
 
-- **Cloude Code ToolBox: Thinking Machine Mode — open related settings** → `cloude-code-toolbox.intelligence`
-- **Cloude Code ToolBox: Thinking Machine Mode — open Thinking Machine settings** → `cloude-code-toolbox.thinkingMachineMode`
-- **Cloude Code ToolBox: Thinking Machine Mode — open One Click Setup settings** → `cloude-code-toolbox.oneClickSetup`
+- **Claude Code ToolBox: Thinking Machine Mode — open related settings** → `claude-code-toolbox.intelligence`
+- **Claude Code ToolBox: Thinking Machine Mode — open Thinking Machine settings** → `claude-code-toolbox.thinkingMachineMode`
+- **Claude Code ToolBox: Thinking Machine Mode — open One Click Setup settings** → `claude-code-toolbox.oneClickSetup`
 
-You can also search **`cloude-code-toolbox`** in the Settings UI. **Note:** Many toolbox commands are grouped under the **Thinking Machine Mode —** prefix in the palette even when they are general Intelligence actions—search **Cloude Code ToolBox** to see the full list.
+You can also search **`claude-code-toolbox`** in the Settings UI. **Note:** Many toolbox commands are grouped under the **Thinking Machine Mode —** prefix in the palette even when they are general Intelligence actions—search **Claude Code ToolBox** to see the full list.
 
 ---
 
@@ -437,20 +437,20 @@ You can also search **`cloude-code-toolbox`** in the Settings UI. **Note:** Many
 
 Issues and PRs are welcome. Please:
 
-- Run `npm run compile` and `npm test` under `packages/cloude-code-toolbox/` before submitting.
+- Run `npm run compile` and `npm test` under `packages/claude-code-toolbox/` before submitting.
 - Keep changes focused; match existing TypeScript and doc style.
 
 ---
 
 ## License
 
-This repository is released under the **MIT License**. See [LICENSE](LICENSE). The VS Code extension package includes its own [packages/cloude-code-toolbox/LICENSE](packages/cloude-code-toolbox/LICENSE) for distribution in `.vsix`.
+This repository is released under the **MIT License**. See [LICENSE](LICENSE). The VS Code extension package includes its own [packages/claude-code-toolbox/LICENSE](packages/claude-code-toolbox/LICENSE) for distribution in `.vsix`.
 
 ---
 
 ## Disclaimer
 
-**Independence and trademarks.** This monorepo is **independent** community tooling. It is **not** affiliated with, endorsed by, sponsored by, or maintained by Microsoft, GitHub, Cursor, OpenAI, Anthropic, or other vendors of products named in this documentation. The **Cloude Code ToolBox** name is an **independent project brand** and is **not** the Anthropic **Claude** product or service. **Visual Studio**, **Visual Studio Code**, **GitHub**, **Cursor**, **Anthropic**, **Claude**, and other product names may be **trademarks** of their respective owners. For Microsoft’s naming and branding expectations around VS Code, see the official [Visual Studio Code brand guidelines](https://code.visualstudio.com/brand). Third-party workflow inspiration is credited in [`packages/cloude-code-toolbox/NOTICE`](packages/cloude-code-toolbox/NOTICE).
+**Independence and trademarks.** This monorepo is **independent** community tooling. It is **not** affiliated with, endorsed by, sponsored by, or maintained by Microsoft, GitHub, Cursor, OpenAI, Anthropic, or other vendors of products named in this documentation. The **Claude Code ToolBox** name is an **independent project brand** and is **not** the Anthropic **Claude** product or service. **Visual Studio**, **Visual Studio Code**, **GitHub**, **Cursor**, **Anthropic**, **Claude**, and other product names may be **trademarks** of their respective owners. For Microsoft’s naming and branding expectations around VS Code, see the official [Visual Studio Code brand guidelines](https://code.visualstudio.com/brand). Third-party workflow inspiration is credited in [`packages/claude-code-toolbox/NOTICE`](packages/claude-code-toolbox/NOTICE).
 
 **Software warranty.** Code is released under the [MIT License](LICENSE). The license applies **“AS IS”**, without warranties of any kind, and limits liability—read the full license text shipped with the software.
 
