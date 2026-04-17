@@ -1,8 +1,8 @@
 {
-  "name": "claude-code-toolbox-vscode",
+  "name": "cloude-code-toolbox-vscode",
   "displayName": "Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)",
   "description": "Claude Code ToolBox: MCP hub, workspace helpers, Thinking Machine Mode (context packs & priming), readiness, and bridges from Cursor to Claude Code in VS Code. Not affiliated with Microsoft, GitHub, or Anthropic. See README disclaimer. Workflow ideas credited in NOTICE (everything-claude-code, MIT).",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "publisher": "amitchorasiya",
   "author": "amitchorasiya",
   "license": "MIT",
@@ -30,7 +30,7 @@
   "contributes": {
     "configuration": [
       {
-        "title": "Cloude Code ToolBox",
+        "title": "Claude Code ToolBox",
         "order": 5,
         "properties": {
           "cloude-code-toolbox.npxTag": {
@@ -336,7 +336,7 @@
           "cloude-code-toolbox.thinkingMachineMode.useSeparateContextPackDefaults": {
             "type": "boolean",
             "default": false,
-            "description": "When off, Thinking Machine priming uses the Cloude Code ToolBox context pack defaults. When on, use the four overrides in this section instead."
+            "description": "When off, Thinking Machine priming uses the Claude Code ToolBox context pack defaults. When on, use the four overrides in this section instead."
           },
           "cloude-code-toolbox.thinkingMachineMode.includeGit": {
             "type": "boolean",
@@ -441,14 +441,14 @@
       "activitybar": [
         {
           "id": "CloudeCodeToolBox",
-          "title": "Cloude Code ToolBox",
+          "title": "Claude Code ToolBox",
           "icon": "resources/icon.svg"
         }
       ],
       "secondarySidebar": [
         {
           "id": "CloudeCodeToolBoxSecondary",
-          "title": "Cloude Code ToolBox",
+          "title": "Claude Code ToolBox",
           "icon": "resources/icon.svg"
         }
       ]
@@ -484,197 +484,197 @@
     "commands": [
       {
         "command": "CloudeCodeToolBox.openWorkspaceMcp",
-        "title": "Cloude Code ToolBox: Open workspace mcp.json"
+        "title": "Claude Code ToolBox: Open workspace mcp.json"
       },
       {
         "command": "CloudeCodeToolBox.openUserMcp",
-        "title": "Cloude Code ToolBox: Open user mcp.json"
+        "title": "Claude Code ToolBox: Open user mcp.json"
       },
       {
         "command": "CloudeCodeToolBox.mcpListServers",
-        "title": "Cloude Code ToolBox: MCP — List servers (native)"
+        "title": "Claude Code ToolBox: MCP — List servers (native)"
       },
       {
         "command": "CloudeCodeToolBox.mcpBrowseRegistry",
-        "title": "Cloude Code ToolBox: MCP — Browse registry (@mcp)"
+        "title": "Claude Code ToolBox: MCP — Browse registry (@mcp)"
       },
       {
         "command": "CloudeCodeToolBox.mcpAddServer",
-        "title": "Cloude Code ToolBox: MCP — Add server (native)"
+        "title": "Claude Code ToolBox: MCP — Add server (native)"
       },
       {
         "command": "CloudeCodeToolBox.portCursorMcp",
-        "title": "Cloude Code ToolBox: Port Cursor MCP → VS Code (npx)"
+        "title": "Claude Code ToolBox: Port Cursor MCP → VS Code (npx)"
       },
       {
         "command": "CloudeCodeToolBox.manualPortCursorMcpWithoutNpx",
-        "title": "Cloude Code ToolBox: Port Cursor MCP → VS Code (bundled CLI — no npx)"
+        "title": "Claude Code ToolBox: Port Cursor MCP → VS Code (bundled CLI — no npx)"
       },
       {
         "command": "CloudeCodeToolBox.syncCursorRules",
-        "title": "Cloude Code ToolBox: Sync Cursor rules → CLAUDE.md (npx)"
+        "title": "Claude Code ToolBox: Sync Cursor rules → CLAUDE.md (npx)"
       },
       {
         "command": "CloudeCodeToolBox.cursorRulesToClaudeWithoutNpx",
-        "title": "Cloude Code ToolBox: Cursor rules → CLAUDE.md (bundled CLI — no npx)"
+        "title": "Claude Code ToolBox: Cursor rules → CLAUDE.md (bundled CLI — no npx)"
       },
       {
         "command": "CloudeCodeToolBox.initMemoryBank",
-        "title": "Cloude Code ToolBox: Init memory bank (npx)"
+        "title": "Claude Code ToolBox: Init memory bank (npx)"
       },
       {
         "command": "CloudeCodeToolBox.memoryBankWithoutNpx",
-        "title": "Cloude Code ToolBox: Init memory bank (bundled CLI — no npx)"
+        "title": "Claude Code ToolBox: Init memory bank (bundled CLI — no npx)"
       },
       {
         "command": "CloudeCodeToolBox.workspaceSetupWizard",
-        "title": "Cloude Code ToolBox: Cursor → Claude Code setup (legacy — opens One Click)"
+        "title": "Claude Code ToolBox: Cursor → Claude Code setup (legacy — opens One Click)"
       },
       {
         "command": "CloudeCodeToolBox.openClaudeCode",
-        "title": "Cloude Code ToolBox: Open Claude Code"
+        "title": "Claude Code ToolBox: Open Claude Code"
       },
       {
         "command": "CloudeCodeToolBox.toggleMcpDiscovery",
-        "title": "Cloude Code ToolBox: Toggle VS Code chat.mcp.discovery.enabled"
+        "title": "Claude Code ToolBox: Toggle VS Code chat.mcp.discovery.enabled"
       },
       {
         "command": "CloudeCodeToolBox.refreshMcpView",
-        "title": "Cloude Code ToolBox: Refresh MCP view",
+        "title": "Claude Code ToolBox: Refresh MCP view",
         "icon": "$(refresh)"
       },
       {
         "command": "CloudeCodeToolBox.refreshWorkspaceView",
-        "title": "Cloude Code ToolBox: Refresh workspace kit view",
+        "title": "Claude Code ToolBox: Refresh workspace kit view",
         "icon": "$(refresh)"
       },
       {
         "command": "CloudeCodeToolBox.openInstructionsPicker",
-        "title": "Cloude Code ToolBox: Open instruction file…"
+        "title": "Claude Code ToolBox: Open instruction file…"
       },
       {
         "command": "CloudeCodeToolBox.appendCursorrules",
-        "title": "Cloude Code ToolBox: Append .cursorrules to CLAUDE.md"
+        "title": "Claude Code ToolBox: Append .cursorrules to CLAUDE.md"
       },
       {
         "command": "CloudeCodeToolBox.mergeCopilotInstructionsIntoClaudeMd",
-        "title": "Cloude Code ToolBox: Merge .github/copilot-instructions.md to CLAUDE.md"
+        "title": "Claude Code ToolBox: Merge .github/copilot-instructions.md to CLAUDE.md"
       },
       {
         "command": "CloudeCodeToolBox.openClaudeUserSettingsJson",
-        "title": "Cloude Code ToolBox: Open Claude Code user settings (JSON)"
+        "title": "Claude Code ToolBox: Open Claude Code user settings (JSON)"
       },
       {
         "command": "CloudeCodeToolBox.migrateCopilotSkillsToAgents",
-        "title": "Cloude Code ToolBox: Migrate Copilot/GitHub skills (.github/skills, ~/.copilot/skills) to .agents"
+        "title": "Claude Code ToolBox: Migrate Copilot/GitHub skills (.github/skills, ~/.copilot/skills) to .agents"
       },
       {
         "command": "CloudeCodeToolBox.revealCopilotSkillFoldersWithoutNpx",
-        "title": "Cloude Code ToolBox: Reveal Copilot/GitHub skill folders (no npx)"
+        "title": "Claude Code ToolBox: Reveal Copilot/GitHub skill folders (no npx)"
       },
       {
         "command": "CloudeCodeToolBox.createCursorrulesTemplate",
-        "title": "Cloude Code ToolBox: Create .cursorrules template"
+        "title": "Claude Code ToolBox: Create .cursorrules template"
       },
       {
         "command": "CloudeCodeToolBox.openCursorClaudeReference",
-        "title": "Cloude Code ToolBox: Open Cursor vs Claude Code reference"
+        "title": "Claude Code ToolBox: Open Cursor vs Claude Code reference"
       },
       {
         "command": "CloudeCodeToolBox.openInlineChatCursorStyle",
-        "title": "Cloude Code ToolBox: Open inline chat (Cursor-style)"
+        "title": "Claude Code ToolBox: Open inline chat (Cursor-style)"
       },
       {
         "command": "CloudeCodeToolBox.openComposerHub",
-        "title": "Cloude Code ToolBox: Open session hub (Cursor-style tips)"
+        "title": "Claude Code ToolBox: Open session hub (Cursor-style tips)"
       },
       {
         "command": "CloudeCodeToolBox.openSessionNotepad",
-        "title": "Cloude Code ToolBox: Open session notepad"
+        "title": "Claude Code ToolBox: Open session notepad"
       },
       {
         "command": "CloudeCodeToolBox.copySessionNotepad",
-        "title": "Cloude Code ToolBox: Copy session notepad to clipboard"
+        "title": "Claude Code ToolBox: Copy session notepad to clipboard"
       },
       {
         "command": "CloudeCodeToolBox.openClaudeCodeAccountDocs",
-        "title": "Cloude Code ToolBox: Open Claude Code account / pricing docs"
+        "title": "Claude Code ToolBox: Open Claude Code account / pricing docs"
       },
       {
         "command": "CloudeCodeToolBox.openEnvSyncChecklist",
-        "title": "Cloude Code ToolBox: Open environment sync checklist"
+        "title": "Claude Code ToolBox: Open environment sync checklist"
       },
       {
         "command": "CloudeCodeToolBox.translateContextSelection",
-        "title": "Cloude Code ToolBox: Translate @-mentions in selection"
+        "title": "Claude Code ToolBox: Translate @-mentions in selection"
       },
       {
         "command": "CloudeCodeToolBox.buildContextPack",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — build context pack (copy)"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — build context pack (copy)"
       },
       {
         "command": "CloudeCodeToolBox.runThinkingMachinePriming",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — prime session (awareness, context pack)"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — prime session (awareness, context pack)"
       },
       {
         "command": "CloudeCodeToolBox.showMcpSkillsAwareness",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — scan MCP & Skills awareness (save to .claude)"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — scan MCP & Skills awareness (save to .claude)"
       },
       {
         "command": "CloudeCodeToolBox.showIntelligenceReadiness",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — show readiness summary"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — show readiness summary"
       },
       {
         "command": "CloudeCodeToolBox.openIntelligenceSettings",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — open related settings"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — open related settings"
       },
       {
         "command": "CloudeCodeToolBox.openThinkingMachineModeSettings",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — open Thinking Machine settings"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — open Thinking Machine settings"
       },
       {
         "command": "CloudeCodeToolBox.openIntelligenceToolboxRepos",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — open Toolbox CLI repo on GitHub…"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — open Toolbox CLI repo on GitHub…"
       },
       {
         "command": "CloudeCodeToolBox.migrateSkillsCursorToAgents",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — migrate skills .cursor → .agents"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — migrate skills .cursor → .agents"
       },
       {
         "command": "CloudeCodeToolBox.revealSkillFoldersWithoutNpx",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — reveal .cursor/.agents skill folders"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — reveal .cursor/.agents skill folders"
       },
       {
         "command": "CloudeCodeToolBox.claudeToolboxConfigScan",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — scan Claude Code / MCP config (Output)"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — scan Claude Code / MCP config (Output)"
       },
       {
         "command": "CloudeCodeToolBox.appendNotepadToMemoryBank",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — append session notepad to memory-bank file"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — append session notepad to memory-bank file"
       },
       {
         "command": "CloudeCodeToolBox.createSkillStub",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — create SKILL.md stub under .github/skills"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — create SKILL.md stub under .github/skills"
       },
       {
         "command": "CloudeCodeToolBox.verificationChecklist",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — verification checklist"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — verification checklist"
       },
       {
         "command": "CloudeCodeToolBox.applyBundledMcpRecipe",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — apply bundled MCP recipe to workspace"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — apply bundled MCP recipe to workspace"
       },
       {
         "command": "CloudeCodeToolBox.runFirstWorkspaceTestTask",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — run first test-like workspace task"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — run first test-like workspace task"
       },
       {
         "command": "CloudeCodeToolBox.runOneClickSetup",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — One Click Setup (configured steps)"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — One Click Setup (configured steps)"
       },
       {
         "command": "CloudeCodeToolBox.openOneClickSetupSettings",
-        "title": "Cloude Code ToolBox: Thinking Machine Mode — open One Click Setup settings"
+        "title": "Claude Code ToolBox: Thinking Machine Mode — open One Click Setup settings"
       }
     ],
     "menus": {

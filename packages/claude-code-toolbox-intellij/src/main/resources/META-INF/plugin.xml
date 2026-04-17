@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/amitchorasiya/Claude-Code-ToolBox">
     <!-- Marketplace listing pulls name, description, change notes, vendor, and compatibility from this file and Gradle. -->
     <!-- Marketplace: plugin id must not contain the word "intellij" (JetBrains validation). -->
-    <id>com.amitchorasiya.claude.code.toolbox</id>
+    <id>com.amitchorasiya.cloude.code.toolbox</id>
     <name>Claude Code ToolBox</name>
     <vendor url="https://github.com/amitchorasiya/Claude-Code-ToolBox">amitchorasiya</vendor>
 
@@ -30,6 +30,7 @@ Claude Code toolbox - JetBrains preview.
 
     <change-notes><![CDATA[
 <ul>
+<li>0.6.11: Display name corrections — "Cloude" → "Claude" in notification group and settings; no functional change from 0.6.10.</li>
 <li>0.6.10: Point release — docs and repo README/static site highlight both the VS Code Marketplace and JetBrains plugin install; no functional change from 0.6.9.</li>
 <li>0.6.9: <b>Merge-only parity</b> — MCP port, memory bank, Cursor rules, and skills migration match VS Code merge-only behavior; One Click / hub bridge argv and settings normalization updated.</li>
 <li>0.6.8: <b>Plugin Verifier</b> — hub command bridge runs actions via <code>ActionManager.tryToExecute</code> (no <code>AnAction.update</code>, <code>AnActionEvent.createFromAnAction</code>, or <code>ActionUtil.performActionDumbAwareWithCallbacks</code>).</li>
@@ -52,14 +53,14 @@ Claude Code toolbox - JetBrains preview.
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="CloudeCodeToolBox" displayType="BALLOON" displayName="Cloude Code ToolBox"/>
+        <notificationGroup id="CloudeCodeToolBox" displayType="BALLOON" displayName="Claude Code ToolBox"/>
         <projectActivity implementation="com.amitchorasiya.cloude.toolbox.intellij.CloudeToolboxRegisterActivity"/>
         <projectService serviceImplementation="com.amitchorasiya.cloude.toolbox.intellij.hub.CloudeHubBridge"/>
         <projectConfigurable
             parentId="tools"
             instance="com.amitchorasiya.cloude.toolbox.intellij.settings.ToolboxSettingsConfigurable"
             id="com.amitchorasiya.cloude.toolbox.settings"
-            displayName="Cloude Code ToolBox"/>
+            displayName="Claude Code ToolBox"/>
         <toolWindow
             id="CloudeCodeToolBox"
             anchor="right"
