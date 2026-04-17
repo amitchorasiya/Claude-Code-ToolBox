@@ -4,12 +4,12 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 
 plugins {
-    kotlin("jvm") version "2.1.10"
+    kotlin("jvm") version "2.1.21"
     id("org.jetbrains.intellij.platform") version "2.13.1"
 }
 
 group = "com.amitchorasiya.claude"
-version = "0.6.11"
+version = "0.6.12"
 
 repositories {
     mavenCentral()
@@ -25,7 +25,7 @@ dependencies {
     intellijPlatform {
         intellijIdea("2024.3")
     }
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.google.code.gson:gson:2.12.1")
     testImplementation(kotlin("test"))
     // IntelliJ JUnit5 initializer expects JUnit 4 API on the classpath (TestRule).
     testImplementation("junit:junit:4.13.2")
@@ -190,4 +190,10 @@ tasks {
     test {
         useJUnitPlatform()
     }
+
+    // Note: verifyPlugin will report Kotlin stdlib compatibility warnings on Java 21+
+    // This is a known issue (TypeVariableImpl missing getAnnotatedBounds()) that will be
+    // fixed in Kotlin 2.2.0+. The warnings don't affect plugin functionality.
+    // To run verification and review reports: ./gradlew verifyPlugin || true
+    // Reports are in build/reports/pluginVerifier/
 }

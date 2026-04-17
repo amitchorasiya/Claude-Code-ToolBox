@@ -20,7 +20,7 @@
 
 **Missing the icon?** **Command Palette** (**Ctrl+Shift+P** / **⌘⇧P**) → type **Claude Code ToolBox** → run a command, or **Developer: Reload Window**, then repeat steps 2–3.
 
-![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=1.0.9)
+![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=1.0.11)
 
 ---
 
@@ -76,27 +76,25 @@ Real VS Code UI (not mockups). **Opening the hub:** [After install](#after-insta
 
 **Intelligence:** Cursor → VS Code + Claude Code bridges, context pack, readiness, MCP & Skills awareness.
 
-![Intelligence: Port Cursor MCP, rules, and memory bank to VS Code + Claude Code](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/02-intelligence-cursor-port.png?v=1.0.9)
+![Intelligence tab: Cursor to VS Code + Claude Code bridges, context packs, and readiness](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=1.0.11)
 
-![Intelligence tab: Cursor to VS Code + Claude Code bridges](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=1.0.9)
-
-![Intelligence: context pack and readiness actions](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/02-intelligence-context-readiness.png?v=1.0.9)
+![Intelligence: Port Cursor MCP, rules, and memory bank to VS Code + Claude Code](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/02-intelligence-cursor-port.png?v=1.0.11)
 
 **MCP** and **Skills** tabs: installed servers, registry browse, skills.sh, local `SKILL.md` trees.
 
-![MCP: installed workspace servers](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/03-mcp-browse-workspace-servers.png?v=1.0.9)
+![MCP: installed workspace servers](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/03-mcp-browse-workspace-servers.png?v=1.0.11)
 
-![MCP: registry browse & search](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/04-mcp-registry-search.png?v=1.0.9)
+![MCP: registry browse & search](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/04-mcp-registry-search.png?v=1.0.11)
 
-![Skills: catalog (skills.sh)](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/05-skills-catalog-skills-sh.png?v=1.0.9)
+![Skills: catalog (skills.sh)](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/05-skills-catalog-skills-sh.png?v=1.0.11)
 
-![Skills: installed local skill folders](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/06-skills-installed-local.png?v=1.0.9)
+![Skills: installed local skill folders](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/06-skills-installed-local.png?v=1.0.11)
 
 **Workspace** checklist and **Intelligence** context hygiene.
 
-![Workspace kit checklist](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/07-workspace-checklist.png?v=1.0.9)
+![Workspace kit checklist](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/07-workspace-checklist.png?v=1.0.11)
 
-![Intelligence: context hygiene and quick actions](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/08-workspace-toolbox-commands.png?v=1.0.9)
+![Intelligence: context hygiene and quick actions](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/08-workspace-toolbox-commands.png?v=1.0.11)
 
 **Reference diagram:** no PNG ships in `screenshots/` for the capability map right now. Source: [`diagrams/mermaid-copilot-map.mmd`](https://github.com/amitchorasiya/Claude-Code-ToolBox/blob/main/diagrams/mermaid-copilot-map.mmd) — export to PNG and add `screenshots/mermaid-claude-map.png` if you want an embedded diagram here again.
 

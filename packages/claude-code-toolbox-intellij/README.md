@@ -1,6 +1,6 @@
 # Claude Code ToolBox — IntelliJ / JetBrains (preview)
 
-**Version:** `0.6.10` (see `version` in [`build.gradle.kts`](build.gradle.kts)).
+**Version:** `0.6.12` (see `version` in [`build.gradle.kts`](build.gradle.kts)).
 
 **Also use VS Code?** The primary shipping surface is the **[VS Code extension](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode)** (`amitchorasiya.claude-code-toolbox-vscode`).
 
@@ -10,9 +10,9 @@ Gradle-based [IntelliJ Platform](https://plugins.jetbrains.com/docs/intellij/wel
 
 **Screenshots** (same hub UI as VS Code; captures from VS Code — see [monorepo `screenshots/`](https://github.com/amitchorasiya/Claude-Code-ToolBox/tree/main/screenshots)):
 
-![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png)
+![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=0.6.12)
 
-![Intelligence tab: Cursor to VS Code + Claude Code bridges](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png)
+![Intelligence tab: Cursor to VS Code + Claude Code bridges](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=0.6.12)
 
 **Feature parity** with VS Code is a **large, multi-phase** effort (JCEF hub, Kotlin bridge, MCP/skills/CLI integrations). See **[ROADMAP.md](ROADMAP.md)** for the technical plan—not something that can be toggled on in one release.
 

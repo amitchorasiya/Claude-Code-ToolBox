@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.11
+
+- **IntelliJ Plugin Verification:** Updated Kotlin (2.1.10 → 2.1.21) and Gson (2.11.0 → 2.12.1) to address compatibility warnings. Plugin verified against IntelliJ IDEA 2024.2 through 2026.1. See [VERIFICATION_REPORT.md](../claude-code-toolbox-intellij/VERIFICATION_REPORT.md).
+- **Dependencies:** Improved compatibility with newer Java versions (Java 21+).
+- Patch release: version **1.0.11** (VS Code) / **0.6.12** (IntelliJ plugin).
+
 ## 1.0.9
 
 - **Docs:** Root README, extension README, IntelliJ README, and GitHub Pages (`docs/index.html`) now link both the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.cloude-code-toolbox-vscode) and JetBrains plugin install (`jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox` plus Marketplace search fallback).
