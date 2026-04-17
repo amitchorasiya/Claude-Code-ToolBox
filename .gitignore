@@ -4,3 +4,10 @@ node_modules/
 memory-bank/
 blog/
 .publish-debug.txt
+
+# Project configuration and workspace files
+.claude/
+.github/
+.vscode/
+diagrams/
+CLAUDE.md
