@@ -143,6 +143,10 @@
               <h3>Smarter context for Claude Code</h3>
               <p>Context packs and readiness flows with explicit choices so teams agree on what Claude Code is allowed to see.</p>
             </article>
+            <article class="pillar">
+              <h3>Agent Teams + live Dashboard</h3>
+              <p>SDLC agents, seven collaboration protocols (debate, plan-then-code with an approval gate), color-coded transcript, and an opt-in dashboard that shows every running Claude Code session on the machine.</p>
+            </article>
           </div>
         </div>
       </section>
@@ -177,6 +181,52 @@
               <p>
                 <strong>Why it matters:</strong> Claude Code works best when sessions start from <strong>accurate, explicit context</strong> — what MCP servers exist, where skills live, and a
                 structured snapshot of the workspace — not from guesswork. Thinking Machine Mode makes that priming a deliberate, repeatable gesture instead of a forgotten manual step.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="modes" aria-labelledby="teams-heading">
+        <div class="wrap">
+          <h2 id="teams-heading">Agent Teams &amp; Dashboard</h2>
+          <p class="sub">
+            The 🤝 <strong>Teams</strong> tab turns the hub into a multi-agent workbench on top of Claude Code's native subagent format. Everything is <strong>opt-in</strong>, disclosed upfront, and reversible.
+          </p>
+          <div class="modes-grid">
+            <article class="mode-card">
+              <h3>Agent Teams + 7 collaboration protocols</h3>
+              <p>
+                <strong>What it does:</strong> CRUD for Claude Code subagents (YAML-frontmatter <code>.md</code> under <code>~/.claude/agents/</code>). A 9-agent <strong>SDLC starter pack</strong> (product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa-test-engineer, code-reviewer, devops, tech-writer) and two preset teams (<code>sdlc-debate</code>, <code>sdlc-plan-then-code</code>) land with one click. Seven collaboration protocols drive runs: <strong>native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge</strong> (writes <code>decision.md</code>), and <strong>plan-then-code</strong> (produces <code>plan.md</code>, blocks on your approval, then runs the code phase). A live color-coded transcript shows pulsing status, tokens, cost, projection, and an approve-plan modal.
+              </p>
+              <p>
+                <strong>Why it matters:</strong> Planning and reviewing are the moments that most benefit from disagreement. Debates and plan-then-code flows make multiple perspectives explicit and auditable, and every run appends a JSONL transcript to <code>&lt;ws&gt;/.claude/runs/&lt;id&gt;/transcript.jsonl</code>.
+              </p>
+            </article>
+            <article class="mode-card">
+              <h3>Agent Dashboard — live visibility for every Claude Code session</h3>
+              <p>
+                <strong>What it does:</strong> A strip of kanban cards above the Run panels shows every running Claude Code session — ours or one you started in a terminal or another window. Each card surfaces pulsing status, current tool + target file, context-window fill, tokens in/out, USD cost + rolling projection, last-3 tool-call feed, and an inline "needs approval" badge. Phase 2 adds swim-lane grouping by workspace, search/filter, cost-cap warnings (soft breach → Stop-now toast; hard breach → auto-abort), and foreign-hook detection.
+              </p>
+              <p>
+                <strong>Why it matters:</strong> Strict opt-in. On enable, the Toolbox drops a Python hook helper into <code>~/.claude/</code>, registers 5 events in <code>~/.claude/settings.json</code> (atomic, dedup, reversible), and starts an HTTP listener on <strong><code>127.0.0.1:3456</code></strong>. <strong>No telemetry — nothing leaves your machine.</strong> Disable reverses only the Toolbox's entries and deletes the helper.
+              </p>
+            </article>
+            <article class="mode-card">
+              <h3>Native Claude Code slash commands</h3>
+              <p>
+                <strong>What it does:</strong> Six custom commands installed under <code>~/.claude/commands/*.md</code> so you can type them inside any <code>claude</code> session and dispatch the Toolbox agents via the native Task tool:
+              </p>
+              <ul>
+                <li><code>/plan-team &lt;task&gt;</code> — product-manager → architect plan.</li>
+                <li><code>/debate-team &lt;topic&gt;</code> — PM → architect vs security-reviewer → rebuttal → verdict in <code>&lt;decision&gt;</code> tags.</li>
+                <li><code>/review-team</code> — runs <code>git diff</code> then code-reviewer + security-reviewer.</li>
+                <li><code>/security-team &lt;change&gt;</code> — OWASP threat model.</li>
+                <li><code>/refactor-team &lt;target&gt;</code> — backend + frontend + QA + reviewer.</li>
+                <li><code>/spec-team &lt;idea&gt;</code> — PRD + technical addendum.</li>
+              </ul>
+              <p>
+                <strong>Why it matters:</strong> Bridges the Toolbox agents into Claude Code's own chat without any VS Code UI — works from JetBrains, a terminal, or any other IDE with a <code>claude</code> shell. Cross-platform: Windows, macOS, Linux.
               </p>
             </article>
           </div>

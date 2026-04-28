@@ -1,6 +1,6 @@
 # Claude Code ToolBox — IntelliJ / JetBrains (preview)
 
-**Version:** `0.6.12` (see `version` in [`build.gradle.kts`](build.gradle.kts)).
+**Version:** `0.6.18` (see `version` in [`build.gradle.kts`](build.gradle.kts)).
 
 **Also use VS Code?** The primary shipping surface is the **[VS Code extension](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode)** (`amitchorasiya.claude-code-toolbox-vscode`).
 
@@ -51,6 +51,17 @@ The plugin ZIP is under `build/distributions/`.
 ```
 
 Then **View → Tool Windows → Claude Code ToolBox** (or find it on the right tool window bar).
+
+## Agent Teams & Dashboard (VS Code-only today — IntelliJ port scoped in ROADMAP)
+
+The 🤝 **Teams** tab (agent CRUD, 7 collaboration protocols including **debate + judge** and **plan-then-code**, live transcript, Agent Dashboard, Claude Code slash commands) ships in the **VS Code extension 1.0.17+**.
+
+**What's already shared** even without a Kotlin port: everything lives on disk. Agents (`~/.claude/agents/*.md`), teams (`~/.claude/teams/*.json`), run transcripts (`<ws>/.claude/runs/<id>/transcript.jsonl`), and slash-command bridges (`~/.claude/commands/*.md`) are all plain files. If you create or edit them in VS Code, they immediately work from any `claude` session — including one launched from a JetBrains terminal. The slash commands in particular (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`) work regardless of which IDE you're in, because Claude Code resolves them from `~/.claude/commands/`.
+
+**What still needs a Kotlin port** (scoped in [ROADMAP.md](ROADMAP.md)):
+- JCEF panel for the Teams tab UI.
+- `ProcessBuilder`-based runtime (`ClaudeSpawn`, `RunBus`, `SessionStore`) — mechanical port of `src/agents/runtime/*` and `src/agents/dashboard/*` from the VS Code extension.
+- Hook server rebound via Kotlin HTTP stack (same IPv4-pinned loopback design, Windows-safe).
 
 ## Not feature parity (yet)
 

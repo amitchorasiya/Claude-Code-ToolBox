@@ -61,8 +61,9 @@ For a **full control-by-control** hub reference (every tab, chip, and tile), see
 **Claude Code ToolBox** adds:
 
 1. **MCP & skills** — Webview hub: **Intelligence** (default), **MCP**, **Skills**, **Workspace** (checklist + searchable command tiles).
-2. **Workspace kit** — Tree checklist for rules, memory bank, **`CLAUDE.md`**, `mcp.json`, plus **One Click Setup** (top row).
-3. **Session notepad** — Optional scratch file at **`.vscode/claude-code-toolbox-notepad.md`** (open/copy from the hub tiles or Command Palette); context packs can append here.
+2. **Agent Teams & Dashboard** — 🤝 **Teams** tab: agent CRUD, SDLC starter pack, 7 collaboration protocols (debate, plan-then-code with approval gate, orchestrator, parallel fan-out, etc.), live color-coded transcript, opt-in **Agent Dashboard** that shows a card for every running Claude Code session, and 6 native Claude Code slash commands (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`).
+3. **Workspace kit** — Tree checklist for rules, memory bank, **`CLAUDE.md`**, `mcp.json`, plus **One Click Setup** (top row).
+4. **Session notepad** — Optional scratch file at **`.vscode/claude-code-toolbox-notepad.md`** (open/copy from the hub tiles or Command Palette); context packs can append here.
 
 **Commands:** `CloudeCodeToolBox.*`. **Settings:** `claude-code-toolbox.*` (legacy `CloudeCodeToolBox.*` values migrate on load).
 
@@ -110,6 +111,7 @@ Open **MCP & skills** from the **Side Bar** after selecting **Claude Code ToolBo
 | **MCP** | **Browse** registry / **Installed** workspace + user `mcp.json`. |
 | **Skills** | **Browse** skills.sh / **Installed** local skills. |
 | **Workspace** | Checklist + **All toolbox commands** tiles. |
+| **🤝 Teams** | Agent CRUD (`~/.claude/agents/*.md`), team composition JSON, 7 protocols, live transcript, **Agent Dashboard** opt-in card strip for every Claude Code session on the machine, and six **Claude Code slash commands** (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`). |
 
 **Auto-scan:** When `claude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen` is on, a debounced run after folder open refreshes awareness and updates the replaceable MCP/skills section in **`CLAUDE.md`** (and saves the full report under `.claude/`).
 
@@ -130,8 +132,11 @@ Open **MCP & skills** from the **Side Bar** after selecting **Claude Code ToolBo
 
 - **One hub** for MCP + skills: workspace/user **`mcp.json`**, registry and skills.sh browse, stash/hide semantics for servers and skills.
 - **Intelligence:** Awareness report, **context pack**, **readiness**, **Claude Code / MCP config scan**, notepad → memory-bank, bundled MCP recipes, verification checklist.
-- **Bridges:** Port Cursor MCP, init **cloude-code-memory-bank**, **cursor-rules-to-claude**, migrate **`.cursor/skills`** → **`.agents/skills`**, optional **GitHub Copilot** instructions/skills → Claude-oriented files (One Click **migration tracks**).
-- **Bundled CLIs** for One Click and “without npx” commands; primary hub actions avoid a network `npx` fetch when using bundled paths.
+- **Bridges:** Port Cursor MCP, init **claude-code-memory-bank**, **cursor-rules-to-claude**, migrate **`.cursor/skills`** → **`.agents/skills`**, optional **GitHub Copilot** instructions/skills → Claude-oriented files (One Click **migration tracks**).
+- **Agent Teams:** 9-agent SDLC starter pack, preset teams (`sdlc-debate`, `sdlc-plan-then-code`), 7 collaboration protocols including **debate + judge** (writes `decision.md`) and **plan-then-code** (writes `plan.md`, blocks on your approval, then runs the code phase). All JSONL-transcripted.
+- **Agent Dashboard (opt-in):** HTTP hook listener on `127.0.0.1:3456` + `~/.claude/projects/*.jsonl` tail → live kanban cards for every Claude Code session (yours or externally started), with pulsing status, current tool, context-window fill, tokens + cost projection, safety-alert banners. Disable removes only Toolbox entries from `~/.claude/settings.json` — no telemetry.
+- **Native slash commands:** `/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team` installed under `~/.claude/commands/*.md` to dispatch Toolbox agents from inside any `claude` session via the native Task tool. Cross-platform (Windows + macOS + Linux).
+- **Bundled CLIs** for One Click and "without npx" commands; primary hub actions avoid a network `npx` fetch when using bundled paths.
 - **Honest skills story:** Local **`SKILL.md`** trees are listed for humans and tools; Claude Code does not auto-load arbitrary folders—use instructions, attachments, or MCP as appropriate.
 
 ---
@@ -148,6 +153,17 @@ Examples:
 - `Claude Code ToolBox: Open Claude Code`
 - `Claude Code ToolBox: Open workspace mcp.json` / `Open user mcp.json`
 
+**Agent Teams + Dashboard:**
+
+- `Claude Code ToolBox: Agent Teams — Enable (create ~/.claude/agents, verify CLI)`
+- `Claude Code ToolBox: Agent Teams — Install SDLC starter pack (9 agents)`
+- `Claude Code ToolBox: Agent Teams — Install slash commands (/plan-team, /debate-team…)`
+- `Claude Code ToolBox: Agent Teams — Uninstall Toolbox slash commands`
+- `Claude Code ToolBox: Agent Teams — List installed slash commands`
+- `Claude Code ToolBox: Agent Dashboard — Enable` / `Disable` / `Status`
+- `Claude Code ToolBox: Plan with Agent Team…` (default keybinding `cmd/ctrl+alt+p`)
+- `Claude Code ToolBox: Smart router — pick workflow for a prompt`
+
 Search **Claude Code ToolBox** under **Keyboard Shortcuts** to rebind.
 
 ---
@@ -163,6 +179,8 @@ Search **Claude Code ToolBox** under **Keyboard Shortcuts** to rebind.
 | `claude-code-toolbox.oneClickSetup.*` | **Migration tracks** (`migrateFromCursor`, `migrateFromGitHubCopilot`), memory bank / rules / skills / MCP / follow-ups, optional **merge Copilot instructions** and **Copilot skills** migration |
 | `claude-code-toolbox.thinkingMachineMode.*` | Priming, awareness, context pack, **Engage** behavior |
 | `claude-code-toolbox.translateWrapMultilineInFence` | Translation helper |
+| `claude-code-toolbox.agentTeams.*` | Default model / protocol, `claudeBinOverride`, `maxConcurrentAgents`, `costCapUsd` (soft breach toast; hard breach auto-aborts internal runs) |
+| `claude-code-toolbox.agentDashboard.*` | Master opt-in (`enabled` = false by default), `hookPort` (3456), `autoPairPlanningPrompts`, `defaultPairTeamName` (`sdlc-debate`), `safetyAlerts` + `safetyPatterns` (opt-in regex guards; non-blocking), `retainDoneCardsMs` |
 
 **Open filtered settings** (exact palette titles):
 
@@ -178,6 +196,7 @@ Or search **`claude-code-toolbox`** in the Settings UI.
 
 - **Ctrl+Alt+K** (Windows/Linux) / **Cmd+Alt+K** (macOS) → **Open inline chat (Cursor-style)**  
   Avoid binding over VS Code’s global **Ctrl+K** chord.
+- **Ctrl+Alt+P** (Windows/Linux) / **Cmd+Alt+P** (macOS) → **Plan with Agent Team…** — parallel to Claude Code's built-in `/plan`; captures the editor selection as context and dispatches your default plan-then-code team.
 
 ---
 

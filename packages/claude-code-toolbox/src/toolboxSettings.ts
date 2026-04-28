@@ -35,6 +35,20 @@ const MIGRATE_SUFFIXES: readonly string[] = [
   "oneClickSetup.migrateSkillsScope",
   "oneClickSetup.migrateSkillsMode",
   "translateWrapMultilineInFence",
+  "agentTeams.enabled",
+  "agentTeams.defaultModel",
+  "agentTeams.defaultProtocol",
+  "agentTeams.claudeBinOverride",
+  "agentTeams.maxConcurrentAgents",
+  "agentTeams.costCapUsd",
+  "agentDashboard.enabled",
+  "agentDashboard.hookPort",
+  "agentDashboard.includeInternalRuns",
+  "agentDashboard.retainDoneCardsMs",
+  "agentDashboard.autoPairPlanningPrompts",
+  "agentDashboard.defaultPairTeamName",
+  "agentDashboard.safetyAlerts",
+  "agentDashboard.safetyPatterns",
 ];
 
 export async function migrateLegacyToolboxSettings(): Promise<void> {
@@ -70,4 +84,32 @@ export function affectsToolboxSetting(
   return LEGACY_SETTING_PREFIXES.some((p) =>
     e.affectsConfiguration(`${p}.${settingRelativeKey}`)
   );
+}
+
+/**
+ * Write a `cloude-code-toolbox.*` setting but tolerate VS Code reporting
+ * "is not a registered configuration" — that happens when the running
+ * extension's JS is newer than its installed `package.json` manifest
+ * (stale reload). We swallow the error so the feature flow still completes;
+ * the state is recomputed from disk on the next reload anyway.
+ */
+export async function safeUpdateToolboxSetting(
+  relativeKey: string,
+  value: unknown,
+  target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global
+): Promise<boolean> {
+  const cfg = vscode.workspace.getConfiguration();
+  try {
+    await cfg.update(`${TOOLBOX_SETTINGS_PREFIX}.${relativeKey}`, value, target);
+    return true;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/not a registered configuration/i.test(msg)) {
+      console.warn(
+        `[Claude Code ToolBox] setting "${relativeKey}" not registered; skipping persist. Reload the window after updating the extension.`
+      );
+      return false;
+    }
+    throw e;
+  }
 }

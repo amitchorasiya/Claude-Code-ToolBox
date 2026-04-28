@@ -111,6 +111,14 @@ export function getHubWebviewHtml(csp: string): string {
       background: color-mix(in srgb, var(--vscode-charts-yellow, #eab308) 26%, var(--vscode-sideBar-background));
       border-color: color-mix(in srgb, var(--vscode-charts-yellow, #eab308) 55%, var(--border));
     }
+    .page-btn[data-page="agentteams"]:not(.active) {
+      border-color: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 48%, var(--border));
+      background: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 14%, var(--vscode-sideBar-background));
+    }
+    .page-btn[data-page="agentteams"]:hover:not(.active) {
+      background: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 26%, var(--vscode-sideBar-background));
+      border-color: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 58%, var(--border));
+    }
     .page-btn.active {
       color: var(--vscode-button-foreground);
       box-shadow:
@@ -132,6 +140,10 @@ export function getHubWebviewHtml(csp: string): string {
     .page-btn[data-page="workspace"].active {
       background: color-mix(in srgb, var(--vscode-charts-yellow, #eab308) 58%, var(--vscode-button-background));
       border-color: color-mix(in srgb, var(--vscode-charts-yellow, #eab308) 48%, var(--border));
+    }
+    .page-btn[data-page="agentteams"].active {
+      background: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 62%, var(--vscode-button-background));
+      border-color: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 50%, var(--border));
     }
     .subpages {
       display: flex;
@@ -619,6 +631,408 @@ export function getHubWebviewHtml(csp: string): string {
     .htext { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .htt { font-weight: 600; font-size: 11px; }
     .htp { font-size: 9px; color: var(--muted); line-height: 1.3; }
+
+    /* === Agent Teams tab === */
+    .at-hero {
+      border-radius: var(--r-lg);
+      border: 1px solid color-mix(in srgb, var(--vscode-charts-orange, #f97316) 45%, var(--border));
+      border-left: 4px solid var(--vscode-charts-orange, #f97316);
+      padding: 14px 14px 12px;
+      margin-bottom: 12px;
+      background: linear-gradient(
+        165deg,
+        color-mix(in srgb, var(--vscode-charts-orange, #f97316) 14%, var(--vscode-sideBar-background)) 0%,
+        color-mix(in srgb, var(--vscode-editor-background) 88%, var(--vscode-sideBar-background)) 55%,
+        color-mix(in srgb, var(--vscode-charts-orange, #f97316) 10%, var(--vscode-sideBar-background)) 100%
+      );
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .at-hero h3 { margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+    .at-hero p { margin: 0 0 10px; font-size: 11px; line-height: 1.5; color: var(--muted); }
+    .at-hero .at-status { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+    .at-hero .at-status .ok { color: var(--ok); font-weight: 600; }
+    .at-hero .at-status .warn { color: var(--warn); font-weight: 600; }
+    .at-hero .row { margin-top: 10px; }
+    .at-pack {
+      margin: 10px 0 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 8px 10px;
+      background: var(--card);
+    }
+    .at-pack .at-pack-title { font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+    .at-pack .at-pack-row {
+      display: flex; align-items: flex-start; gap: 6px; padding: 4px 0;
+      font-size: 11px;
+    }
+    .at-pack .at-pack-row input { margin-top: 3px; flex-shrink: 0; }
+    .at-pack .at-pack-row .at-pack-meta { color: var(--muted); font-size: 10px; display: block; margin-top: 1px; }
+    .at-pack .at-pack-row .at-pack-installed {
+      font-size: 9px; padding: 1px 5px; border-radius: 999px;
+      background: color-mix(in srgb, var(--ok) 22%, transparent); color: var(--ok);
+      margin-left: 6px;
+    }
+    .at-section {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted);
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 14px 0 8px;
+    }
+    .at-section button.btn { font-size: 10px; padding: 4px 9px; min-height: 24px; }
+    .at-card {
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      background: var(--card);
+      padding: 10px 12px 10px 14px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--vscode-focusBorder);
+    }
+    .at-card:hover { border-color: color-mix(in srgb, var(--vscode-focusBorder) 65%, var(--border)); background: var(--card-hover); }
+    .at-card h3 { margin: 0; font-size: 12.5px; font-weight: 600; }
+    .at-card .at-meta { font-size: 9.5px; color: var(--muted); margin-top: 2px; word-break: break-all; }
+    .at-card .at-desc { font-size: 11px; margin-top: 6px; line-height: 1.4; }
+    .at-card .row { margin-top: 8px; }
+    .at-role-badge {
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: color-mix(in srgb, var(--accent) 20%, transparent);
+      color: var(--vscode-button-foreground);
+      margin-left: 6px;
+    }
+    .at-pill {
+      font-size: 9px; padding: 2px 6px; border-radius: 999px;
+      background: color-mix(in srgb, var(--muted) 18%, transparent);
+      color: var(--muted);
+      margin-right: 4px;
+    }
+    .at-pill.runtime-native { background: color-mix(in srgb, var(--vscode-charts-green, #22c55e) 22%, transparent); color: var(--vscode-charts-green, #22c55e); }
+    .at-pill.runtime-custom { background: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 22%, transparent); color: var(--vscode-charts-orange, #f97316); }
+
+    /* Form (agent + team) */
+    .at-form {
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      background: var(--card);
+    }
+    .at-form h3 { margin: 0 0 10px; font-size: 12.5px; font-weight: 600; }
+    .at-form label { display: block; font-size: 10px; font-weight: 600; margin-bottom: 3px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .at-form input[type="text"], .at-form textarea, .at-form select {
+      width: 100%;
+      padding: 6px 8px;
+      font-family: inherit;
+      font-size: 11px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      margin-bottom: 8px;
+      box-sizing: border-box;
+    }
+    .at-form textarea { min-height: 80px; resize: vertical; font-family: var(--vscode-editor-font-family, monospace); }
+    .at-form .at-form-row { display: flex; gap: 8px; }
+    .at-form .at-form-row > div { flex: 1; min-width: 0; }
+    .at-form .at-color-preview {
+      display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--border); vertical-align: middle; margin-right: 6px;
+    }
+    .at-form .at-checkbox-list {
+      max-height: 140px; overflow-y: auto;
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+      padding: 6px 8px; background: var(--vscode-input-background);
+      margin-bottom: 8px;
+    }
+    .at-form .at-checkbox-list label {
+      display: flex; align-items: center; gap: 6px;
+      text-transform: none; letter-spacing: normal;
+      font-size: 11px; font-weight: 500;
+      margin-bottom: 3px; color: inherit; cursor: pointer;
+    }
+    .at-form .at-checkbox-list input { margin: 0; }
+    .at-form .at-form-actions { display: flex; gap: 6px; margin-top: 4px; }
+    .at-empty-tip {
+      font-size: 10.5px; color: var(--muted); margin: 6px 0 12px; line-height: 1.4;
+    }
+    .at-summary-row {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      padding: 8px 10px; margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      background: var(--card);
+      font-size: 10.5px;
+    }
+    .at-summary-row .at-summary-item .k { color: var(--muted); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .at-summary-row .at-summary-item .v { font-weight: 600; font-size: 11.5px; }
+    .at-color-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+
+    /* === Live transcript === */
+    .at-run-panel {
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--vscode-charts-orange, #f97316);
+      border-radius: var(--r-lg);
+      background: var(--card);
+      margin-bottom: 12px;
+    }
+    .at-run-head {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .at-run-head h3 { margin: 0; font-size: 12.5px; font-weight: 600; }
+    .at-run-meta { font-size: 10px; color: var(--muted); }
+    .at-run-phase-pill {
+      font-size: 9px; padding: 2px 7px; border-radius: 999px;
+      background: color-mix(in srgb, var(--accent) 22%, transparent);
+      color: var(--vscode-button-foreground); text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .at-run-phase-pill.phase-plan { background: color-mix(in srgb, var(--vscode-charts-blue, #3b82f6) 32%, transparent); color: var(--vscode-charts-blue, #3b82f6); }
+    .at-run-phase-pill.phase-code { background: color-mix(in srgb, var(--vscode-charts-green, #22c55e) 32%, transparent); color: var(--vscode-charts-green, #22c55e); }
+    .at-run-phase-pill.phase-none { background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--muted); }
+    .at-run-status-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--ok); margin-right: 6px;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--ok) 32%, transparent);
+    }
+    .at-run-status-dot.running { animation: at-pulse 1.2s ease-in-out infinite; }
+    .at-run-status-dot.awaiting_approval { background: var(--warn); box-shadow: 0 0 0 2px color-mix(in srgb, var(--warn) 35%, transparent); }
+    .at-run-status-dot.error { background: var(--vscode-errorForeground, #f48771); }
+    .at-run-status-dot.completed { background: var(--muted); opacity: 0.7; }
+    @keyframes at-pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ok) 32%, transparent); }
+      50% { transform: scale(1.25); box-shadow: 0 0 0 5px color-mix(in srgb, var(--ok) 15%, transparent); }
+    }
+    .at-run-actions { margin-left: auto; display: flex; gap: 6px; }
+    .at-transcript {
+      max-height: 360px;
+      overflow-y: auto;
+      padding: 6px 12px;
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: 10.5px;
+    }
+    .at-line {
+      padding: 4px 0 4px 8px;
+      border-left: 3px solid var(--muted);
+      margin-bottom: 4px;
+      line-height: 1.4;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .at-line .at-line-head {
+      display: flex; gap: 6px; align-items: center;
+      font-size: 9px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+    .at-line .at-line-agent { color: var(--vscode-foreground); font-weight: 600; text-transform: none; letter-spacing: normal; font-size: 10px; }
+    .at-line .at-line-kind { padding: 0 5px; border-radius: 4px; background: color-mix(in srgb, var(--muted) 20%, transparent); }
+    .at-line.kind-error { border-left-color: var(--vscode-errorForeground, #f48771); }
+    .at-line.kind-error .at-line-kind { background: color-mix(in srgb, var(--vscode-errorForeground, #f48771) 25%, transparent); color: var(--vscode-errorForeground, #f48771); }
+    .at-line.kind-tool_use, .at-line.kind-tool_result { font-size: 10px; }
+    .at-line.kind-message { font-style: italic; }
+    .at-line.kind-phase_boundary { border-left-color: var(--vscode-charts-yellow, #eab308); background: color-mix(in srgb, var(--vscode-charts-yellow, #eab308) 8%, transparent); padding: 6px 8px; }
+    .at-line.kind-plan_artifact { border-left-color: var(--vscode-charts-blue, #3b82f6); }
+    .at-line.kind-run_end { border-left-color: var(--vscode-foreground); background: color-mix(in srgb, var(--vscode-foreground) 4%, transparent); padding: 6px 8px; }
+    .at-totals {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      padding: 6px 12px; font-size: 10px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .at-totals strong { color: var(--vscode-foreground); font-weight: 600; }
+
+    /* Approval modal */
+    .at-modal-backdrop {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: color-mix(in srgb, var(--vscode-editor-background) 70%, #000);
+      z-index: 9998;
+    }
+    .at-modal {
+      position: fixed; left: 50%; top: 10%; transform: translateX(-50%);
+      width: min(640px, 92%);
+      max-height: 82vh;
+      display: flex; flex-direction: column;
+      background: var(--vscode-sideBar-background);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      z-index: 9999;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    .at-modal h3 { margin: 0; padding: 12px 14px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--border); }
+    .at-modal .at-modal-body { padding: 12px 14px; overflow-y: auto; flex: 1; }
+    .at-modal .at-modal-body textarea {
+      width: 100%; min-height: 260px; font-family: var(--vscode-editor-font-family, monospace);
+      font-size: 11.5px; background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px;
+      box-sizing: border-box;
+    }
+    .at-modal .at-modal-actions {
+      padding: 10px 14px; border-top: 1px solid var(--border);
+      display: flex; gap: 8px; justify-content: flex-end;
+    }
+    .at-run-prompt {
+      width: 100%; min-height: 80px; padding: 6px 8px;
+      font-family: inherit; font-size: 11px; border-radius: var(--r-sm);
+      border: 1px solid var(--border); background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground); margin-bottom: 8px; box-sizing: border-box;
+    }
+
+    /* === Agent Dashboard strip === */
+    .ad-strip-head {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      padding: 8px 10px;
+      border: 1px solid color-mix(in srgb, var(--vscode-charts-orange, #f97316) 35%, var(--border));
+      border-left: 3px solid var(--vscode-charts-orange, #f97316);
+      border-radius: var(--r-sm);
+      background: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 6%, var(--card));
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+    .ad-strip-head .ad-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted); margin-right: 6px;
+    }
+    .ad-strip-head .ad-dot.running { background: var(--ok); animation: at-pulse 1.2s ease-in-out infinite; }
+    .ad-strip-head .ad-dot.stopped { background: var(--muted); opacity: 0.5; }
+    .ad-strip-head .ad-dot.error   { background: var(--vscode-errorForeground, #f48771); }
+    .ad-strip-head button.btn { padding: 4px 10px; min-height: 24px; font-size: 10px; }
+
+    .ad-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .ad-card {
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 8px 10px;
+      background: var(--card);
+      border-left: 3px solid var(--muted);
+      display: flex; flex-direction: column; gap: 4px;
+      font-size: 10.5px;
+      min-width: 0;
+    }
+    .ad-card.source-internal { border-left-color: var(--vscode-charts-orange, #f97316); }
+    .ad-card.source-external { border-left-color: var(--vscode-charts-blue, #3b82f6); }
+    .ad-card.status-error { border-left-color: var(--vscode-errorForeground, #f48771); }
+    .ad-card.over-budget { border-color: color-mix(in srgb, var(--warn) 55%, var(--border)); }
+    .ad-card .ad-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .ad-card .ad-title { font-weight: 600; font-size: 11px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ad-card .ad-framework, .ad-card .ad-source {
+      font-size: 9px; padding: 1px 6px; border-radius: 999px;
+      background: color-mix(in srgb, var(--muted) 20%, transparent); color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .ad-card .ad-source-internal { background: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 22%, transparent); color: var(--vscode-charts-orange, #f97316); }
+    .ad-card .ad-source-external { background: color-mix(in srgb, var(--vscode-charts-blue, #3b82f6) 22%, transparent); color: var(--vscode-charts-blue, #3b82f6); }
+    .ad-card .ad-status-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted);
+    }
+    .ad-card .ad-status-dot.running { background: var(--ok); animation: at-pulse 1.2s ease-in-out infinite; }
+    .ad-card .ad-status-dot.thinking { background: var(--vscode-charts-blue, #3b82f6); animation: at-pulse 1.4s ease-in-out infinite; }
+    .ad-card .ad-status-dot.awaiting_approval,
+    .ad-card .ad-status-dot.awaiting_permission { background: var(--warn); animation: at-pulse 1.1s ease-in-out infinite; }
+    .ad-card .ad-status-dot.error { background: var(--vscode-errorForeground, #f48771); }
+    .ad-card .ad-status-dot.done, .ad-card .ad-status-dot.idle { background: var(--muted); opacity: 0.55; }
+
+    .ad-card .ad-tool {
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: 10px; color: var(--vscode-charts-green, #22c55e);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ad-card .ad-tool.perm { color: var(--warn); }
+    .ad-card .ad-tool .ad-tool-target { color: var(--muted); margin-left: 4px; }
+
+    .ad-card .ad-ctx-bar {
+      width: 100%; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--muted) 18%, transparent);
+      overflow: hidden; margin: 2px 0;
+    }
+    .ad-card .ad-ctx-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00b894, #00d4aa, #4dffd4);
+    }
+    .ad-card .ad-ctx-label { font-size: 9px; color: var(--muted); }
+
+    .ad-card .ad-metrics { display: flex; flex-wrap: wrap; gap: 8px; font-size: 10px; color: var(--muted); }
+    .ad-card .ad-metrics strong { color: var(--vscode-foreground); font-weight: 600; }
+    .ad-card.over-budget .ad-metrics .ad-cost { color: var(--warn); font-weight: 700; }
+
+    .ad-card .ad-feed { display: flex; flex-direction: column; gap: 2px; font-size: 9.5px; }
+    .ad-card .ad-feed .ad-feed-line {
+      font-family: var(--vscode-editor-font-family, monospace);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .ad-card .ad-feed .ad-feed-line.running { color: var(--vscode-charts-green, #22c55e); }
+    .ad-card .ad-feed .ad-feed-line.error { color: var(--vscode-errorForeground, #f48771); }
+
+    .ad-card .ad-alert {
+      padding: 3px 6px; border-radius: var(--r-sm);
+      background: color-mix(in srgb, var(--vscode-errorForeground, #f48771) 18%, transparent);
+      color: var(--vscode-errorForeground, #f48771);
+      font-size: 9.5px;
+      display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+    }
+    .ad-card .ad-alert button.btn { padding: 2px 7px; min-height: 20px; font-size: 9px; }
+    .ad-card .ad-dissent {
+      font-size: 9.5px; padding: 1px 6px; border-radius: 999px;
+      background: color-mix(in srgb, var(--vscode-charts-yellow, #eab308) 22%, transparent);
+      color: var(--vscode-charts-yellow, #eab308);
+    }
+
+    .ad-card .ad-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+    .ad-card .ad-actions button.btn { padding: 3px 8px; min-height: 22px; font-size: 9px; }
+
+    .ad-disclose {
+      border: 1px solid color-mix(in srgb, var(--vscode-charts-orange, #f97316) 40%, var(--border));
+      border-left: 3px solid var(--vscode-charts-orange, #f97316);
+      border-radius: var(--r-lg);
+      padding: 12px 14px;
+      background: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 8%, var(--card));
+      margin-bottom: 12px;
+    }
+    .ad-disclose h3 { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; }
+    .ad-disclose ul { margin: 4px 0 10px 18px; padding: 0; font-size: 11px; color: var(--muted); }
+    .ad-disclose code { font-family: var(--vscode-editor-font-family, monospace); font-size: 10.5px; }
+
+    /* Phase 2 — toolbar + swim lanes */
+    .ad-toolbar {
+      display: flex; gap: 8px; align-items: center;
+      margin-bottom: 8px;
+    }
+    .ad-toolbar .ad-filter {
+      flex: 1; min-width: 0;
+      padding: 5px 8px;
+      font-family: inherit; font-size: 11px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      box-sizing: border-box;
+    }
+    .ad-toolbar .ad-group-toggle { display: flex; gap: 4px; }
+    .ad-toolbar .ad-group-toggle .btn { padding: 4px 10px; min-height: 24px; font-size: 10px; }
+    .ad-body { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+    .ad-lane { display: flex; flex-direction: column; gap: 6px; }
+    .ad-lane-head {
+      display: flex; align-items: baseline; gap: 6px;
+      font-size: 10px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 0 4px;
+    }
+    .ad-lane-head .ad-lane-title { font-weight: 700; color: var(--vscode-foreground); text-transform: none; letter-spacing: 0; font-size: 11px; }
+    .ad-lane-head .ad-lane-count {
+      font-size: 9px; padding: 1px 7px; border-radius: 999px;
+      background: color-mix(in srgb, var(--muted) 20%, transparent);
+      color: var(--muted);
+    }
+    .ad-card[data-pinned="1"] { outline: 1px dashed color-mix(in srgb, var(--vscode-charts-yellow, #eab308) 55%, transparent); outline-offset: -1px; }
   </style>
 </head>
 <body>
@@ -629,6 +1043,7 @@ export function getHubWebviewHtml(csp: string): string {
       <button type="button" class="page-btn" data-page="mcp" aria-label="MCP" title="Registry search and MCP servers (workspace + user)">🔌 MCP</button>
       <button type="button" class="page-btn" data-page="skills" aria-label="Skills" title="skills.sh catalog and local SKILL.md folders">📚 Skills</button>
       <button type="button" class="page-btn" data-page="workspace" aria-label="Workspace" title="Workspace checklist and all toolbox commands">📋 Workspace</button>
+      <button type="button" class="page-btn" data-page="agentteams" aria-label="Agent Teams" title="Agent definitions + teams: native subagents, debate, plan-then-code">🤝 Teams</button>
     </nav>
     <nav class="subpages" id="subpages" aria-label="Browse or installed">
       <button type="button" class="sub-btn active" data-sub="browse">Browse</button>
@@ -802,7 +1217,7 @@ export function getHubWebviewHtml(csp: string): string {
     }
     var showSub = page === "mcp" || page === "skills";
     subEl.style.display = showSub ? "flex" : "none";
-    searchEl.style.display = page === "intel" ? "none" : "block";
+    searchEl.style.display = (page === "intel" || page === "agentteams") ? "none" : "block";
     chipsEl.style.display = page === "mcp" && sub === "browse" ? "flex" : "none";
     var intelAuto = $("#intel-auto-scan");
     if (intelAuto) {
@@ -1197,6 +1612,10 @@ export function getHubWebviewHtml(csp: string): string {
     if (!e.data) return;
     if (e.data.type === "state") {
       state = e.data.payload;
+      /* Seed dashboard snapshot from full state if we haven't received a push yet. */
+      if (state && Array.isArray(state.sessionCards) && state.sessionCards.length) {
+        adCards = state.sessionCards;
+      }
       render();
       return;
     }
@@ -1227,6 +1646,38 @@ export function getHubWebviewHtml(csp: string): string {
         skillRm.items = e.data.items || [];
       }
       render();
+      return;
+    }
+    if (e.data.type === "agentTeams.runStarted") {
+      atRuns[e.data.runId] = atRuns[e.data.runId] || atNewRunState(e.data);
+      if (page === "agentteams") render();
+      return;
+    }
+    if (e.data.type === "agentTeams.runEvent") {
+      atIngestEvent(e.data.runId, e.data.event);
+      if (page === "agentteams") render();
+      return;
+    }
+    if (e.data.type === "agentTeams.phaseBoundary") {
+      var r = atRuns[e.data.runId];
+      if (r) {
+        r.awaitingApproval = true;
+        r.planPath = e.data.planPath || null;
+      }
+      if (page === "agentteams") render();
+      return;
+    }
+    if (e.data.type === "agentTeams.runEnded") {
+      var r2 = atRuns[e.data.runId];
+      if (r2) { r2.status = e.data.status; r2.awaitingApproval = false; r2.ended = true; }
+      if (page === "agentteams") render();
+      return;
+    }
+    if (e.data.type === "agentDashboard.update") {
+      adCards = Array.isArray(e.data.cards) ? e.data.cards : [];
+      adGeneratedAt = e.data.generatedAt || null;
+      if (page === "agentteams") render();
+      return;
     }
   });
 
@@ -1652,6 +2103,1528 @@ export function getHubWebviewHtml(csp: string): string {
     filterWorkspaceTools();
   }
 
+  /* ======================== Agent Teams page ======================== */
+
+  var atEdit = {
+    mode: "none",     /* "none" | "agent-new" | "agent-edit" | "team-new" | "team-edit" */
+    agentId: null,
+    teamId: null
+  };
+  /** runId -> { events: [], agents: Map, totals: {inTok, outTok, usd}, status, phase, ... } */
+  var atRuns = {};
+  /** Dashboard — latest cards snapshot (array). Populated by agentDashboard.update messages. */
+  var adCards = [];
+  var adGeneratedAt = null;
+  /** Dashboard filter text (persists across renders while the tab is open). */
+  var adFilter = "";
+  /** Swim-lane grouping mode: "workspace" (default) | "flat". */
+  var adGrouping = "workspace";
+  /** runId of the currently-focused run in the UI (last one the user clicked). */
+  var atFocusedRunId = null;
+  /** { runId, planPath, editedPlan } when an approval modal is open, otherwise null. */
+  var atApprovalModal = null;
+  /** { teamId, prompt } inline run-prompt card; null when not shown. */
+  var atRunPromptFor = null;
+
+  function atNewRunState(seed) {
+    return {
+      runId: seed.runId,
+      teamId: seed.teamId,
+      teamName: seed.teamName,
+      protocol: seed.protocol || "",
+      runtime: seed.runtime || "native",
+      events: [],
+      totals: { inTok: 0, outTok: 0, usd: 0 },
+      status: "running",
+      phase: "none",
+      awaitingApproval: false,
+      ended: false,
+      planPath: null,
+      planArtifactPath: null,
+      startedAt: Date.now()
+    };
+  }
+
+  function atIngestEvent(runId, ev) {
+    if (!runId || !ev) return;
+    var r = atRuns[runId];
+    if (!r) {
+      r = atNewRunState({ runId: runId, teamId: "", teamName: ev.teamName || "", protocol: ev.protocol || "", runtime: ev.runtime || "native" });
+      atRuns[runId] = r;
+    }
+    if (!atFocusedRunId) atFocusedRunId = runId;
+    if (r.events.length < 2000) r.events.push(ev);
+    if (ev.kind === "run_start") {
+      r.protocol = ev.protocol || r.protocol;
+      r.runtime = ev.runtime || r.runtime;
+      r.teamName = ev.teamName || r.teamName;
+    } else if (ev.kind === "phase_boundary") {
+      r.phase = ev.to || r.phase;
+      if (ev.needsApproval) {
+        r.awaitingApproval = true;
+        r.planPath = ev.planPath || r.planPath;
+      }
+    } else if (ev.kind === "usage" && ev.usage) {
+      r.totals.inTok += (ev.usage.inputTokens || 0);
+      r.totals.outTok += (ev.usage.outputTokens || 0);
+      r.totals.usd += (ev.usage.costUsd || 0);
+    } else if (ev.kind === "plan_artifact") {
+      r.planArtifactPath = ev.path;
+      r.planPath = ev.path;
+    } else if (ev.kind === "run_end") {
+      r.ended = true;
+      r.status = ev.status || "completed";
+      r.awaitingApproval = false;
+    } else if (ev.kind === "error") {
+      r.hadError = true;
+    }
+  }
+
+  function atFmtUsd(n) {
+    if (!isFinite(n) || !n) return "$0.00";
+    if (n < 0.01) return "$" + n.toFixed(4);
+    return "$" + n.toFixed(2);
+  }
+  function atFmtTokens(n) {
+    if (!n) return "0";
+    if (n >= 1000) return (n / 1000).toFixed(1) + "k";
+    return String(n);
+  }
+
+  function atEventText(ev) {
+    if (ev.kind === "assistant_delta") return ev.text || "";
+    if (ev.kind === "assistant_message") return ev.text || "";
+    if (ev.kind === "message") return (ev.text || "");
+    if (ev.kind === "tool_use") return (ev.tool || "Tool") + (ev.input ? "(" + atTruncate(JSON.stringify(ev.input), 160) + ")" : "");
+    if (ev.kind === "tool_result") return (ev.ok ? "✓ " : "✗ ") + (ev.summary || "");
+    if (ev.kind === "phase_boundary") return "→ phase " + ev.to + (ev.needsApproval ? " (awaiting approval)" : "");
+    if (ev.kind === "plan_artifact") return "📄 " + ev.path;
+    if (ev.kind === "error") return "error: " + ev.message;
+    if (ev.kind === "log") return ev.message;
+    if (ev.kind === "agent_start") return "▶ turn " + ev.turn + " (" + ev.phase + ")";
+    if (ev.kind === "agent_end") return "■ end turn " + ev.turn + " (" + ev.status + ", " + ev.durationMs + "ms)";
+    if (ev.kind === "run_start") return "▶ run started";
+    if (ev.kind === "run_end") return "■ run " + ev.status;
+    return "";
+  }
+  function atTruncate(s, n) {
+    if (!s) return "";
+    if (s.length <= n) return s;
+    return s.slice(0, n) + "…";
+  }
+  function atAgentColorFromEvents(r, agentName) {
+    if (!agentName) return "var(--muted)";
+    for (var i = r.events.length - 1; i >= 0; i--) {
+      var ev = r.events[i];
+      if (ev.kind === "agent_start" && ev.agent === agentName && ev.color) return ev.color;
+    }
+    var s = state || {};
+    var list = s.agents || [];
+    for (var j = 0; j < list.length; j++) {
+      if (list[j].name === agentName) return list[j].color || "var(--muted)";
+    }
+    return "var(--muted)";
+  }
+
+  function renderRunPanel(root, r) {
+    var panel = el("div", "at-run-panel");
+    var head = el("div", "at-run-head");
+    var dot = document.createElement("span");
+    dot.className = "at-run-status-dot " + (r.status || "running");
+    head.appendChild(dot);
+    head.appendChild(el("h3", null, r.teamName || r.runId));
+    var protoPill = el("span", "at-pill runtime-" + (r.runtime || "native"), r.runtime || "native");
+    head.appendChild(protoPill);
+    head.appendChild(el("span", "at-pill", r.protocol || ""));
+    var phasePill = el("span", "at-run-phase-pill phase-" + (r.phase || "none"), "phase: " + (r.phase || "none"));
+    head.appendChild(phasePill);
+    head.appendChild(el("span", "at-run-meta", "run id: " + r.runId));
+    var actions = el("div", "at-run-actions");
+    if (r.awaitingApproval) {
+      var bApprove = el("button", "btn primary", "Approve plan");
+      bApprove.addEventListener("click", function () {
+        atApprovalModal = { runId: r.runId, planPath: r.planPath, editedPlan: null };
+        render();
+      });
+      actions.appendChild(bApprove);
+    }
+    if (!r.ended) {
+      var bStop = el("button", "btn", "Stop");
+      bStop.addEventListener("click", function () {
+        vscode.postMessage({ type: "agentTeams.stopRun", runId: r.runId });
+      });
+      actions.appendChild(bStop);
+    }
+    if (r.planArtifactPath) {
+      var bPlan = el("button", "btn", "Open plan.md");
+      bPlan.addEventListener("click", function () {
+        vscode.postMessage({ type: "agentTeams.openAgentFile", fsPath: r.planArtifactPath });
+      });
+      actions.appendChild(bPlan);
+    }
+    var bOpenRun = el("button", "btn", "Open transcript");
+    bOpenRun.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.openRun", runId: r.runId });
+    });
+    actions.appendChild(bOpenRun);
+    head.appendChild(actions);
+    panel.appendChild(head);
+
+    /* Transcript (virtualized tail: last 300 events). */
+    var trans = el("div", "at-transcript");
+    var events = r.events || [];
+    var tail = events.slice(Math.max(0, events.length - 300));
+    var lastAgent = "";
+    tail.forEach(function (ev) {
+      var agentName = ev.agent || ev.from || "";
+      var line = el("div", "at-line kind-" + (ev.kind || "log"));
+      var color = atAgentColorFromEvents(r, agentName) || "var(--muted)";
+      line.style.borderLeftColor = color;
+      if ((ev.kind === "assistant_delta") && agentName === lastAgent) {
+        /* Extend previous line text to avoid a wall of separate blocks. */
+        var prev = trans.lastElementChild;
+        if (prev && prev.classList.contains("kind-assistant_delta")) {
+          var body = prev.querySelector(".at-line-body");
+          if (body) {
+            body.textContent = (body.textContent || "") + (ev.text || "");
+            return;
+          }
+        }
+      }
+      lastAgent = agentName;
+      var head2 = el("div", "at-line-head");
+      if (agentName) head2.appendChild(el("span", "at-line-agent", agentName));
+      if (ev.kind === "message" && ev.to) head2.appendChild(el("span", "at-line-agent", "→ " + ev.to));
+      head2.appendChild(el("span", "at-line-kind", ev.kind || ""));
+      line.appendChild(head2);
+      var body2 = el("div", "at-line-body", atEventText(ev));
+      line.appendChild(body2);
+      trans.appendChild(line);
+    });
+    /* Auto-scroll to latest */
+    setTimeout(function () { trans.scrollTop = trans.scrollHeight; }, 0);
+    panel.appendChild(trans);
+
+    var totals = el("div", "at-totals");
+    var a1 = el("span", null, "");
+    a1.appendChild(document.createTextNode("Tokens in: "));
+    a1.appendChild(el("strong", null, atFmtTokens(r.totals.inTok)));
+    var a2 = el("span", null, "");
+    a2.appendChild(document.createTextNode("Tokens out: "));
+    a2.appendChild(el("strong", null, atFmtTokens(r.totals.outTok)));
+    var a3 = el("span", null, "");
+    a3.appendChild(document.createTextNode("Cost: "));
+    a3.appendChild(el("strong", null, atFmtUsd(r.totals.usd)));
+    totals.appendChild(a1);
+    totals.appendChild(a2);
+    totals.appendChild(a3);
+    panel.appendChild(totals);
+    root.appendChild(panel);
+  }
+
+  function renderApprovalModal(root) {
+    if (!atApprovalModal) return;
+    var r = atRuns[atApprovalModal.runId];
+    if (!r) { atApprovalModal = null; return; }
+    var back = el("div", "at-modal-backdrop");
+    back.addEventListener("click", function () { /* dismiss blocked */ });
+    var modal = el("div", "at-modal");
+    modal.appendChild(el("h3", null, "Approve plan — " + (r.teamName || r.runId)));
+    var body = el("div", "at-modal-body");
+    body.appendChild(
+      el(
+        "p",
+        "at-empty-tip",
+        "Review the plan below. You can edit it inline before approving; code-phase agents will receive the edited text."
+      )
+    );
+    var ta = document.createElement("textarea");
+    ta.spellcheck = false;
+    /* Seed from last plan_artifact event's path if readable — fallback: synthesise from transcript. */
+    var seed = "";
+    for (var i = r.events.length - 1; i >= 0; i--) {
+      var ev = r.events[i];
+      if (ev.kind === "assistant_delta" || ev.kind === "assistant_message") {
+        seed = (ev.text || "") + seed;
+      } else if (ev.kind === "phase_boundary") {
+        break;
+      }
+    }
+    var planMatch = seed.match(/<plan>([\\s\\S]*?)<\\/plan>/i);
+    ta.value = atApprovalModal.editedPlan != null
+      ? atApprovalModal.editedPlan
+      : (planMatch ? planMatch[1].trim() : seed.trim());
+    ta.addEventListener("input", function () {
+      atApprovalModal.editedPlan = ta.value;
+    });
+    body.appendChild(ta);
+    if (r.planPath) {
+      var openBtn = el("button", "btn", "Open plan.md in editor");
+      openBtn.addEventListener("click", function () {
+        vscode.postMessage({ type: "agentTeams.openAgentFile", fsPath: r.planPath });
+      });
+      body.appendChild(openBtn);
+    }
+    modal.appendChild(body);
+    var actions = el("div", "at-modal-actions");
+    var bReject = el("button", "btn", "Reject — stop run");
+    bReject.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.rejectPlan", runId: r.runId, reason: "user rejected" });
+      atApprovalModal = null;
+      render();
+    });
+    var bApprove = el("button", "btn primary", "Approve — start code phase");
+    bApprove.addEventListener("click", function () {
+      vscode.postMessage({
+        type: "agentTeams.approvePlan",
+        runId: r.runId,
+        editedPlan: atApprovalModal.editedPlan || null
+      });
+      atApprovalModal = null;
+      render();
+    });
+    actions.appendChild(bReject);
+    actions.appendChild(bApprove);
+    modal.appendChild(actions);
+    root.appendChild(back);
+    root.appendChild(modal);
+  }
+
+  function renderRunPromptCard(root, s, teamId) {
+    var t = findTeamById(s, teamId);
+    if (!t) return;
+    var card = el("div", "at-form");
+    card.appendChild(el("h3", null, "Run team: " + t.name));
+    card.appendChild(el("p", "at-empty-tip", "Protocol: " + t.protocol + "  •  Runtime: " + t.runtime + "  •  Agents: " + (t.agents || []).join(", ")));
+    card.appendChild(el("label", null, "What should the team do?"));
+    var ta = document.createElement("textarea");
+    ta.className = "at-run-prompt";
+    ta.placeholder = "Describe the task in plain English. Plan-then-code teams will produce a plan first.";
+    card.appendChild(ta);
+    var actions = el("div", "at-form-actions");
+    var bRun = el("button", "btn primary", "Start run");
+    bRun.addEventListener("click", function () {
+      var prompt = (ta.value || "").trim();
+      if (!prompt) { alert("Enter a prompt first."); return; }
+      vscode.postMessage({ type: "agentTeams.runTeam", teamId: t.id, prompt: prompt });
+      atRunPromptFor = null;
+      render();
+    });
+    var bCancel = el("button", "btn", "Cancel");
+    bCancel.addEventListener("click", function () { atRunPromptFor = null; render(); });
+    actions.appendChild(bRun);
+    actions.appendChild(bCancel);
+    card.appendChild(actions);
+    root.appendChild(card);
+  }
+
+  var AT_PROTOCOLS = [
+    { id: "native-task", label: "Native Task (single session)", runtime: "native" },
+    { id: "round-robin", label: "Round-robin", runtime: "native" },
+    { id: "handoff", label: "Hand-off", runtime: "native" },
+    { id: "plan-then-code", label: "Plan → Code (with approval)", runtime: "custom" },
+    { id: "debate", label: "Debate + judge", runtime: "custom" },
+    { id: "orchestrator", label: "Orchestrator-led", runtime: "custom" },
+    { id: "parallel-fan-out", label: "Parallel fan-out", runtime: "custom" }
+  ];
+  var AT_MODELS = [
+    { id: "", label: "(inherit caller default)" },
+    { id: "claude-opus-4-7", label: "Opus 4.7" },
+    { id: "claude-sonnet-4-5", label: "Sonnet 4.5" },
+    { id: "claude-haiku-4-5-20251001", label: "Haiku 4.5" }
+  ];
+  var AT_ROLES = [
+    { id: "plan", label: "Plan" },
+    { id: "code", label: "Code" },
+    { id: "review", label: "Review" },
+    { id: "both", label: "Both / Flexible" }
+  ];
+  var AT_TOOL_CHOICES = ["Read", "Edit", "Write", "Bash", "Grep", "Glob", "Task"];
+
+  function atProtocolInfo(id) {
+    for (var i = 0; i < AT_PROTOCOLS.length; i++) {
+      if (AT_PROTOCOLS[i].id === id) return AT_PROTOCOLS[i];
+    }
+    return AT_PROTOCOLS[0];
+  }
+
+  function renderAgentTeams() {
+    var root = $("#root");
+    var s = state || {};
+    var st = s.agentTeamsEnableStatus || {};
+    var needsEnable = !st.agentsDirExists || (s.agents || []).length === 0;
+
+    if (needsEnable && atEdit.mode === "none") {
+      renderAgentTeamsHero(root, st, s.starterPack || []);
+      renderAgentDashboard(root, s);
+      return;
+    }
+
+    /* Summary strip */
+    var summary = el("div", "at-summary-row");
+    summary.appendChild(atSummaryItem("Agents", String((s.agents || []).length)));
+    summary.appendChild(atSummaryItem("Teams", String((s.teams || []).length)));
+    summary.appendChild(atSummaryItem("CLI", st.cliOk ? "ok" : "missing"));
+    summary.appendChild(atSummaryItem("~/.claude/agents", st.agentsDirExists ? "exists" : "missing"));
+    root.appendChild(summary);
+
+    /* Agent Dashboard strip (cards for every running Claude session). */
+    renderAgentDashboard(root, s);
+
+    /* Approval modal overlay (in-tab, blocks input). */
+    if (atApprovalModal) {
+      renderApprovalModal(root);
+    }
+
+    if (atEdit.mode === "agent-new" || atEdit.mode === "agent-edit") {
+      renderAgentForm(root, s);
+      return;
+    }
+    if (atEdit.mode === "team-new" || atEdit.mode === "team-edit") {
+      renderTeamForm(root, s);
+      return;
+    }
+
+    /* Run-prompt card (shown when user clicks Run… on a team card). */
+    if (atRunPromptFor) {
+      renderRunPromptCard(root, s, atRunPromptFor);
+    }
+
+    /* Active runs — render one panel per run (most recent first). */
+    var runIds = Object.keys(atRuns);
+    runIds.sort(function (a, b) {
+      return (atRuns[b] && atRuns[b].startedAt) - (atRuns[a] && atRuns[a].startedAt);
+    });
+    if (runIds.length) {
+      root.appendChild(el("div", "at-section", "Runs"));
+    }
+    runIds.forEach(function (id) {
+      renderRunPanel(root, atRuns[id]);
+    });
+
+    /* AGENTS */
+    var agentsSection = el("div", "at-section");
+    agentsSection.appendChild(el("span", null, "Agents (" + (s.agents || []).length + ")"));
+    var agentsRight = el("div");
+    var bPack = el("button", "btn", "Install starter pack");
+    bPack.addEventListener("click", function () {
+      atInstallStarterPackPrompt(s.starterPack || []);
+    });
+    var bNewA = el("button", "btn primary", "+ New agent");
+    bNewA.style.marginLeft = "6px";
+    bNewA.addEventListener("click", function () {
+      atEdit.mode = "agent-new";
+      atEdit.agentId = null;
+      render();
+    });
+    agentsRight.appendChild(bPack);
+    agentsRight.appendChild(bNewA);
+    agentsSection.appendChild(agentsRight);
+    root.appendChild(agentsSection);
+
+    var agents = s.agents || [];
+    if (!agents.length) {
+      root.appendChild(el("div", "empty", "No agents yet. Create one or install the starter pack."));
+    } else {
+      agents.forEach(function (a) {
+        root.appendChild(agentCard(a));
+      });
+    }
+
+    /* TEAMS */
+    var teamsSection = el("div", "at-section");
+    teamsSection.appendChild(el("span", null, "Teams (" + (s.teams || []).length + ")"));
+    var bNewT = el("button", "btn primary", "+ New team");
+    bNewT.addEventListener("click", function () {
+      atEdit.mode = "team-new";
+      atEdit.teamId = null;
+      render();
+    });
+    teamsSection.appendChild(bNewT);
+    root.appendChild(teamsSection);
+
+    var teams = s.teams || [];
+    if (!teams.length) {
+      root.appendChild(el("div", "empty", "No teams yet. Compose agents into a team to run them together."));
+    } else {
+      teams.forEach(function (t) {
+        root.appendChild(teamCard(t));
+      });
+    }
+
+    /* Slash commands installed for Claude Code (bridge to our agents). */
+    renderSlashCommandsSection(root, s);
+
+    root.appendChild(
+      el(
+        "p",
+        "at-empty-tip",
+        "Phase 1: agent + team CRUD. Phase 2 (coming) adds live transcript and multi-agent runs. Phase 3 adds plan-then-code and debate. See the docs for how native vs custom runtimes differ."
+      )
+    );
+  }
+
+  function renderSlashCommandsSection(root, s) {
+    var all = s.slashCommands || [];
+    var section = el("div", "at-section");
+    section.appendChild(el("span", null, "Slash commands (" + all.length + ")"));
+    var rightBtns = el("div");
+    var bInstall = el("button", "btn", "Install");
+    bInstall.title = "Install /plan-team, /debate-team, /review-team etc. into ~/.claude/commands/";
+    bInstall.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.installCommandsPack", scope: "user" });
+    });
+    var bUninstall = el("button", "btn", "Uninstall");
+    bUninstall.style.marginLeft = "6px";
+    bUninstall.title = "Remove only Toolbox-owned slash-command files (foreign files stay).";
+    bUninstall.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.uninstallCommandsPack", scope: "user" });
+    });
+    rightBtns.appendChild(bInstall);
+    rightBtns.appendChild(bUninstall);
+    section.appendChild(rightBtns);
+    root.appendChild(section);
+
+    if (!all.length) {
+      root.appendChild(
+        el(
+          "div",
+          "empty",
+          "No custom slash commands yet. Install to enable /plan-team, /debate-team, /review-team inside any Claude Code session."
+        )
+      );
+      return;
+    }
+    all.forEach(function (c) {
+      var card = el("div", "at-card");
+      card.style.borderLeftColor = c.ownedByToolbox
+        ? "var(--vscode-charts-orange, #f97316)"
+        : "var(--vscode-charts-blue, #3b82f6)";
+      var top = el("div", "card-top");
+      top.appendChild(el("h3", null, "/" + c.id));
+      top.appendChild(el("span", "badge", c.ownedByToolbox ? "Toolbox" : "Foreign"));
+      card.appendChild(top);
+      card.appendChild(el("div", "at-meta", c.scope + "  ·  " + c.filePath));
+      if (c.description) {
+        card.appendChild(el("div", "at-desc", c.description));
+      }
+      if (c.argumentHint) {
+        card.appendChild(el("div", "at-meta", "usage: /" + c.id + " " + c.argumentHint));
+      }
+      var row = el("div", "row");
+      var bOpen = el("button", "btn", "Open file");
+      bOpen.addEventListener("click", function () {
+        vscode.postMessage({ type: "agentTeams.openAgentFile", fsPath: c.filePath });
+      });
+      row.appendChild(bOpen);
+      card.appendChild(row);
+      root.appendChild(card);
+    });
+  }
+
+  function atSummaryItem(k, v) {
+    var w = el("div", "at-summary-item");
+    w.appendChild(el("div", "k", k));
+    w.appendChild(el("div", "v", v));
+    return w;
+  }
+
+  function renderAgentTeamsHero(root, status, pack) {
+    var hero = el("div", "at-hero");
+    hero.appendChild(el("h3", null, "Enable Claude Agent Teams"));
+    hero.appendChild(
+      el(
+        "p",
+        null,
+        "Claude Code subagents live as YAML-frontmatter .md files under ~/.claude/agents/. This will create that folder and (optionally) install the SDLC starter pack."
+      )
+    );
+    var statusEl = el("div", "at-status");
+    var cliSpan = document.createElement("span");
+    cliSpan.className = status.cliOk ? "ok" : "warn";
+    cliSpan.textContent = "claude CLI: " + (status.cliOk ? "OK" : "not found");
+    var dirSpan = document.createElement("span");
+    dirSpan.className = status.agentsDirExists ? "ok" : "warn";
+    dirSpan.textContent = (status.agentsDirPath || "~/.claude/agents") + " — " + (status.agentsDirExists ? "exists" : "missing");
+    statusEl.appendChild(cliSpan);
+    statusEl.appendChild(document.createTextNode("  •  "));
+    statusEl.appendChild(dirSpan);
+    hero.appendChild(statusEl);
+
+    /* Starter pack checkboxes */
+    var packWrap = el("div", "at-pack");
+    packWrap.appendChild(el("div", "at-pack-title", "SDLC starter pack (pre-checked = recommended)"));
+    (pack || []).forEach(function (p) {
+      var row = el("label", "at-pack-row");
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!p.defaultSelected;
+      cb.setAttribute("data-pack-id", p.id);
+      row.appendChild(cb);
+      var body = document.createElement("span");
+      var title = document.createElement("strong");
+      title.textContent = p.title;
+      title.style.fontSize = "11px";
+      body.appendChild(title);
+      if (p.installed) {
+        var badge = document.createElement("span");
+        badge.className = "at-pack-installed";
+        badge.textContent = "installed";
+        body.appendChild(badge);
+      }
+      var meta = document.createElement("span");
+      meta.className = "at-pack-meta";
+      meta.textContent = p.description + "  •  " + p.role + "  •  " + (p.model || "inherit");
+      body.appendChild(meta);
+      row.appendChild(body);
+      packWrap.appendChild(row);
+    });
+    hero.appendChild(packWrap);
+
+    var row = el("div", "row");
+    var bEnable = el("button", "btn primary", "Enable Agent Teams");
+    bEnable.addEventListener("click", function () {
+      var ids = [];
+      packWrap.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
+        if (cb.checked) {
+          ids.push(cb.getAttribute("data-pack-id"));
+        }
+      });
+      vscode.postMessage({
+        type: "agentTeams.enable",
+        scope: "user",
+        installStarterPack: ids.length > 0,
+        starterPackSelection: ids
+      });
+    });
+    var bReveal = el("button", "btn", "Reveal ~/.claude/agents");
+    bReveal.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.revealAgentsFolder", scope: "user" });
+    });
+    var bSkip = el("button", "btn", "I already have agents — scan now");
+    bSkip.addEventListener("click", function () {
+      vscode.postMessage({ type: "refresh" });
+    });
+    row.appendChild(bEnable);
+    row.appendChild(bReveal);
+    row.appendChild(bSkip);
+    hero.appendChild(row);
+    root.appendChild(hero);
+
+    root.appendChild(
+      el(
+        "p",
+        "at-empty-tip",
+        "Agent files work in a regular \\u0060claude\\u0060 session via the Task tool — enabling here just scaffolds the folder and installs helpers. You can always edit the .md files directly in your editor."
+      )
+    );
+  }
+
+  function atInstallStarterPackPrompt(pack) {
+    /* Quick install with default selection (pre-checked items). */
+    var ids = [];
+    (pack || []).forEach(function (p) {
+      if (p.defaultSelected && !p.installed) {
+        ids.push(p.id);
+      }
+    });
+    if (!ids.length) {
+      vscode.postMessage({ type: "refresh" });
+      return;
+    }
+    vscode.postMessage({
+      type: "agentTeams.installStarterPack",
+      scope: "user",
+      selected: ids,
+      overwrite: false
+    });
+  }
+
+  function agentCard(a) {
+    var card = el("div", "at-card");
+    card.style.borderLeftColor = a.color || "var(--vscode-focusBorder)";
+    var top = el("div", "card-top");
+    var left = el("div");
+    var swatch = document.createElement("span");
+    swatch.className = "at-color-swatch";
+    swatch.style.background = a.color || "var(--muted)";
+    var h = el("h3", null, a.name);
+    h.style.display = "inline-block";
+    left.appendChild(swatch);
+    left.appendChild(h);
+    var roleBadge = el("span", "at-role-badge", a.role);
+    left.appendChild(roleBadge);
+    top.appendChild(left);
+    top.appendChild(el("span", "badge", a.scope === "workspace" ? "Workspace" : "User"));
+    card.appendChild(top);
+    var modelStr = a.model ? a.model : "inherit";
+    var toolsStr = (a.tools && a.tools.length) ? a.tools.join(", ") : "(none)";
+    card.appendChild(el("div", "at-meta", "Model: " + modelStr + "  •  Tools: " + toolsStr + "  •  " + a.filePath));
+    if (a.description) {
+      card.appendChild(el("div", "at-desc", a.description));
+    }
+    var row = el("div", "row");
+    var bEdit = el("button", "btn primary", "Edit");
+    bEdit.addEventListener("click", function () {
+      atEdit.mode = "agent-edit";
+      atEdit.agentId = a.id;
+      render();
+    });
+    var bOpen = el("button", "btn", "Open file");
+    bOpen.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.openAgentFile", fsPath: a.filePath });
+    });
+    var bDel = el("button", "btn", "Delete");
+    bDel.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.deleteAgent", id: a.id });
+    });
+    row.appendChild(bEdit);
+    row.appendChild(bOpen);
+    row.appendChild(bDel);
+    card.appendChild(row);
+    return card;
+  }
+
+  function teamCard(t) {
+    var card = el("div", "at-card");
+    card.style.borderLeftColor = "var(--vscode-charts-orange, #f97316)";
+    var top = el("div", "card-top");
+    var left = el("div");
+    left.appendChild(el("h3", null, t.name));
+    var runtimePill = el("span", "at-pill runtime-" + (t.runtime || "native"), t.runtime || "native");
+    var protoPill = el("span", "at-pill", t.protocol);
+    left.appendChild(document.createTextNode(" "));
+    left.appendChild(runtimePill);
+    left.appendChild(protoPill);
+    top.appendChild(left);
+    top.appendChild(el("span", "badge", t.scope === "workspace" ? "Workspace" : "User"));
+    card.appendChild(top);
+    if (t.description) {
+      card.appendChild(el("div", "at-desc", t.description));
+    }
+    var lines = [];
+    if (t.protocol === "plan-then-code") {
+      lines.push("Plan: " + ((t.agents || []).join(", ") || "(none)"));
+      lines.push("Code: " + ((t.codePhaseAgents || []).join(", ") || "(none)"));
+    } else {
+      lines.push("Agents: " + ((t.agents || []).join(", ") || "(none)"));
+    }
+    if (t.judge) lines.push("Judge: " + t.judge);
+    if (t.orchestrator) lines.push("Orchestrator: " + t.orchestrator);
+    lines.push("Max turns: " + (t.maxTurns || 20));
+    lines.forEach(function (ln) { card.appendChild(el("div", "at-meta", ln)); });
+    var row = el("div", "row");
+    var bEdit = el("button", "btn primary", "Edit");
+    bEdit.addEventListener("click", function () {
+      atEdit.mode = "team-edit";
+      atEdit.teamId = t.id;
+      render();
+    });
+    var bRun = el("button", "btn primary", "Run…");
+    bRun.title = "Provide a prompt and dispatch this team.";
+    bRun.addEventListener("click", function () {
+      atRunPromptFor = t.id;
+      render();
+    });
+    var bDel = el("button", "btn", "Delete");
+    bDel.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.deleteTeam", id: t.id });
+    });
+    row.appendChild(bEdit);
+    row.appendChild(bRun);
+    row.appendChild(bDel);
+    card.appendChild(row);
+    return card;
+  }
+
+  function findAgentById(s, id) {
+    var list = (s && s.agents) || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  }
+  function findTeamById(s, id) {
+    var list = (s && s.teams) || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  }
+
+  function renderAgentForm(root, s) {
+    var editing = atEdit.mode === "agent-edit" ? findAgentById(s, atEdit.agentId) : null;
+    var defaultModel = (s && s.agentTeamsDefaultModel) || "claude-sonnet-4-5";
+    var form = el("div", "at-form");
+    form.appendChild(el("h3", null, editing ? "Edit agent: " + editing.name : "New agent"));
+
+    var nameLbl = el("label", null, "Name (used as filename)");
+    form.appendChild(nameLbl);
+    var name = document.createElement("input");
+    name.type = "text";
+    name.value = editing ? editing.name : "";
+    name.placeholder = "e.g. backend-dev";
+    form.appendChild(name);
+
+    var descLbl = el("label", null, "Description");
+    form.appendChild(descLbl);
+    var desc = document.createElement("input");
+    desc.type = "text";
+    desc.value = editing ? editing.description : "";
+    desc.placeholder = "One-line summary";
+    form.appendChild(desc);
+
+    var row1 = el("div", "at-form-row");
+    var rRole = document.createElement("div");
+    rRole.appendChild(el("label", null, "Role"));
+    var role = document.createElement("select");
+    AT_ROLES.forEach(function (r) {
+      var opt = document.createElement("option");
+      opt.value = r.id;
+      opt.textContent = r.label;
+      if (editing ? editing.role === r.id : r.id === "both") opt.selected = true;
+      role.appendChild(opt);
+    });
+    rRole.appendChild(role);
+    var rModel = document.createElement("div");
+    rModel.appendChild(el("label", null, "Model"));
+    var model = document.createElement("select");
+    AT_MODELS.forEach(function (m) {
+      var opt = document.createElement("option");
+      opt.value = m.id;
+      opt.textContent = m.label;
+      if (editing) {
+        if (editing.model === m.id || (!editing.model && m.id === "")) opt.selected = true;
+      } else {
+        if (m.id === defaultModel) opt.selected = true;
+      }
+      model.appendChild(opt);
+    });
+    rModel.appendChild(model);
+    row1.appendChild(rRole);
+    row1.appendChild(rModel);
+    form.appendChild(row1);
+
+    var row2 = el("div", "at-form-row");
+    var rScope = document.createElement("div");
+    rScope.appendChild(el("label", null, "Scope"));
+    var scope = document.createElement("select");
+    [
+      { id: "user", label: "User (~/.claude/agents)" },
+      { id: "workspace", label: "Workspace (./.claude/agents)" }
+    ].forEach(function (sc) {
+      var opt = document.createElement("option");
+      opt.value = sc.id;
+      opt.textContent = sc.label;
+      if (editing ? editing.scope === sc.id : sc.id === "user") opt.selected = true;
+      scope.appendChild(opt);
+    });
+    if (editing) scope.disabled = true;
+    rScope.appendChild(scope);
+    var rColor = document.createElement("div");
+    rColor.appendChild(el("label", null, "Color (hex)"));
+    var color = document.createElement("input");
+    color.type = "text";
+    color.placeholder = "#4ec9b0";
+    color.value = editing ? (editing.color || "") : "";
+    rColor.appendChild(color);
+    row2.appendChild(rScope);
+    row2.appendChild(rColor);
+    form.appendChild(row2);
+
+    form.appendChild(el("label", null, "Tools"));
+    var toolsWrap = el("div", "at-checkbox-list");
+    AT_TOOL_CHOICES.forEach(function (t) {
+      var lbl = document.createElement("label");
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.value = t;
+      if (editing && editing.tools && editing.tools.indexOf(t) !== -1) cb.checked = true;
+      cb.setAttribute("data-tool", t);
+      lbl.appendChild(cb);
+      var sp = document.createElement("span");
+      sp.textContent = t;
+      lbl.appendChild(sp);
+      toolsWrap.appendChild(lbl);
+    });
+    form.appendChild(toolsWrap);
+
+    form.appendChild(el("label", null, "System prompt"));
+    var prompt = document.createElement("textarea");
+    prompt.value = editing ? editing.systemPrompt : "You are…";
+    form.appendChild(prompt);
+
+    var actions = el("div", "at-form-actions");
+    var bSave = el("button", "btn primary", editing ? "Save changes" : "Create agent");
+    bSave.addEventListener("click", function () {
+      var tools = [];
+      toolsWrap.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
+        if (cb.checked) tools.push(cb.getAttribute("data-tool"));
+      });
+      var draft = {
+        name: name.value.trim(),
+        description: desc.value.trim(),
+        role: role.value,
+        model: model.value,
+        tools: tools,
+        color: color.value.trim(),
+        systemPrompt: prompt.value,
+        scope: scope.value
+      };
+      if (!draft.name) {
+        alert("Name is required.");
+        return;
+      }
+      if (editing) {
+        vscode.postMessage({ type: "agentTeams.updateAgent", id: editing.id, draft: draft });
+      } else {
+        vscode.postMessage({ type: "agentTeams.createAgent", draft: draft });
+      }
+      atEdit.mode = "none";
+      atEdit.agentId = null;
+    });
+    var bCancel = el("button", "btn", "Cancel");
+    bCancel.addEventListener("click", function () {
+      atEdit.mode = "none";
+      atEdit.agentId = null;
+      render();
+    });
+    actions.appendChild(bSave);
+    actions.appendChild(bCancel);
+    form.appendChild(actions);
+
+    root.appendChild(form);
+  }
+
+  function renderTeamForm(root, s) {
+    var editing = atEdit.mode === "team-edit" ? findTeamById(s, atEdit.teamId) : null;
+    var agents = (s && s.agents) || [];
+    var defaultProto = (s && s.agentTeamsDefaultProtocol) || "native-task";
+    var form = el("div", "at-form");
+    form.appendChild(el("h3", null, editing ? "Edit team: " + editing.name : "New team"));
+
+    form.appendChild(el("label", null, "Name"));
+    var name = document.createElement("input");
+    name.type = "text";
+    name.value = editing ? editing.name : "";
+    name.placeholder = "e.g. sdlc-core";
+    form.appendChild(name);
+
+    form.appendChild(el("label", null, "Description"));
+    var desc = document.createElement("input");
+    desc.type = "text";
+    desc.value = editing ? editing.description : "";
+    form.appendChild(desc);
+
+    var row1 = el("div", "at-form-row");
+    var rProto = document.createElement("div");
+    rProto.appendChild(el("label", null, "Protocol (runtime auto-derived)"));
+    var proto = document.createElement("select");
+    AT_PROTOCOLS.forEach(function (p) {
+      var opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.label + "  •  " + p.runtime;
+      if (editing ? editing.protocol === p.id : p.id === defaultProto) opt.selected = true;
+      proto.appendChild(opt);
+    });
+    rProto.appendChild(proto);
+    var rScope = document.createElement("div");
+    rScope.appendChild(el("label", null, "Scope"));
+    var scope = document.createElement("select");
+    [
+      { id: "user", label: "User (~/.claude/teams)" },
+      { id: "workspace", label: "Workspace (./.claude/teams)" }
+    ].forEach(function (sc) {
+      var opt = document.createElement("option");
+      opt.value = sc.id;
+      opt.textContent = sc.label;
+      if (editing ? editing.scope === sc.id : sc.id === "user") opt.selected = true;
+      scope.appendChild(opt);
+    });
+    if (editing) scope.disabled = true;
+    rScope.appendChild(scope);
+    row1.appendChild(rProto);
+    row1.appendChild(rScope);
+    form.appendChild(row1);
+
+    form.appendChild(el("label", null, "Max turns"));
+    var maxTurns = document.createElement("input");
+    maxTurns.type = "text";
+    maxTurns.value = editing ? String(editing.maxTurns) : "20";
+    form.appendChild(maxTurns);
+
+    /* Plan-phase / main agents checkbox list */
+    var planLabel = el("label", null, "Agents (plan phase for plan-then-code; otherwise the whole team)");
+    form.appendChild(planLabel);
+    var planWrap = el("div", "at-checkbox-list");
+    if (!agents.length) {
+      planWrap.appendChild(el("div", "empty", "No agents yet. Create some first."));
+    } else {
+      agents.forEach(function (a) {
+        var lbl = document.createElement("label");
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.value = a.name;
+        cb.setAttribute("data-plan-agent", a.name);
+        if (editing && editing.agents && editing.agents.indexOf(a.name) !== -1) cb.checked = true;
+        lbl.appendChild(cb);
+        var sp = document.createElement("span");
+        var sw = document.createElement("span");
+        sw.className = "at-color-swatch";
+        sw.style.background = a.color || "var(--muted)";
+        sp.appendChild(sw);
+        sp.appendChild(document.createTextNode(a.name + "  •  " + a.role));
+        lbl.appendChild(sp);
+        planWrap.appendChild(lbl);
+      });
+    }
+    form.appendChild(planWrap);
+
+    /* Code-phase agents (only shown for plan-then-code) */
+    var codeLabel = el("label", null, "Code-phase agents (plan-then-code only)");
+    form.appendChild(codeLabel);
+    var codeWrap = el("div", "at-checkbox-list");
+    if (!agents.length) {
+      codeWrap.appendChild(el("div", "empty", "No agents yet."));
+    } else {
+      agents.forEach(function (a) {
+        var lbl = document.createElement("label");
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.value = a.name;
+        cb.setAttribute("data-code-agent", a.name);
+        if (editing && editing.codePhaseAgents && editing.codePhaseAgents.indexOf(a.name) !== -1) cb.checked = true;
+        lbl.appendChild(cb);
+        var sp = document.createElement("span");
+        var sw = document.createElement("span");
+        sw.className = "at-color-swatch";
+        sw.style.background = a.color || "var(--muted)";
+        sp.appendChild(sw);
+        sp.appendChild(document.createTextNode(a.name + "  •  " + a.role));
+        lbl.appendChild(sp);
+        codeWrap.appendChild(lbl);
+      });
+    }
+    form.appendChild(codeWrap);
+
+    var row2 = el("div", "at-form-row");
+    var rJudge = document.createElement("div");
+    rJudge.appendChild(el("label", null, "Judge (debate)"));
+    var judge = document.createElement("select");
+    var emptyJ = document.createElement("option");
+    emptyJ.value = "";
+    emptyJ.textContent = "(none)";
+    judge.appendChild(emptyJ);
+    agents.forEach(function (a) {
+      var opt = document.createElement("option");
+      opt.value = a.name;
+      opt.textContent = a.name;
+      if (editing && editing.judge === a.name) opt.selected = true;
+      judge.appendChild(opt);
+    });
+    rJudge.appendChild(judge);
+    var rOrch = document.createElement("div");
+    rOrch.appendChild(el("label", null, "Orchestrator"));
+    var orch = document.createElement("select");
+    var emptyO = document.createElement("option");
+    emptyO.value = "";
+    emptyO.textContent = "(none)";
+    orch.appendChild(emptyO);
+    agents.forEach(function (a) {
+      var opt = document.createElement("option");
+      opt.value = a.name;
+      opt.textContent = a.name;
+      if (editing && editing.orchestrator === a.name) opt.selected = true;
+      orch.appendChild(opt);
+    });
+    rOrch.appendChild(orch);
+    row2.appendChild(rJudge);
+    row2.appendChild(rOrch);
+    form.appendChild(row2);
+
+    var actions = el("div", "at-form-actions");
+    var bSave = el("button", "btn primary", editing ? "Save changes" : "Create team");
+    bSave.addEventListener("click", function () {
+      var picked = [];
+      planWrap.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
+        if (cb.checked) picked.push(cb.value);
+      });
+      var codePicked = [];
+      codeWrap.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
+        if (cb.checked) codePicked.push(cb.value);
+      });
+      var n = parseInt(maxTurns.value, 10);
+      if (isNaN(n) || n < 1) n = 20;
+      var info = atProtocolInfo(proto.value);
+      var draft = {
+        name: name.value.trim(),
+        description: desc.value.trim(),
+        protocol: proto.value,
+        runtime: info.runtime,
+        maxTurns: n,
+        agents: picked,
+        codePhaseAgents: codePicked,
+        judge: judge.value || undefined,
+        orchestrator: orch.value || undefined,
+        scope: scope.value
+      };
+      if (!draft.name) {
+        alert("Team name is required.");
+        return;
+      }
+      if (!draft.agents.length) {
+        alert("Pick at least one agent.");
+        return;
+      }
+      if (editing) {
+        vscode.postMessage({ type: "agentTeams.updateTeam", id: editing.id, draft: draft });
+      } else {
+        vscode.postMessage({ type: "agentTeams.createTeam", draft: draft });
+      }
+      atEdit.mode = "none";
+      atEdit.teamId = null;
+    });
+    var bCancel = el("button", "btn", "Cancel");
+    bCancel.addEventListener("click", function () {
+      atEdit.mode = "none";
+      atEdit.teamId = null;
+      render();
+    });
+    actions.appendChild(bSave);
+    actions.appendChild(bCancel);
+    form.appendChild(actions);
+
+    root.appendChild(form);
+  }
+
+  /* ======================== Agent Dashboard (card strip) ======================== */
+
+  function renderAgentDashboard(root, s) {
+    var d = (s && s.agentDashboard) || null;
+    if (!d) return;
+
+    if (!d.enabled || !d.running) {
+      renderDashboardDisclosure(root, d);
+      if (!d.enabled) return;
+    }
+
+    var head = el("div", "ad-strip-head");
+    var dot = document.createElement("span");
+    dot.className = "ad-dot " + (d.running ? "running" : d.lastError ? "error" : "stopped");
+    head.appendChild(dot);
+    head.appendChild(el("strong", null, "Agent Dashboard"));
+    head.appendChild(
+      el(
+        "span",
+        "ad-source",
+        d.running ? "port " + (d.port || "?") : d.lastError ? "error" : "stopped"
+      )
+    );
+    head.appendChild(el("span", "ad-framework", (adCards.length || 0) + " session(s)"));
+    var actionWrap = document.createElement("div");
+    actionWrap.style.marginLeft = "auto";
+    actionWrap.style.display = "flex";
+    actionWrap.style.gap = "6px";
+    if (!d.running) {
+      var bEnable = el("button", "btn primary", "Enable");
+      bEnable.addEventListener("click", function () {
+        vscode.postMessage({ type: "agentDashboard.enable" });
+      });
+      actionWrap.appendChild(bEnable);
+    } else {
+      var bDisable = el("button", "btn", "Disable");
+      bDisable.addEventListener("click", function () {
+        vscode.postMessage({ type: "agentDashboard.disable" });
+      });
+      actionWrap.appendChild(bDisable);
+    }
+    var bStatus = el("button", "btn", "Status");
+    bStatus.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentDashboard.status" });
+    });
+    actionWrap.appendChild(bStatus);
+    var bReveal = el("button", "btn", "Reveal settings.json");
+    bReveal.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentDashboard.revealSettingsJson" });
+    });
+    actionWrap.appendChild(bReveal);
+    head.appendChild(actionWrap);
+    root.appendChild(head);
+
+    if (Array.isArray(d.foreignHooks) && d.foreignHooks.length > 0) {
+      var warn = el(
+        "div",
+        "callout",
+        "Other agent-dashboard hooks detected in ~/.claude/settings.json (" +
+          d.foreignHooks.length +
+          "). Events may be processed twice. Run Status for details."
+      );
+      warn.style.borderLeftColor = "var(--warn)";
+      root.appendChild(warn);
+    }
+
+    if (!d.running) return;
+
+    if (!adCards || !adCards.length) {
+      root.appendChild(
+        el(
+          "div",
+          "empty",
+          "No Claude Code sessions detected yet — start \\u0060claude\\u0060 in a terminal or run a team from the list below and watch them appear here."
+        )
+      );
+      return;
+    }
+
+    /* Toolbar: filter box + grouping toggle. */
+    var toolbar = el("div", "ad-toolbar");
+    var filterInput = document.createElement("input");
+    filterInput.type = "search";
+    filterInput.className = "ad-filter";
+    filterInput.placeholder = "Filter cards (title, agent, tool, cwd, protocol…)";
+    filterInput.value = adFilter;
+    filterInput.addEventListener("input", function () {
+      adFilter = filterInput.value || "";
+      renderAdCardsBody(root);
+    });
+    toolbar.appendChild(filterInput);
+    var groupWrap = el("div", "ad-group-toggle");
+    ["workspace", "flat"].forEach(function (mode) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn" + (adGrouping === mode ? " primary" : "");
+      b.textContent = mode === "workspace" ? "By workspace" : "Flat";
+      b.addEventListener("click", function () {
+        adGrouping = mode;
+        renderAdCardsBody(root);
+      });
+      groupWrap.appendChild(b);
+    });
+    toolbar.appendChild(groupWrap);
+    root.appendChild(toolbar);
+
+    var bodyWrap = el("div", "ad-body");
+    bodyWrap.setAttribute("data-ad-body", "1");
+    root.appendChild(bodyWrap);
+    renderAdCardsBody(bodyWrap);
+  }
+
+  function renderAdCardsBody(hostOrRoot) {
+    var host = hostOrRoot.getAttribute && hostOrRoot.getAttribute("data-ad-body") === "1"
+      ? hostOrRoot
+      : hostOrRoot.querySelector('[data-ad-body="1"]');
+    if (!host) return;
+    host.textContent = "";
+
+    var filtered = filterDashboardCards(adCards, adFilter);
+    if (!filtered.length) {
+      host.appendChild(
+        el("div", "empty", "No cards match \\u201C" + adFilter + "\\u201D.")
+      );
+      return;
+    }
+
+    if (adGrouping === "flat") {
+      var grid = el("div", "ad-cards");
+      filtered.forEach(function (card) {
+        grid.appendChild(renderSessionCard(card));
+      });
+      host.appendChild(grid);
+      return;
+    }
+
+    /* Swim lanes: group by workspace (cwd basename), pinned first, then by updatedAt. */
+    var lanes = groupSessionsByWorkspace(filtered);
+    lanes.forEach(function (lane) {
+      var laneWrap = el("div", "ad-lane");
+      var head = el("div", "ad-lane-head");
+      head.appendChild(el("span", "ad-lane-title", lane.title));
+      head.appendChild(el("span", "ad-lane-count", String(lane.cards.length)));
+      laneWrap.appendChild(head);
+      var grid = el("div", "ad-cards");
+      lane.cards.forEach(function (card) {
+        grid.appendChild(renderSessionCard(card));
+      });
+      laneWrap.appendChild(grid);
+      host.appendChild(laneWrap);
+    });
+  }
+
+  function filterDashboardCards(cards, query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return cards.slice();
+    return cards.filter(function (c) {
+      var hay =
+        (c.title || "") +
+        " " +
+        (c.cwd || "") +
+        " " +
+        (c.protocol || "") +
+        " " +
+        (c.teamName || "") +
+        " " +
+        ((c.currentTool && c.currentTool.name) || "") +
+        " " +
+        ((c.currentTool && c.currentTool.target) || "") +
+        " " +
+        (c.source || "") +
+        " " +
+        (c.status || "");
+      return hay.toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function groupSessionsByWorkspace(cards) {
+    var map = {};
+    cards.forEach(function (c) {
+      var key = laneKeyForCard(c);
+      if (!map[key]) map[key] = { title: key, cards: [] };
+      map[key].cards.push(c);
+    });
+    var lanes = Object.keys(map).map(function (k) {
+      return map[k];
+    });
+    /* Sort lanes: current workspace first, then alphabetical. */
+    var ws = (state && state.workspaceName) || "";
+    lanes.sort(function (a, b) {
+      if (a.title === ws) return -1;
+      if (b.title === ws) return 1;
+      if (a.title === "(no workspace)") return 1;
+      if (b.title === "(no workspace)") return -1;
+      return a.title.localeCompare(b.title);
+    });
+    lanes.forEach(function (lane) {
+      lane.cards.sort(function (a, b) {
+        if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+        return (b.updatedAt || "").localeCompare(a.updatedAt || "");
+      });
+    });
+    return lanes;
+  }
+
+  function laneKeyForCard(card) {
+    if (!card.cwd) return "(no workspace)";
+    /* Use the basename of the cwd path — cheaper than matching full paths. */
+    var cwd = String(card.cwd).replace(/[\\\\/]+$/, "");
+    var parts = cwd.split(/[\\\\/]/);
+    return parts[parts.length - 1] || cwd;
+  }
+
+  function renderDashboardDisclosure(root, d) {
+    if (d.enabled) return;
+    var box = el("div", "ad-disclose");
+    box.appendChild(el("h3", null, "Enable Agent Dashboard"));
+    var p = el(
+      "p",
+      "at-empty-tip",
+      "Opt-in feature. When enabled, the Toolbox will:"
+    );
+    box.appendChild(p);
+    var ul = document.createElement("ul");
+    function li(text) {
+      var x = document.createElement("li");
+      x.textContent = text;
+      ul.appendChild(x);
+    }
+    li("Write a helper script (agent-dock-hook.py) into ~/.claude/");
+    li("Add hook entries for PreToolUse, PostToolUse, Stop, SubagentStop, PermissionRequest into ~/.claude/settings.json (atomic, dedup, reversible via Disable)");
+    li("Start an HTTP listener on 127.0.0.1:" + (d.port || "3456") + " that only accepts POST /hook + GET /healthz");
+    li("Tail ~/.claude/projects/<session>.jsonl files to show token and tool-call activity");
+    li("No telemetry — nothing leaves your machine. All data stays local to the hook listener and the UI.");
+    box.appendChild(ul);
+    var row = el("div", "row");
+    var b = el("button", "btn primary", "Enable Agent Dashboard");
+    b.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentDashboard.enable" });
+    });
+    row.appendChild(b);
+    box.appendChild(row);
+    root.appendChild(box);
+  }
+
+  function renderSessionCard(card) {
+    var over = card.budgetUsd && card.projectedCostUsd && card.projectedCostUsd > card.budgetUsd;
+    var c = el(
+      "div",
+      "ad-card source-" + (card.source || "external") + " status-" + (card.status || "idle") + (over ? " over-budget" : "")
+    );
+    if (card.pinned) c.setAttribute("data-pinned", "1");
+    /* title row */
+    var top = el("div", "ad-row");
+    var dot = el("span", "ad-status-dot " + (card.status || "idle"), "");
+    top.appendChild(dot);
+    var title = el("span", "ad-title", card.title || card.teamName || card.sessionId);
+    top.appendChild(title);
+    top.appendChild(el("span", "ad-source ad-source-" + (card.source || "external"), card.source || "external"));
+    c.appendChild(top);
+
+    /* framework + status text */
+    var meta = el("div", "ad-row");
+    meta.style.color = "var(--muted)";
+    meta.style.fontSize = "9.5px";
+    meta.appendChild(el("span", null, "status: " + (card.status || "idle")));
+    if (card.protocol) meta.appendChild(el("span", null, "· " + card.protocol));
+    if (card.cwd) {
+      var cwd = card.cwd.length > 40 ? "…" + card.cwd.slice(-40) : card.cwd;
+      meta.appendChild(el("span", null, "· " + cwd));
+    }
+    if (typeof card.dissentCount === "number" && card.dissentCount > 0) {
+      meta.appendChild(el("span", "ad-dissent", "⚖ " + card.dissentCount + " dissent"));
+    }
+    c.appendChild(meta);
+
+    /* current tool */
+    if (card.currentTool && card.currentTool.name) {
+      var tool = el("div", "ad-tool" + (card.waitingForPermission ? " perm" : ""));
+      tool.textContent = "↻ " + card.currentTool.name;
+      if (card.currentTool.target) {
+        var t = el("span", "ad-tool-target", " → " + card.currentTool.target);
+        tool.appendChild(t);
+      }
+      if (card.waitingForPermission) {
+        var perm = el("span", "ad-tool-target", " · needs approval");
+        tool.appendChild(perm);
+      }
+      c.appendChild(tool);
+    }
+
+    /* context bar */
+    var ctxMax = (card.context && card.context.max) || 0;
+    var ctxUsed = (card.context && card.context.used) || 0;
+    var pct = ctxMax > 0 ? Math.min(100, Math.floor((ctxUsed * 100) / ctxMax)) : 0;
+    var bar = el("div", "ad-ctx-bar");
+    var fill = el("div", "ad-ctx-bar-fill");
+    fill.style.width = pct + "%";
+    bar.appendChild(fill);
+    c.appendChild(bar);
+    var ctxLabel = el("div", "ad-ctx-label");
+    ctxLabel.textContent = "ctx " + pct + "% · used " + formatTokens(ctxUsed) + "/" + formatTokens(ctxMax);
+    c.appendChild(ctxLabel);
+
+    /* metrics: tokens + cost */
+    var metrics = el("div", "ad-metrics");
+    var tks = el("span", null, "");
+    tks.appendChild(document.createTextNode("in "));
+    tks.appendChild(el("strong", null, formatTokens((card.tokens && card.tokens.input) || 0)));
+    tks.appendChild(document.createTextNode(" / out "));
+    tks.appendChild(el("strong", null, formatTokens((card.tokens && card.tokens.output) || 0)));
+    metrics.appendChild(tks);
+    var cost = el("span", "ad-cost", "");
+    cost.appendChild(document.createTextNode("cost "));
+    cost.appendChild(el("strong", null, formatUsd(card.costUsd || 0)));
+    metrics.appendChild(cost);
+    if (card.projectedCostUsd && card.projectedCostUsd > (card.costUsd || 0) * 1.02) {
+      var proj = el("span", null, "");
+      proj.appendChild(document.createTextNode("proj "));
+      proj.appendChild(el("strong", null, formatUsd(card.projectedCostUsd)));
+      metrics.appendChild(proj);
+    }
+    if (card.budgetUsd) {
+      var bud = el("span", null, "");
+      bud.appendChild(document.createTextNode("budget "));
+      bud.appendChild(el("strong", null, formatUsd(card.budgetUsd)));
+      metrics.appendChild(bud);
+    }
+    c.appendChild(metrics);
+
+    /* tool feed (last 3) */
+    var feed = (card.toolFeed || []).slice(0, 3);
+    if (feed.length) {
+      var feedEl = el("div", "ad-feed");
+      feed.forEach(function (f) {
+        var line = el(
+          "div",
+          "ad-feed-line " + (f.status === "error" ? "error" : f.status === "running" ? "running" : ""),
+          (f.status === "error" ? "✗ " : f.status === "running" ? "↻ " : "✓ ") +
+            f.name +
+            (f.target ? " " + f.target : "")
+        );
+        feedEl.appendChild(line);
+      });
+      c.appendChild(feedEl);
+    }
+
+    /* Safety alerts (Phase 1.6) */
+    (card.safetyAlerts || []).forEach(function (alert) {
+      if (alert.acknowledged) return;
+      var row = el("div", "ad-alert");
+      row.appendChild(el("span", null, "⚠ " + alert.pattern + " in " + (alert.tool || "tool")));
+      if (alert.target) row.appendChild(el("span", "ad-tool-target", alert.target.slice(0, 60)));
+      var ack = el("button", "btn", "Ack");
+      ack.addEventListener("click", function () {
+        vscode.postMessage({
+          type: "agentDashboard.acknowledgeAlert",
+          sessionId: card.sessionId,
+          alertId: alert.id,
+        });
+      });
+      row.appendChild(ack);
+      c.appendChild(row);
+    });
+
+    /* Actions */
+    var actions = el("div", "ad-actions");
+    if (card.runId) {
+      var bOpen = el("button", "btn primary", "Open run");
+      bOpen.addEventListener("click", function () {
+        vscode.postMessage({ type: "agentTeams.openRun", runId: card.runId });
+      });
+      actions.appendChild(bOpen);
+      if (card.status !== "done" && card.status !== "error") {
+        var bStop = el("button", "btn", "Stop");
+        bStop.addEventListener("click", function () {
+          vscode.postMessage({ type: "agentTeams.stopRun", runId: card.runId });
+        });
+        actions.appendChild(bStop);
+      }
+      if (card.status === "awaiting_approval") {
+        var bApp = el("button", "btn primary", "Approve plan");
+        bApp.addEventListener("click", function () {
+          var r = atRuns[card.runId];
+          if (r) {
+            atApprovalModal = { runId: card.runId, planPath: r.planPath, editedPlan: null };
+          } else {
+            atApprovalModal = { runId: card.runId, planPath: null, editedPlan: null };
+          }
+          render();
+        });
+        actions.appendChild(bApp);
+      }
+    } else {
+      var bTx = el("button", "btn", "Reveal transcript");
+      bTx.addEventListener("click", function () {
+        vscode.postMessage({
+          type: "agentDashboard.revealSessionTranscript",
+          sessionId: card.sessionId,
+        });
+      });
+      actions.appendChild(bTx);
+    }
+    var bPin = el("button", "btn", card.pinned ? "Unpin" : "Pin");
+    bPin.addEventListener("click", function () {
+      vscode.postMessage({
+        type: card.pinned ? "agentDashboard.unpinSession" : "agentDashboard.pinSession",
+        sessionId: card.sessionId,
+      });
+    });
+    actions.appendChild(bPin);
+    c.appendChild(actions);
+
+    return c;
+  }
+
+  function formatTokens(n) {
+    if (!n) return "0";
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+    if (n >= 1000) return (n / 1000).toFixed(1) + "k";
+    return String(n);
+  }
+  function formatUsd(v) {
+    if (!isFinite(v) || !v) return "$0.00";
+    if (v < 0.01) return "$" + v.toFixed(4);
+    return "$" + v.toFixed(2);
+  }
+
   function render() {
     var root = $("#root");
     if (!root) {
@@ -1687,6 +3660,10 @@ export function getHubWebviewHtml(csp: string): string {
     }
     if (page === "workspace") {
       renderWorkspace();
+      return;
+    }
+    if (page === "agentteams") {
+      renderAgentTeams();
       return;
     }
 

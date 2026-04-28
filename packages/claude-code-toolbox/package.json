@@ -2,7 +2,7 @@
   "name": "cloude-code-toolbox-vscode",
   "displayName": "Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)",
   "description": "Claude Code ToolBox: MCP hub, workspace helpers, Thinking Machine Mode (context packs & priming), readiness, and bridges from Cursor to Claude Code in VS Code. Not affiliated with Microsoft, GitHub, or Anthropic. See README disclaimer. Workflow ideas credited in NOTICE (everything-claude-code, MIT).",
-  "version": "1.0.11",
+  "version": "1.0.17",
   "publisher": "amitchorasiya",
   "author": "amitchorasiya",
   "license": "MIT",
@@ -435,6 +435,114 @@
             "description": "When checked: after a workspace opens (debounced), save MCP & Skills awareness to `.claude/cloude-code-toolbox-mcp-skills-awareness.md` (overwritten), refresh hub, and update the MCP/skills block in `CLAUDE.md` — no editor tab. Re-runs on reopen so new MCP/skills are reflected. **Scan now** on the hub does the same immediately. In Claude Code, use `/mcp` for live tools; VS Code `mcp.json` is separate."
           }
         }
+      },
+      {
+        "title": "Agent Teams",
+        "order": 200,
+        "properties": {
+          "cloude-code-toolbox.agentTeams.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the Agent Teams tab in the hub. Disable to hide the feature entirely."
+          },
+          "cloude-code-toolbox.agentTeams.defaultModel": {
+            "type": "string",
+            "enum": [
+              "claude-opus-4-7",
+              "claude-sonnet-4-5",
+              "claude-haiku-4-5-20251001"
+            ],
+            "default": "claude-sonnet-4-5",
+            "description": "Model pre-filled in the New Agent form."
+          },
+          "cloude-code-toolbox.agentTeams.defaultProtocol": {
+            "type": "string",
+            "enum": [
+              "native-task",
+              "round-robin",
+              "handoff",
+              "plan-then-code",
+              "debate",
+              "orchestrator",
+              "parallel-fan-out"
+            ],
+            "default": "native-task",
+            "description": "Default collaboration protocol when creating a new team. native/round-robin/handoff run inside a single `claude` session via the Task tool; plan-then-code / debate / orchestrator / parallel-fan-out use the Toolbox custom orchestrator."
+          },
+          "cloude-code-toolbox.agentTeams.claudeBinOverride": {
+            "type": "string",
+            "default": "",
+            "description": "Absolute path to the `claude` CLI binary. Leave empty to auto-resolve via PATH. On Windows, a .cmd or .exe path is required for `shell:false` spawning."
+          },
+          "cloude-code-toolbox.agentTeams.maxConcurrentAgents": {
+            "type": "number",
+            "default": 3,
+            "minimum": 1,
+            "maximum": 8,
+            "description": "Cap for parallel-fan-out protocol (how many agents may run concurrently)."
+          },
+          "cloude-code-toolbox.agentTeams.costCapUsd": {
+            "type": "number",
+            "default": 5,
+            "minimum": 0,
+            "description": "Hard-stop a run when estimated spend exceeds this USD amount. 0 disables the cap."
+          }
+        }
+      },
+      {
+        "title": "Agent Dashboard",
+        "order": 210,
+        "properties": {
+          "cloude-code-toolbox.agentDashboard.enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Opt-in: show live cards for every running Claude Code session. When enabled the toolbox writes hook entries to ~/.claude/settings.json and starts an HTTP listener on 127.0.0.1. Disable to remove both."
+          },
+          "cloude-code-toolbox.agentDashboard.hookPort": {
+            "type": "number",
+            "default": 3456,
+            "minimum": 0,
+            "maximum": 65535,
+            "description": "Port for the dashboard HTTP listener on 127.0.0.1. Set 0 for a random ephemeral port. The helper script is rewritten automatically if a fallback port is chosen."
+          },
+          "cloude-code-toolbox.agentDashboard.includeInternalRuns": {
+            "type": "boolean",
+            "default": true,
+            "description": "Mirror our own orchestrator runs (Teams-tab protocols) into the dashboard alongside external sessions."
+          },
+          "cloude-code-toolbox.agentDashboard.retainDoneCardsMs": {
+            "type": "number",
+            "default": 60000,
+            "minimum": 0,
+            "description": "Fade completed cards after this many milliseconds (0 = keep forever)."
+          },
+          "cloude-code-toolbox.agentDashboard.autoPairPlanningPrompts": {
+            "type": "boolean",
+            "default": false,
+            "description": "When an external Claude session's first prompt looks like planning (contains 'plan', 'design', 'architect', etc.), offer to pair it with the default team."
+          },
+          "cloude-code-toolbox.agentDashboard.defaultPairTeamName": {
+            "type": "string",
+            "default": "sdlc-debate",
+            "description": "Name of the team dispatched by auto-pair + planWithTeam when no explicit pick is made."
+          },
+          "cloude-code-toolbox.agentDashboard.safetyAlerts": {
+            "type": "boolean",
+            "default": false,
+            "description": "Phase 1.6: install a PreToolUse safety guard helper that flags risky patterns (never blocks Claude; surfaces warnings in the dashboard)."
+          },
+          "cloude-code-toolbox.agentDashboard.safetyPatterns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [
+              "\\brm\\s+-rf\\b",
+              "\\brm\\s+-fr\\b",
+              "\\.env(?:$|[^a-zA-Z0-9])",
+              "\\bcurl\\b.*\\|\\s*sh\\b"
+            ],
+            "description": "Regex patterns (Python re syntax) that the safety guard looks for inside tool input values."
+          }
+        }
       }
     ],
     "viewsContainers": {
@@ -675,6 +783,58 @@
       {
         "command": "CloudeCodeToolBox.openOneClickSetupSettings",
         "title": "Claude Code ToolBox: Thinking Machine Mode — open One Click Setup settings"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentTeams.enable",
+        "title": "Claude Code ToolBox: Agent Teams — Enable (create ~/.claude/agents, verify CLI)"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentTeams.installStarterPack",
+        "title": "Claude Code ToolBox: Agent Teams — Install SDLC starter pack (9 agents)"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentTeams.revealAgentsFolder",
+        "title": "Claude Code ToolBox: Agent Teams — Reveal ~/.claude/agents"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentTeams.refresh",
+        "title": "Claude Code ToolBox: Agent Teams — Refresh"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentTeams.installCommandsPack",
+        "title": "Claude Code ToolBox: Agent Teams — Install slash commands (/plan-team, /debate-team…)"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentTeams.uninstallCommandsPack",
+        "title": "Claude Code ToolBox: Agent Teams — Uninstall Toolbox slash commands"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentTeams.listCommands",
+        "title": "Claude Code ToolBox: Agent Teams — List installed slash commands"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentDashboard.enable",
+        "title": "Claude Code ToolBox: Agent Dashboard — Enable"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentDashboard.disable",
+        "title": "Claude Code ToolBox: Agent Dashboard — Disable"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentDashboard.status",
+        "title": "Claude Code ToolBox: Agent Dashboard — Status"
+      },
+      {
+        "command": "CloudeCodeToolBox.agentDashboard.revealSettingsJson",
+        "title": "Claude Code ToolBox: Agent Dashboard — Reveal ~/.claude/settings.json"
+      },
+      {
+        "command": "CloudeCodeToolBox.planWithTeam",
+        "title": "Claude Code ToolBox: Plan with Agent Team…"
+      },
+      {
+        "command": "CloudeCodeToolBox.smartRouter",
+        "title": "Claude Code ToolBox: Smart router — pick workflow for a prompt"
       }
     ],
     "menus": {

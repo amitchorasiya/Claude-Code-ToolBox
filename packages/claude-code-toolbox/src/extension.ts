@@ -61,7 +61,27 @@ import {
   McpSkillsHubViewProvider,
 } from "./webview/mcpSkillsHubView";
 import { migrateOneClickSetupToNewKeys } from "./oneClickSetupSettingsMigrate";
-import { affectsToolboxSetting, migrateLegacyToolboxSettings } from "./toolboxSettings";
+import {
+  affectsToolboxSetting,
+  migrateLegacyToolboxSettings,
+  safeUpdateToolboxSetting,
+} from "./toolboxSettings";
+import { enableAgentTeams, revealAgentsFolder } from "./commands/enableAgentTeams";
+import {
+  installSdlcStarterPack,
+  starterPackDefaultSelection,
+} from "./agents/starterPack";
+import { DashboardController } from "./agents/dashboard/dashboardController";
+import { planWithTeamCommand } from "./commands/planWithTeam";
+import { smartRouterCommand } from "./commands/smartRouter";
+import { maybeOfferPlanPairing } from "./commands/pairExternalSession";
+import { writePresetTeamsIfEligible } from "./agents/starterPack";
+import {
+  commandsPackDefaultSelection,
+  installCommandsPack,
+  listInstalledCommands,
+  uninstallCommandsPack,
+} from "./agents/commandsPack";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   try {
@@ -76,8 +96,80 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
   void thinkingMachineModeActivationStartupCheck(context);
   void maybeShowAutoScanDefaultMigrationToast(context);
-  const mcpHubActivity = new McpSkillsHubViewProvider(context);
-  const mcpHubSecondary = new McpSkillsHubViewProvider(context);
+
+  /* Agent Dashboard (Phase 1) — construct the controller but do not start it
+   * until the user explicitly enables via the Teams-tab disclosure card. */
+  const cfgNow = vscode.workspace.getConfiguration();
+  const agentDashboard = new DashboardController({
+    preferredPort: cfgNow.get<number>("cloude-code-toolbox.agentDashboard.hookPort", 3456),
+    retainDoneCardsMs: cfgNow.get<number>(
+      "cloude-code-toolbox.agentDashboard.retainDoneCardsMs",
+      60_000
+    ),
+    includeInternalRuns: cfgNow.get<boolean>(
+      "cloude-code-toolbox.agentDashboard.includeInternalRuns",
+      true
+    ),
+    installSafetyGuard: cfgNow.get<boolean>(
+      "cloude-code-toolbox.agentDashboard.safetyAlerts",
+      false
+    ),
+    safetyPatterns: cfgNow.get<string[]>(
+      "cloude-code-toolbox.agentDashboard.safetyPatterns",
+      []
+    ),
+  });
+  context.subscriptions.push({
+    dispose: () => void agentDashboard.dispose().catch(() => undefined),
+  });
+  /* Auto-start if user previously had it enabled. */
+  if (cfgNow.get<boolean>("cloude-code-toolbox.agentDashboard.enabled", false)) {
+    void agentDashboard.start().catch((e) => {
+      console.error("[Cloude Code ToolBox] agent dashboard start failed", e);
+    });
+  }
+  /* Subscribe auto-pair heuristic — cheap, no-op when the setting is off. */
+  agentDashboard.onChange((snapshot) => {
+    for (const card of snapshot.cards) {
+      void maybeOfferPlanPairing(card, agentDashboard);
+    }
+  });
+
+  /* Phase 2: cost-cap warnings + auto-stop on hard breach. */
+  agentDashboard.store.onBudgetBreach((ev) => {
+    const usd = (n: number) => (n < 0.01 ? `$${n.toFixed(4)}` : `$${n.toFixed(2)}`);
+    const teamLabel = ev.teamName ? `"${ev.teamName}" ` : "";
+    if (ev.severity === "soft") {
+      void vscode.window
+        .showWarningMessage(
+          `Run ${teamLabel}is projected to spend ${usd(ev.projectedCostUsd)} (budget ${usd(ev.budgetUsd)}). Stop now?`,
+          "Stop now",
+          "Keep running"
+        )
+        .then((pick) => {
+          if (pick !== "Stop now" || !ev.runId) return;
+          const runMod = require("./agents/runtime/runRegistry") as typeof import("./agents/runtime/runRegistry");
+          const orchestrator = require("./agents/runtime/runOrchestrator") as typeof import("./agents/runtime/runOrchestrator");
+          const run = runMod.getRun(ev.runId);
+          if (run) orchestrator.abortRun(run);
+        });
+      return;
+    }
+    /* Hard breach: auto-stop internal runs without prompting. */
+    if (!ev.runId) return;
+    const runMod = require("./agents/runtime/runRegistry") as typeof import("./agents/runtime/runRegistry");
+    const orchestrator = require("./agents/runtime/runOrchestrator") as typeof import("./agents/runtime/runOrchestrator");
+    const run = runMod.getRun(ev.runId);
+    if (run) {
+      orchestrator.abortRun(run);
+      vscode.window.showErrorMessage(
+        `Auto-stopped ${teamLabel}— cost ${usd(ev.costUsd)} reached budget ${usd(ev.budgetUsd)}.`
+      );
+    }
+  });
+
+  const mcpHubActivity = new McpSkillsHubViewProvider(context, agentDashboard);
+  const mcpHubSecondary = new McpSkillsHubViewProvider(context, agentDashboard);
   const refreshMcpHubs = (): void => {
     mcpHubActivity.refresh();
     mcpHubSecondary.refresh();
@@ -375,6 +467,278 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     await showMcpSkillsAwareness(context, { silentNotification: true });
     refreshMcpHubs();
   });
+
+  /* Agent Teams commands. */
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.agentTeams.enable", async () => {
+      try {
+        await enableAgentTeams({
+          scope: "user",
+          installStarterPack: false,
+        });
+        refreshMcpHubs();
+      } catch (e) {
+        vscode.window.showErrorMessage(
+          `Enable Agent Teams failed: ${e instanceof Error ? e.message : String(e)}`
+        );
+      }
+    })
+  );
+  sub(
+    vscode.commands.registerCommand(
+      "CloudeCodeToolBox.agentTeams.installStarterPack",
+      async () => {
+        try {
+          const folder = vscode.workspace.workspaceFolders?.[0];
+          const result = await installSdlcStarterPack({
+            selected: starterPackDefaultSelection(),
+            scope: "user",
+            homeDir: (await import("node:os")).homedir(),
+            workspaceRoot: folder?.uri.fsPath,
+          });
+          const teamsBit = result.teamsWritten.length
+            ? ` · ${result.teamsWritten.length} team(s) created`
+            : "";
+          vscode.window.showInformationMessage(
+            `SDLC starter pack installed (${result.written.length} agents${teamsBit}) to ~/.claude/agents.`
+          );
+          refreshMcpHubs();
+        } catch (e) {
+          vscode.window.showErrorMessage(
+            `Starter pack install failed: ${e instanceof Error ? e.message : String(e)}`
+          );
+        }
+      }
+    )
+  );
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.agentTeams.revealAgentsFolder", () => {
+      revealAgentsFolder("user");
+    })
+  );
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.agentTeams.refresh", () =>
+      refreshMcpHubs()
+    )
+  );
+  sub(
+    vscode.commands.registerCommand(
+      "CloudeCodeToolBox.agentTeams.installCommandsPack",
+      async () => {
+        try {
+          const folder = vscode.workspace.workspaceFolders?.[0];
+          const result = await installCommandsPack({
+            selected: commandsPackDefaultSelection(),
+            scope: "user",
+            homeDir: (await import("node:os")).homedir(),
+            workspaceRoot: folder?.uri.fsPath,
+          });
+          vscode.window.showInformationMessage(
+            `Slash commands: ${result.written.length} installed (${result.skipped.length} already existed / foreign) at ${result.targetDir}. Type /<tab> in any claude session.`
+          );
+          refreshMcpHubs();
+        } catch (e) {
+          vscode.window.showErrorMessage(
+            `Install slash commands failed: ${e instanceof Error ? e.message : String(e)}`
+          );
+        }
+      }
+    )
+  );
+  sub(
+    vscode.commands.registerCommand(
+      "CloudeCodeToolBox.agentTeams.uninstallCommandsPack",
+      async () => {
+        try {
+          const folder = vscode.workspace.workspaceFolders?.[0];
+          const homeDir = (await import("node:os")).homedir();
+          const user = await uninstallCommandsPack({ scope: "user", homeDir });
+          const ws = folder
+            ? await uninstallCommandsPack({
+                scope: "workspace",
+                homeDir,
+                workspaceRoot: folder.uri.fsPath,
+              })
+            : { removed: [] as string[] };
+          const total = user.removed.length + ws.removed.length;
+          vscode.window.showInformationMessage(
+            `Slash commands: removed ${total} file(s) (user: ${user.removed.length}${
+              folder ? `, workspace: ${ws.removed.length}` : ""
+            }).`
+          );
+          refreshMcpHubs();
+        } catch (e) {
+          vscode.window.showErrorMessage(
+            `Uninstall slash commands failed: ${e instanceof Error ? e.message : String(e)}`
+          );
+        }
+      }
+    )
+  );
+  sub(
+    vscode.commands.registerCommand(
+      "CloudeCodeToolBox.agentTeams.listCommands",
+      async () => {
+        const folder = vscode.workspace.workspaceFolders?.[0];
+        const homeDir = (await import("node:os")).homedir();
+        const cmds = await listInstalledCommands(homeDir, folder?.uri.fsPath);
+        if (!cmds.length) {
+          vscode.window.showInformationMessage("No custom slash commands installed.");
+          return;
+        }
+        const pick = await vscode.window.showQuickPick(
+          cmds.map((c) => ({
+            label: `/${c.id}`,
+            description: c.ownedByToolbox ? "Toolbox" : "Foreign",
+            detail: `${c.scope} · ${c.description ?? "(no description)"}`,
+            path: c.filePath,
+          })),
+          { placeHolder: "Custom slash commands (select to open file)" }
+        );
+        if (pick) {
+          void vscode.window.showTextDocument(vscode.Uri.file(pick.path));
+        }
+      }
+    )
+  );
+
+  /* Agent Dashboard commands (Phase 1). */
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.agentDashboard.enable", async () => {
+      await safeUpdateToolboxSetting("agentDashboard.enabled", true);
+      try {
+        await agentDashboard.start();
+        const folder = vscode.workspace.workspaceFolders?.[0];
+        const homeDir = (await import("node:os")).homedir();
+        const teamsWritten = await writePresetTeamsIfEligible({
+          scope: "user",
+          homeDir,
+          workspaceRoot: folder?.uri.fsPath,
+        });
+        let cmdsWritten = 0;
+        try {
+          const res = await installCommandsPack({
+            selected: commandsPackDefaultSelection(),
+            scope: "user",
+            homeDir,
+            workspaceRoot: folder?.uri.fsPath,
+          });
+          cmdsWritten = res.written.length;
+        } catch {
+          /* best-effort */
+        }
+        const extras: string[] = [];
+        if (teamsWritten.length) extras.push(`${teamsWritten.length} team(s)`);
+        if (cmdsWritten) extras.push(`${cmdsWritten} slash command(s)`);
+        vscode.window.showInformationMessage(
+          extras.length
+            ? `Agent Dashboard enabled · ${extras.join(" · ")} created.`
+            : "Agent Dashboard enabled."
+        );
+      } catch (e) {
+        vscode.window.showErrorMessage(
+          `Enable Agent Dashboard failed: ${e instanceof Error ? e.message : String(e)}`
+        );
+      }
+      refreshMcpHubs();
+    })
+  );
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.agentDashboard.disable", async () => {
+      await agentDashboard.stop().catch(() => undefined);
+      await safeUpdateToolboxSetting("agentDashboard.enabled", false);
+      refreshMcpHubs();
+      vscode.window.showInformationMessage("Agent Dashboard disabled.");
+    })
+  );
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.agentDashboard.status", async () => {
+      const s = await agentDashboard.currentState();
+      const parts = [
+        `Agent Dashboard: ${s.running ? "running" : "stopped"}`,
+        `port ${s.port ?? "n/a"}`,
+        `${s.sessionsDiscovered} session(s)`,
+      ];
+      if (s.foreignHooks.length > 0) {
+        parts.push(`foreign hook(s) detected: ${s.foreignHooks.length}`);
+      }
+      const msg = parts.join(" · ");
+      if (s.foreignHooks.length > 0) {
+        void vscode.window
+          .showWarningMessage(msg + " — events may be double-processed.", "Show details")
+          .then((pick) => {
+            if (pick !== "Show details") return;
+            const detail = s.foreignHooks.join("\n");
+            vscode.window.showInformationMessage(
+              `Foreign hooks in ~/.claude/settings.json:\n${detail}`,
+              { modal: true }
+            );
+          });
+      } else {
+        vscode.window.showInformationMessage(msg);
+      }
+    })
+  );
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.agentDashboard.revealSettingsJson", async () => {
+      const home = (await import("node:os")).homedir();
+      const p = (await import("node:path")).join(home, ".claude", "settings.json");
+      try {
+        await vscode.window.showTextDocument(vscode.Uri.file(p));
+      } catch {
+        vscode.window.showWarningMessage(`Not found: ${p}`);
+      }
+    })
+  );
+
+  /* Phase 1.5 commands. */
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.planWithTeam", () =>
+      planWithTeamCommand(agentDashboard)
+    )
+  );
+  sub(
+    vscode.commands.registerCommand("CloudeCodeToolBox.smartRouter", () =>
+      smartRouterCommand(agentDashboard)
+    )
+  );
+
+  /* React to settings changes that affect dashboard lifecycle. */
+  sub(
+    vscode.workspace.onDidChangeConfiguration(async (e) => {
+      if (e.affectsConfiguration("cloude-code-toolbox.agentDashboard.enabled")) {
+        const isOn = vscode.workspace
+          .getConfiguration()
+          .get<boolean>("cloude-code-toolbox.agentDashboard.enabled", false);
+        if (isOn && !agentDashboard.isRunning) {
+          await agentDashboard.start().catch(() => undefined);
+        } else if (!isOn && agentDashboard.isRunning) {
+          await agentDashboard.stop().catch(() => undefined);
+        }
+        refreshMcpHubs();
+      }
+      if (
+        e.affectsConfiguration("cloude-code-toolbox.agentDashboard.retainDoneCardsMs") ||
+        e.affectsConfiguration("cloude-code-toolbox.agentDashboard.safetyAlerts")
+      ) {
+        const cfg2 = vscode.workspace.getConfiguration();
+        agentDashboard.updateConfig({
+          retainDoneCardsMs: cfg2.get<number>(
+            "cloude-code-toolbox.agentDashboard.retainDoneCardsMs",
+            60_000
+          ),
+          installSafetyGuard: cfg2.get<boolean>(
+            "cloude-code-toolbox.agentDashboard.safetyAlerts",
+            false
+          ),
+          safetyPatterns: cfg2.get<string[]>(
+            "cloude-code-toolbox.agentDashboard.safetyPatterns",
+            []
+          ),
+        });
+      }
+    })
+  );
 }
 
 export function deactivate(): void {}

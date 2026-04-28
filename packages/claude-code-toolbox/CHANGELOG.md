@@ -1,5 +1,55 @@
 # Changelog
 
+## 1.0.17
+
+- **Claude Code slash commands.** New `commandsPack` ships six custom slash commands that bridge Claude Code's native chat to Toolbox subagents via the Task tool: `/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`. Files land under `~/.claude/commands/*.md` with a marker comment so `Uninstall` removes only ours (foreign files stay). Auto-installed alongside the starter pack and on Enable Agent Teams / Enable Agent Dashboard; also available via `Agent Teams: Install slash commands`, `Uninstall`, and `List` commands.
+- **UI:** New "Slash commands" section in the Teams tab listing installed commands (Toolbox-owned vs foreign) with Open / Install / Uninstall actions.
+- **Cross-platform:** works on macOS + Windows + Linux via `path.join(os.homedir(), ".claude", "commands")`; Claude Code auto-resolves `~` → `%USERPROFILE%` on Windows.
+- **Tests:** 102/102 (+11 for `commandsPack` — install, idempotency, foreign-file safety, workspace-scope guard, uninstall scoping, frontmatter parsing).
+- Release: **1.0.17** (VS Code) / **0.6.18** (IntelliJ plugin).
+
+## 1.0.16
+
+- **Hardened atomic writes.** Consolidated four duplicate `atomicWrite` helpers into one [`src/agents/atomicFile.ts`](src/agents/atomicFile.ts). When `fs.rename` throws `ENOENT` (macOS FSEvents / concurrent Enable clicks), we now re-create the tmp file and fall back to `fs.copyFile + fs.unlink`.
+- **Settings write tolerance.** New `safeUpdateToolboxSetting` swallows only the VS Code "not a registered configuration" error that appears after a stale extension reload; other errors still propagate.
+- **Auto-create default teams on Enable.** `writePresetTeamsIfEligible` is now called from `enableAgentTeams`, the Agent Dashboard enable path, and the starter-pack installer — so users get agents + `sdlc-debate.json` + `sdlc-plan-then-code.json` in a single click.
+- **Tests:** +7 (`writePresetTeamsIfEligible` standalone + `atomicWriteText` fallback).
+- Release: **1.0.16** (VS Code) / **0.6.17** (IntelliJ plugin).
+
+## 1.0.15 — Phase 2 polish (Agent Dashboard)
+
+- **Swim-lane grouping** by workspace folder in the Agent Dashboard card strip (flat/by-workspace toggle; pinned cards stay at the top; current workspace sorts first).
+- **Search / filter** input matches across title, cwd, protocol, team name, current tool + target, source, status.
+- **Cost guardrails.** `SessionStore.onBudgetBreach` emits once per severity per run: soft breach (projected > budget) → `showWarningMessage` with Stop-now; hard breach (actual > budget) → auto-abort for internal runs.
+- **Foreign-hook detection.** `detectForeignHooks` scans `~/.claude/settings.json` for agent-dock-like commands from other tools; surfaced in Status command + inline warning callout.
+- **Telemetry-off disclosure** line on the Enable card.
+- **Preset teams** (`sdlc-debate.json`, `sdlc-plan-then-code.json`) are written during starter-pack install when required agents are present.
+- **Tests:** +6 (soft/hard budget breach, preset-teams writer, foreign-hook detection).
+- Release: **1.0.15** (VS Code) / **0.6.16** (IntelliJ plugin).
+
+## 1.0.14 — Agent Dashboard (Phase 1 + 1.5 + 1.6)
+
+- **Opt-in Agent Dashboard.** Live kanban card for every Claude Code session on the machine — ours or started externally (terminal, another VS Code window, JetBrains). Cards show pulsing status dot, current tool + target, context-window fill bar, tokens in/out, USD cost + projection, last-3 tool-call feed, "needs approval" badge.
+- **Hook server + transcript watcher.** Atomic installer drops `~/.claude/agent-dock-hook.py`, registers 5 hook events in `~/.claude/settings.json` (`PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `PermissionRequest`), and binds an HTTP listener on **`127.0.0.1:3456`** (IPv4-pinned; falls back to ephemeral with helper rewrite). Separately, `transcriptWatcher` tails `~/.claude/projects/*/*.jsonl` for sessions we can't hook. Disable removes only our entries.
+- **Phase 1.5 entry points:** `Plan with Agent Team…` (keybinding `cmd/ctrl+alt+p`, parallel to Claude Code's `/plan`), `Smart router` quick-pick (plan/debate/single), auto-pair toast on external planning prompts.
+- **Phase 1.6:** opt-in safety-guard PreToolUse helper (non-blocking; flags `rm -rf`, `.env*` reads, `curl | sh`); consensus ⚖ badge on debate runs when ≥2 participants stake conflicting stances.
+- **Settings** under `cloude-code-toolbox.agentDashboard.*`: `enabled`, `hookPort`, `autoPairPlanningPrompts`, `defaultPairTeamName`, `safetyAlerts`, `safetyPatterns`, `retainDoneCardsMs`. **No telemetry — nothing leaves your machine.**
+- **Tests:** +22 (sessionStore, transcriptParser, hookInstaller, smartRouter, claudeSpawn stream-json, runBus, protocols, runOrchestrator e2e).
+- Release: **1.0.14** (VS Code) / **0.6.15** (IntelliJ plugin).
+
+## 1.0.13 — Agent Teams (Phase 1 MVP)
+
+- **New 🤝 Teams tab** in the hub. Native Claude Code subagent format (YAML-frontmatter `.md` under `~/.claude/agents/`) with CRUD, team composition JSON under `.claude/teams/`, and a custom orchestrator running seven collaboration protocols: **native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge, plan-then-code (with approval gate)**. Color-coded live transcript with pulsing status dot, per-agent color, tokens+cost totals; approval-gate modal; per-run JSONL under `.claude/runs/`.
+- **Hybrid runtime.** Native-task / round-robin / handoff run inside a single `claude` session via the Task tool. Plan-then-code / debate / orchestrator / parallel-fan-out use a custom multi-process orchestrator with streamed `--output-format stream-json`. Both emit the same event shape into a shared `RunBus`.
+- **SDLC starter pack** — 9 agent `.md` templates (product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa-test-engineer, code-reviewer, devops, tech-writer).
+- **Cross-platform spawn.** `resolveClaudeBin()` walks `PATH` + `PATHEXT` (Windows `.cmd`/`.exe`), `spawn` with `shell:false`, `killProcessTree` via POSIX pgroup + Windows `taskkill /T /F`.
+- **Tests:** +12 (agents, teamsStore, starterPack, localAgents).
+- Release: **1.0.13** (VS Code) / **0.6.14** (IntelliJ plugin).
+
+## 1.0.12
+
+- **Release:** Updated screenshots and dependency bumps; groundwork for the 1.0.13 Agent Teams feature. Release: **1.0.12** (VS Code) / **0.6.13** (IntelliJ plugin).
+
 ## 1.0.11
 
 - **IntelliJ Plugin Verification:** Updated Kotlin (2.1.10 → 2.1.21) and Gson (2.11.0 → 2.12.1) to address compatibility warnings. Plugin verified against IntelliJ IDEA 2024.2 through 2026.1. See [VERIFICATION_REPORT.md](../claude-code-toolbox-intellij/VERIFICATION_REPORT.md).
