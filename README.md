@@ -1,8 +1,19 @@
 # Claude Code ToolBox
 
-**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.11`** · JetBrains plugin **`0.6.12`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
+**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.21`** · JetBrains plugin **`0.6.19`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
+
+> ### 🤝 New: Agentic Teams — multi-agent planning & debate
+>
+> The new **🤝 Agentic Teams** tab makes Claude Code **think in a team**. Specialised agents (product-manager, architect, security-reviewer, backend/frontend/qa/code-reviewer) **debate a design**, produce a **plan you review and approve**, then **execute** — with a live color-coded transcript, per-turn tokens + cost, and persisted `plan.md` / `decision.md` per run.
+>
+> - **Eight collaboration protocols** — native-task, round-robin, handoff, orchestrator, parallel fan-out, **debate + judge**, **plan-then-code (with your approval gate)**, **converge (parallel → cross-pollinate → synthesize)**.
+> - **Agent Dashboard** (opt-in) — live cards for every Claude Code session on your machine, whether started by the Toolbox or by `claude` in a terminal.
+> - **Editable slash commands** — create, edit, and delete commands with an agent-selection UI; six presets included (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`).
+> - **Cross-platform** — macOS, Windows, Linux.
+>
+> Skip to the full walkthrough: [Agentic Teams — multi-agent planning &amp; debate](#agentic-teams--multi-agent-planning--debate).
 
 ## IDE support
 
@@ -66,7 +77,7 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 - [What’s in this repo](#whats-in-this-repo)
 - [See the real UI (screenshots)](#see-the-real-ui-screenshots)
 - [MCP & skills hub: every tab, toggle, and button](#mcp--skills-hub-every-tab-toggle-and-button)
-- [Agent Teams & Dashboard](#agent-teams--dashboard)
+- [Agentic Teams — multi-agent planning & debate](#agentic-teams--multi-agent-planning--debate)
 - [Why it exists](#why-it-exists)
 - [Quick start (extension)](#quick-start-extension)
 - [Install the extension](#install-the-extension)
@@ -137,7 +148,7 @@ Open the **MCP & skills** hub from the **Side Bar** after you click **Claude Cod
 | **MCP** | **Browse** official registry search or **Installed** workspace + user servers from `mcp.json`. |
 | **Skills** | **Browse** [skills.sh](https://skills.sh) catalog or **Installed** local folders that contain `SKILL.md` under standard roots. |
 | **Workspace** | **Workspace checklist** (One Click Setup, rules, memory bank, **`CLAUDE.md`**, `mcp.json`) and **All toolbox commands** (searchable tiles). |
-| **🤝 Teams** | **Agent Teams** (subagent CRUD, team composition, 7 collaboration protocols incl. debate + plan-then-code), opt-in **Agent Dashboard** (live cards for every Claude Code session), **SDLC starter pack** (9 agents), and **Claude Code slash commands** (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`). See the [Agent Teams & Dashboard](#agent-teams--dashboard) section below. |
+| **🤝 Agentic Teams** | **Multi-agent planning &amp; debate** — subagent CRUD, team composition, 8 collaboration protocols incl. **debate (+ judge)**, **plan-then-code (with your approval gate)**, and **converge** (parallel → cross-pollinate → synthesize), editable slash commands with agent selection, opt-in **Agent Dashboard** (live cards for every Claude Code session), **SDLC starter pack** (9 agents), and **Claude Code slash commands** (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`). See the [Agentic Teams — multi-agent planning &amp; debate](#agentic-teams--multi-agent-planning--debate) section below. |
 
 ### Browse vs Installed (MCP and Skills only)
 
@@ -281,16 +292,22 @@ The **MCP & skills** and **Workspace kit** views expose a **Refresh** action in 
 
 ---
 
-## Agent Teams & Dashboard
+## Agentic Teams — multi-agent planning & debate
 
-The **🤝 Teams** tab turns the hub into a multi-agent workbench on top of Claude Code's native subagent format (`.md` files under `~/.claude/agents/`). Everything is **opt-in** — nothing is written to `~/.claude/settings.json` until you click **Enable**.
+> **New in 1.0.17.** The **🤝 Agentic Teams** tab turns the hub into a **multi-agent planning &amp; debate** workbench on top of Claude Code's native subagent format. Instead of one model doing everything, you get specialised agents (product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa, code-reviewer, …) that can **argue a design**, **produce a plan for you to approve**, and then **execute the approved plan** with a live color-coded transcript of every turn. Everything is **opt-in** — nothing is written to `~/.claude/settings.json` until you click **Enable**.
+
+**TL;DR — three ways to use it**
+
+1. **Click Run on a team** in the Agentic Teams tab → watch agents debate live, approve the plan, let the code phase run. Transcript + `plan.md` + `decision.md` are saved under `<ws>/.claude/runs/`.
+2. **`cmd/ctrl+alt+p` → Plan with Agent Team…** — parallel to Claude Code's built-in `/plan`; captures your editor selection as context.
+3. **Type `/debate-team` or `/plan-team` inside any `claude` session** — the same agents dispatched via Claude Code's native Task tool. Works from a terminal, JetBrains, or anywhere Claude Code runs.
 
 ### Agent Teams — what ships
 
 - **Agent CRUD** using Claude Code's native YAML-frontmatter `.md` format. Agents live in `~/.claude/agents/` (user scope) or `<workspace>/.claude/agents/` and are immediately invokable from any `claude` session via the Task tool.
 - **SDLC starter pack** — 9 ready-made agents: `product-manager`, `architect`, `security-reviewer`, `backend-dev`, `frontend-dev`, `qa-test-engineer`, `code-reviewer`, `devops`, `tech-writer`. Each gets a role tag (`plan`, `code`, `review`), model default, and tool whitelist.
 - **Preset teams** (JSON under `~/.claude/teams/`) — `sdlc-debate` and `sdlc-plan-then-code` auto-created when the required agents are on disk.
-- **7 collaboration protocols** driven by the Toolbox orchestrator:
+- **8 collaboration protocols** driven by the Toolbox orchestrator:
   - `native-task` — single `claude` session picks subagents via the Task tool.
   - `round-robin` — agents speak in order, each sees the previous N messages.
   - `handoff` — each agent ends with `HANDOFF: <name>` to route the next turn.
@@ -298,13 +315,14 @@ The **🤝 Teams** tab turns the hub into a multi-agent workbench on top of Clau
   - `parallel-fan-out` — all agents answer in parallel, then one synthesizes.
   - `debate` — N rounds of disagreement, then a judge agent writes `decision.md`.
   - `plan-then-code` — plan agents produce `<plan>...</plan>` → **you approve or edit** → code agents execute against the approved plan → optional judge review.
+  - `converge` — all agents think in parallel (diverge), see each other's work and refine (cross-pollinate, N rounds), judge synthesizes a cohesive plan → **you approve or edit** → code agents execute → optional judge review.
 - **Live color-coded transcript** with pulsing status, tokens + cost + projected-cost, tool-call feed, approve-plan modal, Stop button.
 - **Cost guardrails** — soft breach shows a "Stop now" toast; hard breach auto-aborts internal runs.
 - **Run artifacts** — every run appends JSON lines to `<ws>/.claude/runs/<id>/transcript.jsonl` plus optional `plan.md` / `decision.md`.
 
 ### Agent Dashboard — watch every Claude Code session live (opt-in)
 
-When enabled, the Teams tab shows a card for **every** running Claude Code session on your machine — including sessions you start in a terminal or another VS Code window. Each card displays:
+When enabled, the Agentic Teams tab shows a card for **every** running Claude Code session on your machine — including sessions you start in a terminal or another VS Code window. Each card displays:
 
 - Pulsing status dot (`running`, `thinking`, `awaiting_permission`, `idle`, `error`).
 - Current tool + target file (`Edit → src/foo.ts`).
@@ -318,7 +336,7 @@ Phase 2 polish: swim-lane grouping by workspace, search/filter, cost-cap warning
 
 ### Claude Code slash commands (bridge into native chat)
 
-Six custom slash commands that make the Toolbox agents usable from inside a regular `claude` session — no VS Code UI needed:
+Six preset slash commands that make the Toolbox agents usable from inside a regular `claude` session — no VS Code UI needed. You can also **create, edit, and delete** commands from the Agentic Teams tab with a point-and-click agent selection UI:
 
 | Command | What it does |
 |---------|---------------|
@@ -329,9 +347,9 @@ Six custom slash commands that make the Toolbox agents usable from inside a regu
 | `/refactor-team <target>` | backend-dev + frontend-dev + qa-test-engineer + code-reviewer propose an edit sequence + test command. |
 | `/spec-team <idea>` | product-manager writes a PRD; architect adds a technical addendum. |
 
-Files land in `~/.claude/commands/*.md` (user scope) or `<workspace>/.claude/commands/*.md`; each carries a marker so **Uninstall** removes only ours (foreign files stay). Install via the Teams tab button, the command palette (`Claude Code ToolBox: Agent Teams — Install slash commands`), or automatically when you click **Enable Claude Agent Teams** or **Enable Agent Dashboard**.
+Files land in `~/.claude/commands/*.md` (user scope) or `<workspace>/.claude/commands/*.md`; each carries a marker so **Uninstall** removes only ours (foreign files stay). Install presets via the Agentic Teams tab button, the command palette (`Claude Code ToolBox: Agent Teams — Install slash commands`), or automatically when you click **Enable Claude Agent Teams** or **Enable Agent Dashboard**. Create custom commands from the **+ New command** button in the tab — pick agents, write instructions, and the command `.md` is generated automatically.
 
-### Entry points (Teams tab + commands)
+### Entry points (Agentic Teams tab + commands)
 
 - **Hero button** — `Enable Claude Agent Teams` (scaffolds `~/.claude/agents/`, optionally installs the starter pack, writes preset teams, installs eligible slash commands).
 - **Run… button on each team card** — opens a prompt input, dispatches the team through the chosen protocol, streams events into the live transcript.

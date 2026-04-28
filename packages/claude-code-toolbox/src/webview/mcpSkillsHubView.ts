@@ -59,6 +59,14 @@ import {
   uninstallCommandsPack,
   type InstalledCommand,
 } from "../agents/commandsPack";
+import {
+  createCommand,
+  updateCommand,
+  deleteCommand,
+  readCommandBody,
+  parseAgentsFromBody,
+  type CommandDraft,
+} from "../agents/commandsMutations";
 import { TOOLBOX_SETTINGS_PREFIX, safeUpdateToolboxSetting } from "../toolboxSettings";
 import {
   startTeamRun,
@@ -954,6 +962,113 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
             vscode.window.showErrorMessage(`Uninstall slash commands failed: ${m}`);
           }
           this._postState();
+          break;
+        }
+        case "agentTeams.createCommand": {
+          try {
+            const draft = msg.draft as CommandDraft | undefined;
+            if (!draft || typeof draft.name !== "string") {
+              throw new Error("Missing command draft.");
+            }
+            const folder = mcpPaths.getPrimaryWorkspaceFolder();
+            await createCommand(draft, os.homedir(), folder?.uri.fsPath);
+            vscode.window.showInformationMessage(
+              `Slash command "/${draft.name}" created. Type /<tab> inside claude to see it.`
+            );
+          } catch (e) {
+            const m = e instanceof Error ? e.message : String(e);
+            vscode.window.showErrorMessage(`Create command failed: ${m}`);
+          }
+          this._postState();
+          break;
+        }
+        case "agentTeams.updateCommand": {
+          try {
+            const filePath = typeof msg.filePath === "string" ? msg.filePath : "";
+            const draft = msg.draft as CommandDraft | undefined;
+            if (!filePath || !draft) {
+              throw new Error("Missing filePath or draft.");
+            }
+            const folder = mcpPaths.getPrimaryWorkspaceFolder();
+            const commands = await listInstalledCommands(
+              os.homedir(),
+              folder?.uri.fsPath
+            );
+            const existing = commands.find((c) => c.filePath === filePath);
+            if (!existing) {
+              throw new Error(`Command not found: ${filePath}`);
+            }
+            await updateCommand(existing, draft, os.homedir(), folder?.uri.fsPath);
+            vscode.window.showInformationMessage(
+              `Slash command "/${draft.name}" updated.`
+            );
+          } catch (e) {
+            const m = e instanceof Error ? e.message : String(e);
+            vscode.window.showErrorMessage(`Update command failed: ${m}`);
+          }
+          this._postState();
+          break;
+        }
+        case "agentTeams.deleteCommand": {
+          try {
+            const filePath = typeof msg.filePath === "string" ? msg.filePath : "";
+            if (!filePath) {
+              throw new Error("Missing filePath.");
+            }
+            const folder = mcpPaths.getPrimaryWorkspaceFolder();
+            const commands = await listInstalledCommands(
+              os.homedir(),
+              folder?.uri.fsPath
+            );
+            const existing = commands.find((c) => c.filePath === filePath);
+            if (!existing) {
+              throw new Error(`Command not found: ${filePath}`);
+            }
+            const pick = await vscode.window.showWarningMessage(
+              `Delete slash command "/${existing.id}" (${existing.scope})?`,
+              { modal: true },
+              "Delete",
+              "Cancel"
+            );
+            if (pick !== "Delete") break;
+            await deleteCommand(existing);
+            vscode.window.showInformationMessage(
+              `Slash command "/${existing.id}" deleted.`
+            );
+          } catch (e) {
+            const m = e instanceof Error ? e.message : String(e);
+            vscode.window.showErrorMessage(`Delete command failed: ${m}`);
+          }
+          this._postState();
+          break;
+        }
+        case "agentTeams.readCommandBody": {
+          try {
+            const filePath = typeof msg.filePath === "string" ? msg.filePath : "";
+            if (!filePath) throw new Error("Missing filePath.");
+            const folder = mcpPaths.getPrimaryWorkspaceFolder();
+            const commands = await listInstalledCommands(
+              os.homedir(),
+              folder?.uri.fsPath
+            );
+            const existing = commands.find((c) => c.filePath === filePath);
+            if (!existing) throw new Error(`Command not found: ${filePath}`);
+            const body = await readCommandBody(existing);
+            const agents = parseAgentsFromBody(body);
+            this._view?.webview.postMessage({
+              type: "agentTeams.commandBody",
+              filePath,
+              body,
+              agents,
+            });
+          } catch {
+            this._view?.webview.postMessage({
+              type: "agentTeams.commandBody",
+              filePath: msg.filePath,
+              body: "",
+              agents: [],
+            });
+          }
           break;
         }
         case "agentTeams.runTeam": {

@@ -144,8 +144,8 @@
               <p>Context packs and readiness flows with explicit choices so teams agree on what Claude Code is allowed to see.</p>
             </article>
             <article class="pillar">
-              <h3>Agent Teams + live Dashboard</h3>
-              <p>SDLC agents, seven collaboration protocols (debate, plan-then-code with an approval gate), color-coded transcript, and an opt-in dashboard that shows every running Claude Code session on the machine.</p>
+              <h3>Agentic Teams — multi-agent planning &amp; debate</h3>
+              <p>SDLC agents that <strong>debate a design</strong> and produce a <strong>plan you approve</strong> before code runs — eight collaboration protocols (including <strong>converge</strong>: parallel thinking → cross-pollination → synthesis), editable slash commands with agent selection, color-coded live transcript, plus an opt-in dashboard that shows every running Claude Code session on the machine.</p>
             </article>
           </div>
         </div>
@@ -189,15 +189,15 @@
 
       <section class="modes" aria-labelledby="teams-heading">
         <div class="wrap">
-          <h2 id="teams-heading">Agent Teams &amp; Dashboard</h2>
+          <h2 id="teams-heading">Agentic Teams — multi-agent planning &amp; debate</h2>
           <p class="sub">
-            The 🤝 <strong>Teams</strong> tab turns the hub into a multi-agent workbench on top of Claude Code's native subagent format. Everything is <strong>opt-in</strong>, disclosed upfront, and reversible.
+            The 🤝 <strong>Agentic Teams</strong> tab turns the hub into a <strong>multi-agent planning &amp; debate</strong> workbench on top of Claude Code's native subagent format. Specialised agents <strong>argue a design</strong>, produce a <strong>plan you approve</strong>, then <strong>execute</strong> — with a live transcript and persisted artifacts. Everything is <strong>opt-in</strong>, disclosed upfront, and reversible.
           </p>
           <div class="modes-grid">
             <article class="mode-card">
-              <h3>Agent Teams + 7 collaboration protocols</h3>
+              <h3>Agent Teams + 8 collaboration protocols</h3>
               <p>
-                <strong>What it does:</strong> CRUD for Claude Code subagents (YAML-frontmatter <code>.md</code> under <code>~/.claude/agents/</code>). A 9-agent <strong>SDLC starter pack</strong> (product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa-test-engineer, code-reviewer, devops, tech-writer) and two preset teams (<code>sdlc-debate</code>, <code>sdlc-plan-then-code</code>) land with one click. Seven collaboration protocols drive runs: <strong>native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge</strong> (writes <code>decision.md</code>), and <strong>plan-then-code</strong> (produces <code>plan.md</code>, blocks on your approval, then runs the code phase). A live color-coded transcript shows pulsing status, tokens, cost, projection, and an approve-plan modal.
+                <strong>What it does:</strong> CRUD for Claude Code subagents (YAML-frontmatter <code>.md</code> under <code>~/.claude/agents/</code>). A 9-agent <strong>SDLC starter pack</strong> (product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa-test-engineer, code-reviewer, devops, tech-writer) and two preset teams (<code>sdlc-debate</code>, <code>sdlc-plan-then-code</code>) land with one click. Eight collaboration protocols drive runs: <strong>native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge</strong> (writes <code>decision.md</code>), <strong>plan-then-code</strong> (produces <code>plan.md</code>, blocks on your approval, then runs the code phase), and <strong>converge</strong> (parallel diverge → cross-pollination rounds → judge synthesis → your approval → code execution). A live color-coded transcript shows pulsing status, tokens, cost, projection, and an approve-plan modal.
               </p>
               <p>
                 <strong>Why it matters:</strong> Planning and reviewing are the moments that most benefit from disagreement. Debates and plan-then-code flows make multiple perspectives explicit and auditable, and every run appends a JSONL transcript to <code>&lt;ws&gt;/.claude/runs/&lt;id&gt;/transcript.jsonl</code>.
@@ -213,9 +213,9 @@
               </p>
             </article>
             <article class="mode-card">
-              <h3>Native Claude Code slash commands</h3>
+              <h3>Editable Claude Code slash commands</h3>
               <p>
-                <strong>What it does:</strong> Six custom commands installed under <code>~/.claude/commands/*.md</code> so you can type them inside any <code>claude</code> session and dispatch the Toolbox agents via the native Task tool:
+                <strong>What it does:</strong> Six preset commands installed under <code>~/.claude/commands/*.md</code> so you can type them inside any <code>claude</code> session and dispatch the Toolbox agents via the native Task tool. You can also <strong>create, edit, and delete</strong> commands from the Agentic Teams tab with a point-and-click agent selection UI:
               </p>
               <ul>
                 <li><code>/plan-team &lt;task&gt;</code> — product-manager → architect plan.</li>

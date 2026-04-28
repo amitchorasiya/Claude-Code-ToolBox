@@ -61,11 +61,15 @@ For a **full control-by-control** hub reference (every tab, chip, and tile), see
 **Claude Code ToolBox** adds:
 
 1. **MCP & skills** — Webview hub: **Intelligence** (default), **MCP**, **Skills**, **Workspace** (checklist + searchable command tiles).
-2. **Agent Teams & Dashboard** — 🤝 **Teams** tab: agent CRUD, SDLC starter pack, 7 collaboration protocols (debate, plan-then-code with approval gate, orchestrator, parallel fan-out, etc.), live color-coded transcript, opt-in **Agent Dashboard** that shows a card for every running Claude Code session, and 6 native Claude Code slash commands (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`).
+2. **Agent Teams & Dashboard** — 🤝 **Teams** tab: agent CRUD, SDLC starter pack, 8 collaboration protocols (debate, plan-then-code with approval gate, **converge** (parallel → cross-pollinate → synthesize), orchestrator, parallel fan-out, etc.), editable slash commands with agent selection UI, live color-coded transcript, opt-in **Agent Dashboard** that shows a card for every running Claude Code session, and 6 native Claude Code slash commands (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`).
 3. **Workspace kit** — Tree checklist for rules, memory bank, **`CLAUDE.md`**, `mcp.json`, plus **One Click Setup** (top row).
 4. **Session notepad** — Optional scratch file at **`.vscode/claude-code-toolbox-notepad.md`** (open/copy from the hub tiles or Command Palette); context packs can append here.
 
 **Commands:** `CloudeCodeToolBox.*`. **Settings:** `claude-code-toolbox.*` (legacy `CloudeCodeToolBox.*` values migrate on load).
+
+> ### 🤝 New: Agentic Teams — multi-agent planning & debate (1.0.17+)
+>
+> The new **🤝 Agentic Teams** tab turns the hub into a **multi-agent planning &amp; debate** workbench on top of Claude Code's native subagent format. Specialised agents (product-manager, architect, security-reviewer, backend/frontend/qa/reviewer) **debate a design**, produce a **plan you approve**, then **execute** it — with a live color-coded transcript, token + cost tracking, and persisted `plan.md` / `decision.md` per run. Opt-in **Agent Dashboard** shows live cards for every Claude Code session on the machine (yours or externally started). Six **native Claude Code slash commands** (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`) bridge the same agents into any `claude` session. Cross-platform on macOS, Windows, and Linux.
 
 In this repo, the extension reference README keeps **absolute** `raw.githubusercontent.com` URLs for screenshots. **`npm run package`** temporarily replaces this file with the transformed monorepo README (same raw URLs + `?v=`) for the `.vsix`, then restores this file.
 
@@ -111,7 +115,7 @@ Open **MCP & skills** from the **Side Bar** after selecting **Claude Code ToolBo
 | **MCP** | **Browse** registry / **Installed** workspace + user `mcp.json`. |
 | **Skills** | **Browse** skills.sh / **Installed** local skills. |
 | **Workspace** | Checklist + **All toolbox commands** tiles. |
-| **🤝 Teams** | Agent CRUD (`~/.claude/agents/*.md`), team composition JSON, 7 protocols, live transcript, **Agent Dashboard** opt-in card strip for every Claude Code session on the machine, and six **Claude Code slash commands** (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`). |
+| **🤝 Agentic Teams** | **Multi-agent planning &amp; debate.** Agent CRUD (`~/.claude/agents/*.md`), team composition JSON, 8 protocols (incl. **debate + judge**, **plan-then-code with your approval gate**, and **converge** — parallel thinking → cross-pollination → synthesis), editable slash commands with agent selection, live transcript, **Agent Dashboard** opt-in card strip for every Claude Code session, and six **Claude Code slash commands** (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`). |
 
 **Auto-scan:** When `claude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen` is on, a debounced run after folder open refreshes awareness and updates the replaceable MCP/skills section in **`CLAUDE.md`** (and saves the full report under `.claude/`).
 
@@ -133,9 +137,9 @@ Open **MCP & skills** from the **Side Bar** after selecting **Claude Code ToolBo
 - **One hub** for MCP + skills: workspace/user **`mcp.json`**, registry and skills.sh browse, stash/hide semantics for servers and skills.
 - **Intelligence:** Awareness report, **context pack**, **readiness**, **Claude Code / MCP config scan**, notepad → memory-bank, bundled MCP recipes, verification checklist.
 - **Bridges:** Port Cursor MCP, init **claude-code-memory-bank**, **cursor-rules-to-claude**, migrate **`.cursor/skills`** → **`.agents/skills`**, optional **GitHub Copilot** instructions/skills → Claude-oriented files (One Click **migration tracks**).
-- **Agent Teams:** 9-agent SDLC starter pack, preset teams (`sdlc-debate`, `sdlc-plan-then-code`), 7 collaboration protocols including **debate + judge** (writes `decision.md`) and **plan-then-code** (writes `plan.md`, blocks on your approval, then runs the code phase). All JSONL-transcripted.
+- **Agent Teams:** 9-agent SDLC starter pack, preset teams (`sdlc-debate`, `sdlc-plan-then-code`), 8 collaboration protocols including **debate + judge** (writes `decision.md`), **plan-then-code** (writes `plan.md`, blocks on your approval, then runs the code phase), and **converge** (parallel independent thinking → cross-pollination rounds → judge synthesis → approval → code execution). All JSONL-transcripted.
 - **Agent Dashboard (opt-in):** HTTP hook listener on `127.0.0.1:3456` + `~/.claude/projects/*.jsonl` tail → live kanban cards for every Claude Code session (yours or externally started), with pulsing status, current tool, context-window fill, tokens + cost projection, safety-alert banners. Disable removes only Toolbox entries from `~/.claude/settings.json` — no telemetry.
-- **Native slash commands:** `/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team` installed under `~/.claude/commands/*.md` to dispatch Toolbox agents from inside any `claude` session via the native Task tool. Cross-platform (Windows + macOS + Linux).
+- **Native slash commands:** `/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team` installed under `~/.claude/commands/*.md` to dispatch Toolbox agents from inside any `claude` session via the native Task tool. Editable in the UI with selectable agents. Cross-platform (Windows + macOS + Linux).
 - **Bundled CLIs** for One Click and "without npx" commands; primary hub actions avoid a network `npx` fetch when using bundled paths.
 - **Honest skills story:** Local **`SKILL.md`** trees are listed for humans and tools; Claude Code does not auto-load arbitrary folders—use instructions, attachments, or MCP as appropriate.
 

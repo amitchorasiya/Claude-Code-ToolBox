@@ -1043,7 +1043,7 @@ export function getHubWebviewHtml(csp: string): string {
       <button type="button" class="page-btn" data-page="mcp" aria-label="MCP" title="Registry search and MCP servers (workspace + user)">🔌 MCP</button>
       <button type="button" class="page-btn" data-page="skills" aria-label="Skills" title="skills.sh catalog and local SKILL.md folders">📚 Skills</button>
       <button type="button" class="page-btn" data-page="workspace" aria-label="Workspace" title="Workspace checklist and all toolbox commands">📋 Workspace</button>
-      <button type="button" class="page-btn" data-page="agentteams" aria-label="Agent Teams" title="Agent definitions + teams: native subagents, debate, plan-then-code">🤝 Teams</button>
+      <button type="button" class="page-btn" data-page="agentteams" aria-label="Agentic Teams" title="Multi-agent planning &amp; debate: agents, teams, live transcript, debate + plan-then-code, dashboard, slash commands">🤝 Agentic Teams</button>
     </nav>
     <nav class="subpages" id="subpages" aria-label="Browse or installed">
       <button type="button" class="sub-btn active" data-sub="browse">Browse</button>
@@ -1679,6 +1679,14 @@ export function getHubWebviewHtml(csp: string): string {
       if (page === "agentteams") render();
       return;
     }
+    if (e.data.type === "agentTeams.commandBody") {
+      if (atEdit.mode === "command-edit" && atEdit.commandFilePath === e.data.filePath) {
+        atEdit.commandBody = e.data.body || "";
+        atEdit.commandAgents = e.data.agents || [];
+        if (page === "agentteams") render();
+      }
+      return;
+    }
   });
 
   function filterText(items, getStr) {
@@ -2106,9 +2114,12 @@ export function getHubWebviewHtml(csp: string): string {
   /* ======================== Agent Teams page ======================== */
 
   var atEdit = {
-    mode: "none",     /* "none" | "agent-new" | "agent-edit" | "team-new" | "team-edit" */
+    mode: "none",     /* "none" | "agent-new" | "agent-edit" | "team-new" | "team-edit" | "command-new" | "command-edit" */
     agentId: null,
-    teamId: null
+    teamId: null,
+    commandFilePath: null,
+    commandBody: null,
+    commandAgents: null
   };
   /** runId -> { events: [], agents: Map, totals: {inTok, outTok, usd}, status, phase, ... } */
   var atRuns = {};
@@ -2425,7 +2436,8 @@ export function getHubWebviewHtml(csp: string): string {
     { id: "plan-then-code", label: "Plan → Code (with approval)", runtime: "custom" },
     { id: "debate", label: "Debate + judge", runtime: "custom" },
     { id: "orchestrator", label: "Orchestrator-led", runtime: "custom" },
-    { id: "parallel-fan-out", label: "Parallel fan-out", runtime: "custom" }
+    { id: "parallel-fan-out", label: "Parallel fan-out", runtime: "custom" },
+    { id: "converge", label: "Converge (parallel + cross-pollinate + synthesize)", runtime: "custom" }
   ];
   var AT_MODELS = [
     { id: "", label: "(inherit caller default)" },
@@ -2482,6 +2494,10 @@ export function getHubWebviewHtml(csp: string): string {
     }
     if (atEdit.mode === "team-new" || atEdit.mode === "team-edit") {
       renderTeamForm(root, s);
+      return;
+    }
+    if (atEdit.mode === "command-new" || atEdit.mode === "command-edit") {
+      renderCommandForm(root, s);
       return;
     }
 
@@ -2569,17 +2585,27 @@ export function getHubWebviewHtml(csp: string): string {
     var section = el("div", "at-section");
     section.appendChild(el("span", null, "Slash commands (" + all.length + ")"));
     var rightBtns = el("div");
-    var bInstall = el("button", "btn", "Install");
+    var bNew = el("button", "btn primary", "+ New command");
+    bNew.addEventListener("click", function () {
+      atEdit.mode = "command-new";
+      atEdit.commandFilePath = null;
+      atEdit.commandBody = null;
+      atEdit.commandAgents = null;
+      render();
+    });
+    var bInstall = el("button", "btn", "Install starter pack");
+    bInstall.style.marginLeft = "6px";
     bInstall.title = "Install /plan-team, /debate-team, /review-team etc. into ~/.claude/commands/";
     bInstall.addEventListener("click", function () {
       vscode.postMessage({ type: "agentTeams.installCommandsPack", scope: "user" });
     });
-    var bUninstall = el("button", "btn", "Uninstall");
+    var bUninstall = el("button", "btn", "Uninstall starter pack");
     bUninstall.style.marginLeft = "6px";
     bUninstall.title = "Remove only Toolbox-owned slash-command files (foreign files stay).";
     bUninstall.addEventListener("click", function () {
       vscode.postMessage({ type: "agentTeams.uninstallCommandsPack", scope: "user" });
     });
+    rightBtns.appendChild(bNew);
     rightBtns.appendChild(bInstall);
     rightBtns.appendChild(bUninstall);
     section.appendChild(rightBtns);
@@ -2590,7 +2616,7 @@ export function getHubWebviewHtml(csp: string): string {
         el(
           "div",
           "empty",
-          "No custom slash commands yet. Install to enable /plan-team, /debate-team, /review-team inside any Claude Code session."
+          "No custom slash commands yet. Create one or install the starter pack."
         )
       );
       return;
@@ -2612,11 +2638,25 @@ export function getHubWebviewHtml(csp: string): string {
         card.appendChild(el("div", "at-meta", "usage: /" + c.id + " " + c.argumentHint));
       }
       var row = el("div", "row");
+      var bEdit = el("button", "btn primary", "Edit");
+      bEdit.addEventListener("click", function () {
+        atEdit.mode = "command-edit";
+        atEdit.commandFilePath = c.filePath;
+        atEdit.commandBody = null;
+        atEdit.commandAgents = null;
+        vscode.postMessage({ type: "agentTeams.readCommandBody", filePath: c.filePath });
+      });
       var bOpen = el("button", "btn", "Open file");
       bOpen.addEventListener("click", function () {
         vscode.postMessage({ type: "agentTeams.openAgentFile", fsPath: c.filePath });
       });
+      var bDel = el("button", "btn", "Delete");
+      bDel.addEventListener("click", function () {
+        vscode.postMessage({ type: "agentTeams.deleteCommand", filePath: c.filePath });
+      });
+      row.appendChild(bEdit);
       row.appendChild(bOpen);
+      row.appendChild(bDel);
       card.appendChild(row);
       root.appendChild(card);
     });
@@ -3188,6 +3228,193 @@ export function getHubWebviewHtml(csp: string): string {
     bCancel.addEventListener("click", function () {
       atEdit.mode = "none";
       atEdit.teamId = null;
+      render();
+    });
+    actions.appendChild(bSave);
+    actions.appendChild(bCancel);
+    form.appendChild(actions);
+
+    root.appendChild(form);
+  }
+
+  function findCommandByFilePath(s, fp) {
+    var list = (s && s.slashCommands) || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].filePath === fp) return list[i];
+    }
+    return null;
+  }
+
+  function buildCommandBodyPreview(agentNames, allAgents) {
+    if (!agentNames.length) return "";
+    var NL = String.fromCharCode(10);
+    var BT = String.fromCharCode(96);
+    var lines = [];
+    lines.push("Run this command using the **Task** tool to dispatch each subagent in order:");
+    lines.push("");
+    for (var i = 0; i < agentNames.length; i++) {
+      var aName = agentNames[i];
+      var agent = null;
+      for (var j = 0; j < allAgents.length; j++) {
+        if (allAgents[j].name === aName) { agent = allAgents[j]; break; }
+      }
+      var agentDesc = agent && agent.description ? " -- " + agent.description : "";
+      lines.push((i + 1) + ". " + BT + aName + BT + agentDesc);
+    }
+    lines.push("");
+    lines.push("After all agents have replied, synthesize their outputs into a coherent response.");
+    lines.push("");
+    lines.push("User's request:");
+    lines.push("$ARGUMENTS");
+    return lines.join(NL);
+  }
+
+  function renderCommandForm(root, s) {
+    var editing = atEdit.mode === "command-edit" ? findCommandByFilePath(s, atEdit.commandFilePath) : null;
+    var agents = (s && s.agents) || [];
+    var userEditedBody = false;
+
+    if (editing && atEdit.commandBody === null) {
+      var loading = el("div", "at-form");
+      loading.appendChild(el("h3", null, "Loading command..."));
+      loading.appendChild(el("p", null, "Reading command body from disk."));
+      root.appendChild(loading);
+      return;
+    }
+
+    var form = el("div", "at-form");
+    form.appendChild(el("h3", null, editing ? "Edit command: /" + editing.id : "New slash command"));
+
+    form.appendChild(el("label", null, "Name (becomes the /command-name)"));
+    var name = document.createElement("input");
+    name.type = "text";
+    name.value = editing ? editing.id : "";
+    name.placeholder = "e.g. my-review";
+    if (editing) name.disabled = true;
+    form.appendChild(name);
+
+    form.appendChild(el("label", null, "Description"));
+    var desc = document.createElement("input");
+    desc.type = "text";
+    desc.value = editing ? (editing.description || "") : "";
+    desc.placeholder = "Short description shown by Claude Code";
+    form.appendChild(desc);
+
+    form.appendChild(el("label", null, "Argument hint"));
+    var hint = document.createElement("input");
+    hint.type = "text";
+    hint.value = editing ? (editing.argumentHint || "") : "";
+    hint.placeholder = "<what should the command do?>";
+    form.appendChild(hint);
+
+    var row1 = el("div", "at-form-row");
+    var rScope = document.createElement("div");
+    rScope.appendChild(el("label", null, "Scope"));
+    var scope = document.createElement("select");
+    [
+      { id: "user", label: "User (~/.claude/commands)" },
+      { id: "workspace", label: "Workspace (./.claude/commands)" }
+    ].forEach(function (sc) {
+      var opt = document.createElement("option");
+      opt.value = sc.id;
+      opt.textContent = sc.label;
+      if (editing ? editing.scope === sc.id : sc.id === "user") opt.selected = true;
+      scope.appendChild(opt);
+    });
+    if (editing) scope.disabled = true;
+    rScope.appendChild(scope);
+    row1.appendChild(rScope);
+    form.appendChild(row1);
+
+    var editAgents = editing && atEdit.commandAgents ? atEdit.commandAgents : [];
+
+    form.appendChild(el("label", null, "Agents to dispatch (select and order)"));
+    form.appendChild(el("div", "at-meta", "Check agents to include. Instructions below auto-update when you change selection."));
+    var agentsWrap = el("div", "at-checkbox-list");
+    if (!agents.length) {
+      agentsWrap.appendChild(el("div", "at-meta", "No agents available. Create agents first."));
+    }
+    agents.forEach(function (a) {
+      var lbl = document.createElement("label");
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.value = a.name;
+      cb.setAttribute("data-agent", a.name);
+      if (editAgents.indexOf(a.name) !== -1) cb.checked = true;
+      lbl.appendChild(cb);
+      var swatch = document.createElement("span");
+      swatch.className = "at-color-swatch";
+      swatch.style.background = a.color || "var(--muted)";
+      lbl.appendChild(swatch);
+      var sp = document.createElement("span");
+      sp.textContent = a.name + " (" + a.role + ")";
+      lbl.appendChild(sp);
+      agentsWrap.appendChild(lbl);
+    });
+    form.appendChild(agentsWrap);
+
+    form.appendChild(el("label", null, "Instructions (command body)"));
+    form.appendChild(el("div", "at-meta", "Auto-generated from agents. Edit freely; once edited, agent changes won't overwrite your text. Use $ARGUMENTS for user input."));
+    var instructions = document.createElement("textarea");
+    instructions.rows = 12;
+    if (editing && atEdit.commandBody) {
+      instructions.value = atEdit.commandBody;
+      userEditedBody = true;
+    } else {
+      instructions.value = buildCommandBodyPreview(editAgents, agents);
+    }
+    instructions.addEventListener("input", function () { userEditedBody = true; });
+    form.appendChild(instructions);
+
+    function refreshBody() {
+      if (userEditedBody) return;
+      var sel = [];
+      agentsWrap.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
+        if (cb.checked) sel.push(cb.getAttribute("data-agent"));
+      });
+      instructions.value = buildCommandBodyPreview(sel, agents);
+    }
+    agentsWrap.addEventListener("change", refreshBody);
+
+    var actions = el("div", "at-form-actions");
+    var bSave = el("button", "btn primary", editing ? "Save changes" : "Create command");
+    bSave.addEventListener("click", function () {
+      var selectedAgents = [];
+      agentsWrap.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
+        if (cb.checked) selectedAgents.push(cb.getAttribute("data-agent"));
+      });
+      var draft = {
+        name: name.value.trim(),
+        description: desc.value.trim(),
+        argumentHint: hint.value.trim(),
+        agents: selectedAgents,
+        instructions: instructions.value,
+        scope: scope.value
+      };
+      if (!draft.name) {
+        alert("Command name is required.");
+        return;
+      }
+      if (!draft.agents.length && !draft.instructions.trim()) {
+        alert("Select at least one agent or provide custom instructions.");
+        return;
+      }
+      if (editing) {
+        vscode.postMessage({ type: "agentTeams.updateCommand", filePath: editing.filePath, draft: draft });
+      } else {
+        vscode.postMessage({ type: "agentTeams.createCommand", draft: draft });
+      }
+      atEdit.mode = "none";
+      atEdit.commandFilePath = null;
+      atEdit.commandBody = null;
+      atEdit.commandAgents = null;
+    });
+    var bCancel = el("button", "btn", "Cancel");
+    bCancel.addEventListener("click", function () {
+      atEdit.mode = "none";
+      atEdit.commandFilePath = null;
+      atEdit.commandBody = null;
+      atEdit.commandAgents = null;
       render();
     });
     actions.appendChild(bSave);

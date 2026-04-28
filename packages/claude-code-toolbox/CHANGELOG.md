@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.21
+
+- **New protocol: Converge (parallel → cross-pollinate → synthesize).** 8th collaboration protocol — all agents think independently in parallel (diverge), then see each other's work and refine across N cross-pollination rounds, a judge synthesizes a cohesive plan, you approve or edit, code-phase agents execute, and an optional judge reviews the result. Combines the best of parallel-fan-out (speed) and debate (peer refinement). `maxTurns` controls cross-pollination rounds (1–5).
+- **Editable slash commands with agent selection UI.** Create, edit, and delete Claude Code slash commands from the Agentic Teams tab. Point-and-click agent checkbox list with color swatches; instructions auto-generated from selected agents with their descriptions. New `commandsMutations.ts` CRUD module.
+- **Fix: run_end totals.** The final `run_end` event now carries the protocol's accumulated `inputTokens`, `outputTokens`, and `costUsd` instead of hardcoded zeros.
+- Release: **1.0.21** (VS Code).
+
+## 1.0.18
+
+- **Rename hub tab:** `🤝 Teams` → `🤝 Agentic Teams` to foreground the multi-agent planning &amp; debate story.
+- **Docs polish:** root README, extension README, and `docs/index.html` now lead with a clear "multi-agent planning &amp; debate" callout. IntelliJ README updated; CHANGELOG tracks the rename.
+- Release: **1.0.18** (VS Code) / **0.6.19** (IntelliJ plugin).
+
 ## 1.0.17
 
 - **Claude Code slash commands.** New `commandsPack` ships six custom slash commands that bridge Claude Code's native chat to Toolbox subagents via the Task tool: `/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`. Files land under `~/.claude/commands/*.md` with a marker comment so `Uninstall` removes only ours (foreign files stay). Auto-installed alongside the starter pack and on Enable Agent Teams / Enable Agent Dashboard; also available via `Agent Teams: Install slash commands`, `Uninstall`, and `List` commands.

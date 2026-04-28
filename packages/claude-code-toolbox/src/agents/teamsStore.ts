@@ -16,7 +16,8 @@ export type TeamProtocol =
   | "plan-then-code"
   | "debate"
   | "orchestrator"
-  | "parallel-fan-out";
+  | "parallel-fan-out"
+  | "converge";
 
 export type TeamRuntime = "native" | "custom";
 
@@ -53,6 +54,7 @@ const PROTOCOLS: readonly TeamProtocol[] = [
   "debate",
   "orchestrator",
   "parallel-fan-out",
+  "converge",
 ];
 
 /** Which runtime a protocol needs. */

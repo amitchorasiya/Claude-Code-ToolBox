@@ -23,6 +23,7 @@ import { orchestrator } from "./protocols/orchestrator";
 import { makeParallelFanout } from "./protocols/parallelFanout";
 import { debate } from "./protocols/debate";
 import { planThenCode } from "./protocols/planThenCode";
+import { makeConverge } from "./protocols/converge";
 
 export type StartRunOptions = {
   team: TeamEntry;
@@ -65,6 +66,8 @@ function pickProtocol(team: TeamEntry, opts: { maxConcurrent: number }): Protoco
       return debate;
     case "plan-then-code":
       return planThenCode;
+    case "converge":
+      return makeConverge({ maxConcurrent: opts.maxConcurrent });
     default:
       return nativeTask;
   }
@@ -174,6 +177,7 @@ export function startTeamRun(opts: StartRunOptions): StartRunResult {
   const finished = (async (): Promise<{ status: RunStatus; planArtifactPath?: string }> => {
     let status: RunStatus = "running";
     let planArtifactPath: string | undefined;
+    let runTotals = { inputTokens: 0, outputTokens: 0, costUsd: 0 };
     try {
       const result = await protocol({
         team: opts.team,
@@ -191,6 +195,9 @@ export function startTeamRun(opts: StartRunOptions): StartRunResult {
       });
       status = result.status;
       planArtifactPath = result.planArtifactPath;
+      if (result.totals) {
+        runTotals = result.totals;
+      }
     } catch (e) {
       status = "error";
       bus.emit({
@@ -205,7 +212,7 @@ export function startTeamRun(opts: StartRunOptions): StartRunResult {
       t: nowIso(),
       runId,
       status,
-      totals: { inputTokens: 0, outputTokens: 0, costUsd: 0 },
+      totals: runTotals,
     });
     updateRun(runId, { status });
     await bus.flush();
