@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.24
+
+- **Swarm dispatch.** Every team is now a slash command. Creating or editing a team auto-generates a `/command` that dispatches all agents **in parallel** via the Task tool (swarm pattern). No separate "Create /command" button or sync checkbox — team cards show a `/slug` pill and "Swarm agents dispatched in parallel" badge.
+- **7 preset teams.** The starter pack now installs 7 teams (`debate-team`, `plan-team`, `review-team`, `security-team`, `sdlc-plan-then-code`, `refactor-team`, `spec-team`) with swarm commands, replacing the old 6 standalone command `.md` files.
+- **Starter pack merges.** Install starter pack now merges with existing agents and teams instead of skipping when files already exist. Teams and swarm commands are always synced.
+- **Simplified team UI.** Removed the "Auto-create /command" checkbox and "Edit /cmd" button from team forms — teams and commands are a single concept.
+- Release: **1.0.24** (VS Code).
+
+## 1.0.23
+
+- **Unified Teams + Slash Commands.** Teams and slash commands are now a single concept in the Agentic Teams tab. Each team card shows a linked `/command-name` pill; creating or editing a team can auto-create a matching slash command. Standalone (foreign/unlinked) commands are collapsed into their own section. The team form includes an "Auto-create /command" checkbox (on by default for new teams).
+- **Full IntelliJ Agentic Teams port.** The JetBrains plugin now has full Kotlin implementations of agent/team/command CRUD, all 8 collaboration protocols (native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate, plan-then-code, converge), `ProcessBuilder`-based `ClaudeSpawn`, `RunBus`, `RunRegistry`, `RunOrchestrator`, and all hub message handlers. Teams can be created, edited, run, and managed entirely from IntelliJ.
+- **Team-command sync backend.** New `agentTeams.syncTeamCommand` message handler on both VS Code and IntelliJ backends — creates or updates a slash command matching a team name with auto-generated Task-dispatch body.
+- Release: **1.0.23** (VS Code) / **0.6.20** (IntelliJ plugin).
+
 ## 1.0.21
 
 - **New protocol: Converge (parallel → cross-pollinate → synthesize).** 8th collaboration protocol — all agents think independently in parallel (diverge), then see each other's work and refine across N cross-pollination rounds, a judge synthesizes a cohesive plan, you approve or edit, code-phase agents execute, and an optional judge reviews the result. Combines the best of parallel-fan-out (speed) and debate (peer refinement). `maxTurns` controls cross-pollination rounds (1–5).

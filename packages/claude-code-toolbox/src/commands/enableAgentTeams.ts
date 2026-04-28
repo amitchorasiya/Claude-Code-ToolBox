@@ -22,12 +22,6 @@ import {
   writePresetTeamsIfEligible,
   type StarterPackInstallResult,
 } from "../agents/starterPack";
-import {
-  SDLC_COMMANDS,
-  commandsPackDefaultSelection,
-  installCommandsPack,
-  type InstallCommandsPackResult,
-} from "../agents/commandsPack";
 import { TOOLBOX_SETTINGS_PREFIX, safeUpdateToolboxSetting } from "../toolboxSettings";
 
 export type EnableAgentTeamsOptions = {
@@ -46,10 +40,10 @@ export type EnableAgentTeamsResult = {
   cliPath?: string;
   cliReason?: string;
   starterPack?: StarterPackInstallResult;
-  /** Paths of preset team JSONs written (e.g. sdlc-debate.json). */
+  /** Paths of preset team JSONs written (e.g. debate-team.json). */
   teamsWritten: string[];
-  /** Slash-command files written (e.g. plan-team, debate-team). */
-  commandsInstalled: InstallCommandsPackResult | undefined;
+  /** Swarm slash commands synced for written teams. */
+  commandsSynced: string[];
 };
 
 function workspaceRootFsPath(): string | undefined {
@@ -105,43 +99,11 @@ export async function enableAgentTeams(
     workspaceRoot,
   });
 
-  /* Also install the slash-command bridge so `/plan-team` etc. work inside
-   * any `claude` session. Only install commands whose required agents are on
-   * disk — pointing `/debate-team` at a missing architect would be confusing. */
-  let commandsInstalled: InstallCommandsPackResult | undefined;
-  try {
-    const installedAgentsSet = new Set<string>();
-    const agentsDirForCheck = agentsDirForScope(scope, homeDir, workspaceRoot);
-    if (agentsDirForCheck) {
-      try {
-        const entries = await (await import("node:fs/promises")).readdir(agentsDirForCheck);
-        for (const e of entries) {
-          if (/\.md$/i.test(e)) installedAgentsSet.add(e.replace(/\.md$/i, ""));
-        }
-      } catch {
-        /* fall through — no agents installed yet */
-      }
-    }
-    const eligible = SDLC_COMMANDS.filter(
-      (c) =>
-        commandsPackDefaultSelection().includes(c.id) &&
-        c.requires.every((a) => installedAgentsSet.has(a))
-    ).map((c) => c.id);
-    if (eligible.length) {
-      commandsInstalled = await installCommandsPack({
-        selected: eligible,
-        scope,
-        homeDir,
-        workspaceRoot,
-      });
-    }
-  } catch {
-    /* slash-command install is best-effort */
-  }
+  const commandsSynced = starterPack?.commandsSynced ?? [];
 
   const teamsBit = teamsWritten.length ? ` · ${teamsWritten.length} team(s)` : "";
-  const cmdsBit = commandsInstalled?.written.length
-    ? ` · ${commandsInstalled.written.length} slash command(s)`
+  const cmdsBit = commandsSynced.length
+    ? ` · ${commandsSynced.length} swarm command(s)`
     : "";
   if (createdDir) {
     vscode.window.showInformationMessage(
@@ -179,7 +141,7 @@ export async function enableAgentTeams(
     cliReason: cliStatus.reason,
     starterPack,
     teamsWritten,
-    commandsInstalled,
+    commandsSynced,
   };
 }
 

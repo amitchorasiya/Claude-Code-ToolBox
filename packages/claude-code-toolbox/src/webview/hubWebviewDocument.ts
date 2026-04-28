@@ -712,6 +712,7 @@ export function getHubWebviewHtml(csp: string): string {
     }
     .at-pill.runtime-native { background: color-mix(in srgb, var(--vscode-charts-green, #22c55e) 22%, transparent); color: var(--vscode-charts-green, #22c55e); }
     .at-pill.runtime-custom { background: color-mix(in srgb, var(--vscode-charts-orange, #f97316) 22%, transparent); color: var(--vscode-charts-orange, #f97316); }
+    .at-pill.at-cmd-pill { background: color-mix(in srgb, var(--vscode-charts-blue, #3b82f6) 22%, transparent); color: var(--vscode-charts-blue, #3b82f6); font-family: monospace; }
 
     /* Form (agent + team) */
     .at-form {
@@ -2361,7 +2362,7 @@ export function getHubWebviewHtml(csp: string): string {
         break;
       }
     }
-    var planMatch = seed.match(/<plan>([\\s\\S]*?)<\\/plan>/i);
+    var planMatch = seed.match(new RegExp("<plan>([\\\\s\\\\S]*?)</plan>", "i"));
     ta.value = atApprovalModal.editedPlan != null
       ? atApprovalModal.editedPlan
       : (planMatch ? planMatch[1].trim() : seed.trim());
@@ -2476,6 +2477,8 @@ export function getHubWebviewHtml(csp: string): string {
     var summary = el("div", "at-summary-row");
     summary.appendChild(atSummaryItem("Agents", String((s.agents || []).length)));
     summary.appendChild(atSummaryItem("Teams", String((s.teams || []).length)));
+    var foreignCmds = ((s.slashCommands || []).filter(function (c) { return !c.linkedTeam; }));
+    if (foreignCmds.length) summary.appendChild(atSummaryItem("Commands", String(foreignCmds.length)));
     summary.appendChild(atSummaryItem("CLI", st.cliOk ? "ok" : "missing"));
     summary.appendChild(atSummaryItem("~/.claude/agents", st.agentsDirExists ? "exists" : "missing"));
     root.appendChild(summary);
@@ -2547,119 +2550,97 @@ export function getHubWebviewHtml(csp: string): string {
       });
     }
 
-    /* TEAMS */
+    /* TEAMS & SLASH COMMANDS (unified section) */
+    var teams = s.teams || [];
+    var cmds = s.slashCommands || [];
+    var totalCount = teams.length + cmds.length;
     var teamsSection = el("div", "at-section");
-    teamsSection.appendChild(el("span", null, "Teams (" + (s.teams || []).length + ")"));
+    teamsSection.appendChild(el("span", null, "Teams & Commands (" + totalCount + ")"));
+    var teamsRight = el("div");
     var bNewT = el("button", "btn primary", "+ New team");
     bNewT.addEventListener("click", function () {
       atEdit.mode = "team-new";
       atEdit.teamId = null;
       render();
     });
-    teamsSection.appendChild(bNewT);
-    root.appendChild(teamsSection);
-
-    var teams = s.teams || [];
-    if (!teams.length) {
-      root.appendChild(el("div", "empty", "No teams yet. Compose agents into a team to run them together."));
-    } else {
-      teams.forEach(function (t) {
-        root.appendChild(teamCard(t));
-      });
-    }
-
-    /* Slash commands installed for Claude Code (bridge to our agents). */
-    renderSlashCommandsSection(root, s);
-
-    root.appendChild(
-      el(
-        "p",
-        "at-empty-tip",
-        "Phase 1: agent + team CRUD. Phase 2 (coming) adds live transcript and multi-agent runs. Phase 3 adds plan-then-code and debate. See the docs for how native vs custom runtimes differ."
-      )
-    );
-  }
-
-  function renderSlashCommandsSection(root, s) {
-    var all = s.slashCommands || [];
-    var section = el("div", "at-section");
-    section.appendChild(el("span", null, "Slash commands (" + all.length + ")"));
-    var rightBtns = el("div");
-    var bNew = el("button", "btn primary", "+ New command");
-    bNew.addEventListener("click", function () {
+    teamsRight.appendChild(bNewT);
+    var bNewCmd = el("button", "btn primary", "+ New command");
+    bNewCmd.style.marginLeft = "6px";
+    bNewCmd.addEventListener("click", function () {
       atEdit.mode = "command-new";
       atEdit.commandFilePath = null;
       atEdit.commandBody = null;
       atEdit.commandAgents = null;
       render();
     });
-    var bInstall = el("button", "btn", "Install starter pack");
-    bInstall.style.marginLeft = "6px";
-    bInstall.title = "Install /plan-team, /debate-team, /review-team etc. into ~/.claude/commands/";
-    bInstall.addEventListener("click", function () {
-      vscode.postMessage({ type: "agentTeams.installCommandsPack", scope: "user" });
+    teamsRight.appendChild(bNewCmd);
+    var bTeamPack = el("button", "btn", "Install starter pack");
+    bTeamPack.style.marginLeft = "6px";
+    bTeamPack.title = "Install SDLC teams (debate, plan, review, security, etc.) with swarm slash commands";
+    bTeamPack.addEventListener("click", function () {
+      atInstallStarterPackPrompt(s.starterPack || []);
     });
-    var bUninstall = el("button", "btn", "Uninstall starter pack");
-    bUninstall.style.marginLeft = "6px";
-    bUninstall.title = "Remove only Toolbox-owned slash-command files (foreign files stay).";
-    bUninstall.addEventListener("click", function () {
-      vscode.postMessage({ type: "agentTeams.uninstallCommandsPack", scope: "user" });
-    });
-    rightBtns.appendChild(bNew);
-    rightBtns.appendChild(bInstall);
-    rightBtns.appendChild(bUninstall);
-    section.appendChild(rightBtns);
-    root.appendChild(section);
+    teamsRight.appendChild(bTeamPack);
+    teamsSection.appendChild(teamsRight);
+    root.appendChild(teamsSection);
 
-    if (!all.length) {
-      root.appendChild(
-        el(
-          "div",
-          "empty",
-          "No custom slash commands yet. Create one or install the starter pack."
-        )
-      );
-      return;
+    var linkedCmdPaths = {};
+    if (!teams.length && !cmds.length) {
+      root.appendChild(el("div", "empty", "No teams or commands yet. Create a team or slash command, or install the starter pack."));
     }
-    all.forEach(function (c) {
-      var card = el("div", "at-card");
-      card.style.borderLeftColor = c.ownedByToolbox
-        ? "var(--vscode-charts-orange, #f97316)"
-        : "var(--vscode-charts-blue, #3b82f6)";
-      var top = el("div", "card-top");
-      top.appendChild(el("h3", null, "/" + c.id));
-      top.appendChild(el("span", "badge", c.ownedByToolbox ? "Toolbox" : "Foreign"));
-      card.appendChild(top);
-      card.appendChild(el("div", "at-meta", c.scope + "  ·  " + c.filePath));
-      if (c.description) {
-        card.appendChild(el("div", "at-desc", c.description));
-      }
-      if (c.argumentHint) {
-        card.appendChild(el("div", "at-meta", "usage: /" + c.id + " " + c.argumentHint));
-      }
-      var row = el("div", "row");
-      var bEdit = el("button", "btn primary", "Edit");
-      bEdit.addEventListener("click", function () {
-        atEdit.mode = "command-edit";
-        atEdit.commandFilePath = c.filePath;
-        atEdit.commandBody = null;
-        atEdit.commandAgents = null;
-        vscode.postMessage({ type: "agentTeams.readCommandBody", filePath: c.filePath });
-      });
-      var bOpen = el("button", "btn", "Open file");
-      bOpen.addEventListener("click", function () {
-        vscode.postMessage({ type: "agentTeams.openAgentFile", fsPath: c.filePath });
-      });
-      var bDel = el("button", "btn", "Delete");
-      bDel.addEventListener("click", function () {
-        vscode.postMessage({ type: "agentTeams.deleteCommand", filePath: c.filePath });
-      });
-      row.appendChild(bEdit);
-      row.appendChild(bOpen);
-      row.appendChild(bDel);
-      card.appendChild(row);
-      root.appendChild(card);
+    teams.forEach(function (t) {
+      var linkedCmd = findLinkedCommand(cmds, t.name);
+      if (linkedCmd) linkedCmdPaths[linkedCmd.filePath] = true;
+      root.appendChild(teamCard(t, linkedCmd));
     });
+    var standaloneCmds = cmds.filter(function (c) { return !linkedCmdPaths[c.filePath]; });
+    standaloneCmds.forEach(function (c) {
+      root.appendChild(standaloneCmdCard(c));
+    });
+  }
+
+  function standaloneCmdCard(c) {
+    var card = el("div", "at-card");
+    card.style.borderLeftColor = c.ownedByToolbox
+      ? "var(--vscode-charts-orange, #f97316)"
+      : "var(--vscode-charts-blue, #3b82f6)";
+    var top = el("div", "card-top");
+    var left = el("div");
+    left.appendChild(el("h3", null, "/" + c.id));
+    var typePill = el("span", "at-pill", "command");
+    left.appendChild(typePill);
+    top.appendChild(left);
+    top.appendChild(el("span", "badge", c.ownedByToolbox ? "Toolbox" : c.scope === "workspace" ? "Workspace" : "User"));
+    card.appendChild(top);
+    if (c.description) {
+      card.appendChild(el("div", "at-desc", c.description));
+    }
+    if (c.argumentHint) {
+      card.appendChild(el("div", "at-meta", "usage: /" + c.id + " " + c.argumentHint));
+    }
+    card.appendChild(el("div", "at-meta", c.scope + "  ·  " + c.filePath));
+    var row = el("div", "row");
+    var bEdit = el("button", "btn primary", "Edit");
+    bEdit.addEventListener("click", function () {
+      atEdit.mode = "command-edit";
+      atEdit.commandFilePath = c.filePath;
+      atEdit.commandBody = null;
+      atEdit.commandAgents = null;
+      vscode.postMessage({ type: "agentTeams.readCommandBody", filePath: c.filePath });
+    });
+    var bOpen = el("button", "btn", "Open file");
+    bOpen.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.openAgentFile", fsPath: c.filePath });
+    });
+    var bDel = el("button", "btn", "Delete");
+    bDel.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.deleteCommand", filePath: c.filePath });
+    });
+    row.appendChild(bEdit);
+    row.appendChild(bOpen);
+    row.appendChild(bDel);
+    card.appendChild(row);
+    return card;
   }
 
   function atSummaryItem(k, v) {
@@ -2761,16 +2742,14 @@ export function getHubWebviewHtml(csp: string): string {
   }
 
   function atInstallStarterPackPrompt(pack) {
-    /* Quick install with default selection (pre-checked items). */
     var ids = [];
     (pack || []).forEach(function (p) {
-      if (p.defaultSelected && !p.installed) {
+      if (p.defaultSelected) {
         ids.push(p.id);
       }
     });
     if (!ids.length) {
-      vscode.postMessage({ type: "refresh" });
-      return;
+      ids = (pack || []).map(function (p) { return p.id; });
     }
     vscode.postMessage({
       type: "agentTeams.installStarterPack",
@@ -2825,7 +2804,25 @@ export function getHubWebviewHtml(csp: string): string {
     return card;
   }
 
-  function teamCard(t) {
+  function findLinkedCommand(cmds, teamName) {
+    if (!cmds || !teamName) return null;
+    var slug = teamName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    for (var i = 0; i < cmds.length; i++) {
+      if (cmds[i].id === slug || cmds[i].id === teamName) return cmds[i];
+    }
+    return null;
+  }
+
+  function findTeamForCommand(teams, cmd) {
+    if (!teams || !cmd) return null;
+    for (var i = 0; i < teams.length; i++) {
+      var slug = teams[i].name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      if (cmd.id === slug || cmd.id === teams[i].name) return teams[i];
+    }
+    return null;
+  }
+
+  function teamCard(t, linkedCmd) {
     var card = el("div", "at-card");
     card.style.borderLeftColor = "var(--vscode-charts-orange, #f97316)";
     var top = el("div", "card-top");
@@ -2836,6 +2833,10 @@ export function getHubWebviewHtml(csp: string): string {
     left.appendChild(document.createTextNode(" "));
     left.appendChild(runtimePill);
     left.appendChild(protoPill);
+    var cmdSlug = linkedCmd ? linkedCmd.id : t.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    var cmdPill = el("span", "at-pill at-cmd-pill", "/" + cmdSlug);
+    cmdPill.title = "Slash command — type /" + cmdSlug + " in Claude Code";
+    left.appendChild(cmdPill);
     top.appendChild(left);
     top.appendChild(el("span", "badge", t.scope === "workspace" ? "Workspace" : "User"));
     card.appendChild(top);
@@ -2843,7 +2844,8 @@ export function getHubWebviewHtml(csp: string): string {
       card.appendChild(el("div", "at-desc", t.description));
     }
     var lines = [];
-    if (t.protocol === "plan-then-code") {
+    lines.push("Swarm agents dispatched in parallel via /" + cmdSlug);
+    if (t.protocol === "plan-then-code" || t.protocol === "converge") {
       lines.push("Plan: " + ((t.agents || []).join(", ") || "(none)"));
       lines.push("Code: " + ((t.codePhaseAgents || []).join(", ") || "(none)"));
     } else {
@@ -2866,12 +2868,12 @@ export function getHubWebviewHtml(csp: string): string {
       atRunPromptFor = t.id;
       render();
     });
+    row.appendChild(bEdit);
+    row.appendChild(bRun);
     var bDel = el("button", "btn", "Delete");
     bDel.addEventListener("click", function () {
       vscode.postMessage({ type: "agentTeams.deleteTeam", id: t.id });
     });
-    row.appendChild(bEdit);
-    row.appendChild(bRun);
     row.appendChild(bDel);
     card.appendChild(row);
     return card;
@@ -3181,6 +3183,8 @@ export function getHubWebviewHtml(csp: string): string {
     row2.appendChild(rJudge);
     row2.appendChild(rOrch);
     form.appendChild(row2);
+
+    form.appendChild(el("div", "at-meta", "A matching /" + (editing ? editing.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : "team-name") + " slash command will be auto-created for this team."));
 
     var actions = el("div", "at-form-actions");
     var bSave = el("button", "btn primary", editing ? "Save changes" : "Create team");

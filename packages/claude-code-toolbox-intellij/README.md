@@ -1,20 +1,20 @@
-# Claude Code ToolBox — IntelliJ / JetBrains (preview)
+# Claude Code ToolBox — IntelliJ / JetBrains
 
-**Version:** `0.6.19` (see `version` in [`build.gradle.kts`](build.gradle.kts)).
+**Version:** `0.6.20` (see `version` in [`build.gradle.kts`](build.gradle.kts)).
 
 **Also use VS Code?** The primary shipping surface is the **[VS Code extension](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode)** (`amitchorasiya.claude-code-toolbox-vscode`).
 
 **Install this plugin (JetBrains):** [Search JetBrains Marketplace](https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox) · [`jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox) (opens your IDE) · or build a `.zip` from this package (below).
 
-Gradle-based [IntelliJ Platform](https://plugins.jetbrains.com/docs/intellij/welcome.html) plugin. **Preview:** JCEF **hub** (MCP, skills, Intelligence, workspace flows) with ongoing parity vs **[VS Code](../claude-code-toolbox/)**; see plugin description and [ROADMAP.md](ROADMAP.md).
+Gradle-based [IntelliJ Platform](https://plugins.jetbrains.com/docs/intellij/welcome.html) plugin. JCEF **hub** (MCP, skills, Intelligence, workspace flows) + **Agentic Teams** (all 8 collaboration protocols, agent/team/command CRUD, live transcript, approval gate) — near-full parity with **[VS Code](../claude-code-toolbox/)**; see plugin description and [ROADMAP.md](ROADMAP.md).
 
 **Screenshots** (same hub UI as VS Code; captures from VS Code — see [monorepo `screenshots/`](https://github.com/amitchorasiya/Claude-Code-ToolBox/tree/main/screenshots)):
 
-![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=0.6.12)
+![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=0.6.20)
 
-![Intelligence tab: Cursor to VS Code + Claude Code bridges](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=0.6.12)
+![Intelligence tab: Cursor to VS Code + Claude Code bridges](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=0.6.20)
 
-**Feature parity** with VS Code is a **large, multi-phase** effort (JCEF hub, Kotlin bridge, MCP/skills/CLI integrations). See **[ROADMAP.md](ROADMAP.md)** for the technical plan—not something that can be toggled on in one release.
+The remaining VS Code-only feature is the **Agent Dashboard** (hook server + transcript watcher). See **[ROADMAP.md](ROADMAP.md)** for details.
 
 ## Requirements
 
@@ -52,20 +52,24 @@ The plugin ZIP is under `build/distributions/`.
 
 Then **View → Tool Windows → Claude Code ToolBox** (or find it on the right tool window bar).
 
-## Agent Teams & Dashboard (VS Code-only today — IntelliJ port scoped in ROADMAP)
+## Agentic Teams — full Kotlin port (0.6.20)
 
-The 🤝 **Teams** tab (agent CRUD, 8 collaboration protocols including **debate + judge**, **plan-then-code**, and **converge** (parallel → cross-pollinate → synthesize), editable slash commands with agent selection UI, live transcript, Agent Dashboard, Claude Code slash commands) ships in the **VS Code extension 1.0.19+**.
+The 🤝 **Agentic Teams** tab ships with full feature parity to the VS Code extension:
 
-**What's already shared** even without a Kotlin port: everything lives on disk. Agents (`~/.claude/agents/*.md`), teams (`~/.claude/teams/*.json`), run transcripts (`<ws>/.claude/runs/<id>/transcript.jsonl`), and slash-command bridges (`~/.claude/commands/*.md`) are all plain files. If you create or edit them in VS Code, they immediately work from any `claude` session — including one launched from a JetBrains terminal. The slash commands in particular (`/plan-team`, `/debate-team`, `/review-team`, `/security-team`, `/refactor-team`, `/spec-team`) work regardless of which IDE you're in, because Claude Code resolves them from `~/.claude/commands/`.
+- **Agent/Team/Command CRUD** — create, edit, delete agents (`~/.claude/agents/*.md`), teams (`~/.claude/teams/*.json`), and slash commands (`~/.claude/commands/*.md`) directly from the hub.
+- **All 8 collaboration protocols** — native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge, plan-then-code (with approval gate), converge (parallel → cross-pollinate → synthesize).
+- **`ProcessBuilder`-based runtime** — `ClaudeSpawn` spawns `claude` CLI processes, `RunBus` streams events to the JCEF transcript, `RunRegistry` tracks active runs, `RunOrchestrator` coordinates multi-agent workflows with `CompletableFuture` and thread pools.
+- **Unified teams + slash commands** — each team card shows a `/command-name` pill; creating a team can auto-sync a matching slash command.
+- **SDLC starter pack** — 9 agents + 6 preset commands, installable with one click.
+- **Live transcript** — color-coded, per-turn tokens + cost, approve/reject plan modal, Stop button.
+- **Approval gate** — `CountDownLatch`-based blocking in the protocol thread, resolved by the UI thread via `RunOrchestrator.resolvePendingApproval()`.
 
-**What still needs a Kotlin port** (scoped in [ROADMAP.md](ROADMAP.md)):
-- JCEF panel for the Agentic Teams tab UI.
-- `ProcessBuilder`-based runtime (`ClaudeSpawn`, `RunBus`, `SessionStore`) — mechanical port of `src/agents/runtime/*` and `src/agents/dashboard/*` from the VS Code extension.
-- Hook server rebound via Kotlin HTTP stack (same IPv4-pinned loopback design, Windows-safe).
+**What's still VS Code-only:**
+- Agent Dashboard (hook server + transcript watcher — loopback HTTP listener, `~/.claude/settings.json` hook registration). Scoped in [ROADMAP.md](ROADMAP.md).
 
-## Not feature parity (yet)
+## Remaining VS Code-only features
 
-Roadmap items (shared product goals with VS Code) belong in the main repo; implementation here will grow independently. See the root [README.md](../../README.md).
+Agent Dashboard (hook server + transcript watcher) is the main remaining gap. Other roadmap items belong in the main repo. See the root [README.md](../../README.md).
 
 **CI:** [`.github/workflows/intellij-ci.yml`](../../.github/workflows/intellij-ci.yml) runs **`./gradlew buildPlugin`** on pushes that touch this package (Ubuntu, JDK 21).
 

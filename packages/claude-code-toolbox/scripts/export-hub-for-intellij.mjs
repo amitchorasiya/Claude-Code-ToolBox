@@ -84,7 +84,7 @@ const out = join(
   __dirname,
   "..",
   "..",
-  "cloude-code-toolbox-intellij",
+  "claude-code-toolbox-intellij",
   "src",
   "main",
   "resources",

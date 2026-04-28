@@ -25,7 +25,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&family=Press+Start+2P&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/site.css?v=34" />
+    <link rel="stylesheet" href="css/site.css?v=35" />
   </head>
   <body>
     <header class="site-header">
@@ -70,10 +70,10 @@
         <div class="wrap hero-grid">
           <div>
             <h1>One place for Claude Code-related setup.</h1>
-            <p class="lead">
+            <p class=”lead”>
               Stop losing time to scattered rules, MCP config, and “skills” folders. Give your team a single, honest view
-              inside <strong>VS Code</strong> today. An early <strong>JetBrains</strong> plugin (preview) lives in the same
-              <a href="https://github.com/amitchorasiya/Cloude-Code-ToolBox">repository</a>—not feature parity yet.
+              inside <strong>VS Code</strong> and <strong>JetBrains</strong> (IntelliJ, PyCharm, …). Both IDEs ship Agentic Teams — 8 collaboration protocols, agent/team/command CRUD, live transcript, and approval gates — from the same
+              <a href=”https://github.com/amitchorasiya/Cloude-Code-ToolBox”>repository</a>.
             </p>
             <div class="plain">
               <strong>After you install:</strong> In VS Code, use the <strong>Activity Bar</strong> (icons on the
@@ -85,7 +85,7 @@
               <strong>JetBrains (IntelliJ IDEA, PyCharm, …):</strong> install <strong>Claude Code ToolBox</strong> from the
               <a href="https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox">JetBrains Marketplace</a>,
               <a href="jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox">open in your IDE</a>, or read the
-              <a href="https://github.com/amitchorasiya/Cloude-Code-ToolBox/blob/main/packages/claude-code-toolbox-intellij/README.md">IntelliJ plugin readme</a> (preview; hub parity is ongoing).
+              <a href="https://github.com/amitchorasiya/Cloude-Code-ToolBox/blob/main/packages/claude-code-toolbox-intellij/README.md">IntelliJ plugin readme</a> (MCP hub + Agentic Teams with all 8 protocols).
             </div>
             <div class="plain">
               <strong>In plain terms:</strong> Claude Code in VS Code only works as well as the setup around it—but that setup is
@@ -100,7 +100,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Where to open Claude Code ToolBox — Activity Bar → Claude Code ToolBox, then Side Bar → MCP &amp; skills"
-                src="screenshots/00-toolbox-access.png?v=34"
+                src="screenshots/00-toolbox-access.png?v=35"
                 alt="VS Code: Activity Bar Claude Code ToolBox icon and Side Bar MCP &amp; skills. Click to view fullscreen."
                 width="3010"
                 height="1644"
@@ -112,7 +112,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Intelligence tab — Cursor → VS Code &amp; Claude Code bridges (inside the hub)"
-                src="screenshots/01-intelligence.png?v=34"
+                src="screenshots/01-intelligence.png?v=35"
                 alt="Claude Code ToolBox hub: Intelligence tab with Cursor to VS Code and Claude Code bridges. Click to view fullscreen."
                 width="2312"
                 height="1600"
@@ -144,8 +144,8 @@
               <p>Context packs and readiness flows with explicit choices so teams agree on what Claude Code is allowed to see.</p>
             </article>
             <article class="pillar">
-              <h3>Agentic Teams — multi-agent planning &amp; debate</h3>
-              <p>SDLC agents that <strong>debate a design</strong> and produce a <strong>plan you approve</strong> before code runs — eight collaboration protocols (including <strong>converge</strong>: parallel thinking → cross-pollination → synthesis), editable slash commands with agent selection, color-coded live transcript, plus an opt-in dashboard that shows every running Claude Code session on the machine.</p>
+              <h3>Agentic Teams — swarm dispatch + multi-agent debate</h3>
+              <p>SDLC agents that <strong>debate a design</strong> and produce a <strong>plan you approve</strong> before code runs — eight collaboration protocols (including <strong>converge</strong>: parallel thinking → cross-pollination → synthesis). Every team <strong>is</strong> a slash command — creating a team auto-generates a <code>/command</code> that dispatches all agents <strong>in parallel</strong> (swarm pattern). 7 preset teams ship with the starter pack. Full parity on both <strong>VS Code</strong> and <strong>IntelliJ</strong>.</p>
             </article>
           </div>
         </div>
@@ -213,20 +213,21 @@
               </p>
             </article>
             <article class="mode-card">
-              <h3>Editable Claude Code slash commands</h3>
+              <h3>Swarm dispatch — teams are slash commands</h3>
               <p>
-                <strong>What it does:</strong> Six preset commands installed under <code>~/.claude/commands/*.md</code> so you can type them inside any <code>claude</code> session and dispatch the Toolbox agents via the native Task tool. You can also <strong>create, edit, and delete</strong> commands from the Agentic Teams tab with a point-and-click agent selection UI:
+                <strong>What it does:</strong> Every team <strong>is</strong> a slash command. Creating or editing a team auto-generates a <code>/command</code> that dispatches all agents <strong>in parallel</strong> via the Task tool (swarm pattern), then synthesizes results. 7 preset teams ship with the starter pack:
               </p>
               <ul>
-                <li><code>/plan-team &lt;task&gt;</code> — product-manager → architect plan.</li>
-                <li><code>/debate-team &lt;topic&gt;</code> — PM → architect vs security-reviewer → rebuttal → verdict in <code>&lt;decision&gt;</code> tags.</li>
-                <li><code>/review-team</code> — runs <code>git diff</code> then code-reviewer + security-reviewer.</li>
+                <li><code>/debate-team &lt;topic&gt;</code> — product-manager, architect, security-reviewer in parallel → synthesis.</li>
+                <li><code>/plan-team &lt;task&gt;</code> — product-manager + architect parallel planning → unified plan.</li>
+                <li><code>/review-team</code> — code-reviewer + security-reviewer parallel review → merged findings.</li>
                 <li><code>/security-team &lt;change&gt;</code> — OWASP threat model.</li>
-                <li><code>/refactor-team &lt;target&gt;</code> — backend + frontend + QA + reviewer.</li>
-                <li><code>/spec-team &lt;idea&gt;</code> — PRD + technical addendum.</li>
+                <li><code>/sdlc-plan-then-code &lt;task&gt;</code> — full SDLC swarm.</li>
+                <li><code>/refactor-team &lt;target&gt;</code> — backend + frontend + QA + reviewer parallel refactor.</li>
+                <li><code>/spec-team &lt;idea&gt;</code> — PRD + technical addendum in parallel.</li>
               </ul>
               <p>
-                <strong>Why it matters:</strong> Bridges the Toolbox agents into Claude Code's own chat without any VS Code UI — works from JetBrains, a terminal, or any other IDE with a <code>claude</code> shell. Cross-platform: Windows, macOS, Linux.
+                <strong>Why it matters:</strong> One concept, one place. Create a team in the UI and it's immediately available as a swarm <code>/command</code> in any <code>claude</code> session — from VS Code, JetBrains, a terminal, or any other IDE. No separate command editing needed. Cross-platform: Windows, macOS, Linux.
               </p>
             </article>
           </div>
@@ -247,7 +248,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Open the hub — Activity Bar: Claude Code ToolBox → Side Bar: MCP &amp; skills"
-                src="screenshots/00-toolbox-access.png?v=34"
+                src="screenshots/00-toolbox-access.png?v=35"
                 alt="How to open Claude Code ToolBox after install: Activity Bar and MCP &amp; skills. Click to view fullscreen."
                 width="3010"
                 height="1644"
@@ -260,7 +261,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Port Cursor — MCP, rules, memory bank to VS Code &amp; Claude Code"
-                src="screenshots/02-intelligence-cursor-port.png?v=34"
+                src="screenshots/02-intelligence-cursor-port.png?v=35"
                 alt="Intelligence: Port Cursor MCP, rules, and memory bank to VS Code and Claude Code. Click to view fullscreen."
                 width="2438"
                 height="1604"
@@ -273,7 +274,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Cursor → VS Code &amp; Claude Code bridges"
-                src="screenshots/01-intelligence.png?v=34"
+                src="screenshots/01-intelligence.png?v=35"
                 alt="Intelligence: Cursor to VS Code and Claude Code bridges. Click to view fullscreen."
                 width="2312"
                 height="1600"
@@ -286,7 +287,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="MCP — installed servers"
-                src="screenshots/03-mcp-browse-workspace-servers.png?v=34"
+                src="screenshots/03-mcp-browse-workspace-servers.png?v=35"
                 alt="MCP installed servers. Click to view fullscreen."
                 width="2314"
                 height="1636"
@@ -299,7 +300,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="MCP — registry browse"
-                src="screenshots/04-mcp-registry-search.png?v=34"
+                src="screenshots/04-mcp-registry-search.png?v=35"
                 alt="MCP registry browse. Click to view fullscreen."
                 width="2328"
                 height="1636"
@@ -312,7 +313,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Skills — skills.sh catalog"
-                src="screenshots/05-skills-catalog-skills-sh.png?v=34"
+                src="screenshots/05-skills-catalog-skills-sh.png?v=35"
                 alt="Skills catalog. Click to view fullscreen."
                 width="2308"
                 height="1636"
@@ -325,7 +326,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Skills — installed"
-                src="screenshots/06-skills-installed-local.png?v=34"
+                src="screenshots/06-skills-installed-local.png?v=35"
                 alt="Installed local skills. Click to view fullscreen."
                 width="2308"
                 height="1590"
@@ -338,7 +339,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Workspace checklist"
-                src="screenshots/07-workspace-checklist.png?v=34"
+                src="screenshots/07-workspace-checklist.png?v=35"
                 alt="Workspace checklist. Click to view fullscreen."
                 width="2308"
                 height="1594"
@@ -351,7 +352,7 @@
                 class="zoomable"
                 tabindex="0"
                 data-caption="Intelligence — context hygiene"
-                src="screenshots/08-workspace-toolbox-commands.png?v=34"
+                src="screenshots/08-workspace-toolbox-commands.png?v=35"
                 alt="Context hygiene and quick actions. Click to view fullscreen."
                 width="2308"
                 height="1608"

@@ -459,6 +459,32 @@ export function emptyHubPayload(): HubPayload {
 
 const HUB_PAYLOAD_TIMEOUT_MS = 12_000;
 
+function buildTeamCommandBody(teamName: string, agents: string[], protocol?: string): string {
+  const lines: string[] = [];
+  lines.push(`You are the orchestrator for the **${teamName}** agent team (protocol: ${protocol || "native-task"}).`);
+  lines.push("");
+  lines.push("## Swarm dispatch");
+  lines.push("");
+  lines.push("Use the **Task** tool to dispatch ALL of these agents **in parallel** (send every Task call in a single response so they run concurrently):");
+  lines.push("");
+  for (let i = 0; i < agents.length; i++) {
+    lines.push(`- \`${agents[i]}\``);
+  }
+  lines.push("");
+  lines.push("Each agent receives the full task below. They work independently and simultaneously as a swarm.");
+  lines.push("");
+  lines.push("## After all agents respond");
+  lines.push("");
+  lines.push("1. Review every agent's output");
+  lines.push("2. Resolve conflicts or contradictions");
+  lines.push("3. Synthesize a single, cohesive response that incorporates the strongest contributions from each agent");
+  lines.push("");
+  lines.push("## Task");
+  lines.push("");
+  lines.push("$ARGUMENTS");
+  return lines.join("\n");
+}
+
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout>;
   return new Promise<T>((resolve, reject) => {
@@ -474,6 +500,38 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
       }
     );
   });
+}
+
+async function syncTeamCommand(
+  teamName: string,
+  scope: "user" | "workspace",
+  agentNames: string[],
+  protocol: string | undefined,
+  folder: vscode.WorkspaceFolder | undefined
+): Promise<void> {
+  const slug = teamName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const commands = await listInstalledCommands(
+    os.homedir(),
+    folder?.uri.fsPath
+  );
+  const existing = commands.find((c) => c.id === slug);
+  const body = buildTeamCommandBody(teamName, agentNames, protocol);
+  const draft: CommandDraft = {
+    name: slug,
+    description: `Run the "${teamName}" agent team`,
+    argumentHint: "<task description>",
+    agents: agentNames,
+    instructions: body,
+    scope,
+  };
+  if (existing) {
+    await updateCommand(existing, draft, os.homedir(), folder?.uri.fsPath);
+  } else {
+    await createCommand(draft, os.homedir(), folder?.uri.fsPath);
+  }
 }
 
 /** Activity bar (Cloude Code ToolBox) — first view */
@@ -753,10 +811,13 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
               overwrite,
             });
             const teamsBit = result.teamsWritten.length
-              ? ` · ${result.teamsWritten.length} team(s) created`
+              ? ` · ${result.teamsWritten.length} team(s)`
+              : "";
+            const cmdsBit = result.commandsSynced.length
+              ? ` · ${result.commandsSynced.length} swarm command(s)`
               : "";
             vscode.window.showInformationMessage(
-              `Starter pack: ${result.written.length} agents (${result.skipped.length} existed)${teamsBit} at ${result.targetDir}.`
+              `Starter pack: ${result.written.length} agents (${result.skipped.length} existed)${teamsBit}${cmdsBit} at ${result.targetDir}.`
             );
           } catch (e) {
             const m = e instanceof Error ? e.message : String(e);
@@ -842,7 +903,8 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
             draft.runtime = runtimeForProtocol(draft.protocol);
             const folder = mcpPaths.getPrimaryWorkspaceFolder();
             await createTeam(draft, os.homedir(), folder?.uri.fsPath);
-            vscode.window.showInformationMessage(`Team "${draft.name}" created.`);
+            await syncTeamCommand(draft.name, draft.scope ?? "user", draft.agents ?? [], draft.protocol, folder);
+            vscode.window.showInformationMessage(`Team "${draft.name}" created with /${draft.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")} command.`);
           } catch (e) {
             const m = e instanceof Error ? e.message : String(e);
             vscode.window.showErrorMessage(`Create team failed: ${m}`);
@@ -865,6 +927,7 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
               throw new Error(`Team not found: ${id}`);
             }
             await updateTeam(existing, draft, os.homedir(), folder?.uri.fsPath);
+            await syncTeamCommand(draft.name, draft.scope ?? "user", draft.agents ?? [], draft.protocol, folder);
             vscode.window.showInformationMessage(`Team "${draft.name}" updated.`);
           } catch (e) {
             const m = e instanceof Error ? e.message : String(e);
@@ -960,6 +1023,27 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
           } catch (e) {
             const m = e instanceof Error ? e.message : String(e);
             vscode.window.showErrorMessage(`Uninstall slash commands failed: ${m}`);
+          }
+          this._postState();
+          break;
+        }
+        case "agentTeams.syncTeamCommand": {
+          try {
+            const teamName = typeof msg.teamName === "string" ? msg.teamName : "";
+            const scope: "user" | "workspace" =
+              msg.scope === "workspace" ? "workspace" : "user";
+            const agentNames = Array.isArray(msg.agents)
+              ? (msg.agents as unknown[]).filter(
+                  (x): x is string => typeof x === "string"
+                )
+              : [];
+            const protocol = typeof msg.protocol === "string" ? msg.protocol : undefined;
+            if (!teamName) throw new Error("Missing teamName.");
+            const folder = mcpPaths.getPrimaryWorkspaceFolder();
+            await syncTeamCommand(teamName, scope, agentNames, protocol, folder);
+          } catch (e) {
+            const m = e instanceof Error ? e.message : String(e);
+            vscode.window.showErrorMessage(`Sync team command failed: ${m}`);
           }
           this._postState();
           break;

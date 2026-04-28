@@ -60,5 +60,9 @@ object VsCodeHubCommandIds {
         "CloudeCodeToolBox.openOneClickSetupSettings",
         "CloudeCodeToolBox.openClaudeCodePanel",
         "CloudeCodeToolBox.openKitTarget",
+        "CloudeCodeToolBox.agentTeams.installStarterPack",
+        "CloudeCodeToolBox.agentTeams.installCommandsPack",
+        "CloudeCodeToolBox.agentTeams.uninstallCommandsPack",
+        "CloudeCodeToolBox.agentTeams.revealAgentsFolder",
     )
 }

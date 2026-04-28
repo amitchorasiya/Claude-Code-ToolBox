@@ -1,5 +1,8 @@
 package com.amitchorasiya.claude.toolbox.intellij.hub
 
+import com.amitchorasiya.claude.toolbox.intellij.agents.*
+import com.amitchorasiya.claude.toolbox.intellij.agents.runtime.RunRegistry
+import com.amitchorasiya.claude.toolbox.intellij.agents.runtime.resolveClaudeBin
 import com.amitchorasiya.claude.toolbox.intellij.mcp.McpJson
 import com.amitchorasiya.claude.toolbox.intellij.mcp.McpPaths
 import com.amitchorasiya.claude.toolbox.intellij.mcp.McpStash
@@ -52,6 +55,59 @@ object HubStateService {
 
         o.addProperty("autoScanMcpSkillsOnWorkspaceOpen", settings.getAutoScanMcpSkills())
         o.addProperty("thinkingMachineModeEnabled", settings.getThinkingMachine())
+
+        // Agent Teams state
+        val agents = collectLocalAgents(home, base)
+        val teams = collectLocalTeams(home, base)
+        val commands = listInstalledCommands(home, base)
+        o.add("agents", agentsToJsonArray(agents))
+        o.add("teams", teamsToJsonArray(teams))
+        o.add("slashCommands", commandsToJsonArray(commands))
+        o.addProperty("agentTeamsEnabled", true)
+        o.addProperty("agentTeamsDefaultProtocol", "native-task")
+        o.addProperty("agentTeamsDefaultModel", "claude-sonnet-4-5")
+
+        val userAgentsDir = home.resolve(".claude/agents")
+        val enableStatus = JsonObject()
+        enableStatus.addProperty("agentsDirExists", userAgentsDir.toFile().isDirectory)
+        enableStatus.addProperty("agentsDirPath", userAgentsDir.toString())
+        enableStatus.addProperty("agentsCount", agents.size)
+        val cliBin = resolveClaudeBin(null)
+        enableStatus.addProperty("cliOk", cliBin != null)
+        if (cliBin != null) enableStatus.addProperty("cliPath", cliBin)
+        o.add("agentTeamsEnableStatus", enableStatus)
+
+        val installedNames = agents.map { it.name }.toSet()
+        val starterPack = JsonArray()
+        for (sa in SDLC_STARTER_AGENTS) {
+            val sp = JsonObject()
+            sp.addProperty("id", sa.name)
+            sp.addProperty("title", sa.name)
+            sp.addProperty("role", sa.role)
+            sp.addProperty("model", "")
+            sp.addProperty("color", colorForAgentName(sa.name))
+            sp.addProperty("description", sa.description)
+            sp.addProperty("defaultSelected", true)
+            sp.addProperty("installed", sa.name in installedNames)
+            starterPack.add(sp)
+        }
+        o.add("starterPack", starterPack)
+
+        val activeRuns = JsonArray()
+        for (r in RunRegistry.listActive()) {
+            val ro = JsonObject()
+            ro.addProperty("runId", r.runId)
+            ro.addProperty("teamId", r.teamId)
+            ro.addProperty("teamName", r.teamName)
+            ro.addProperty("protocol", r.protocol)
+            ro.addProperty("runtime", r.runtime)
+            ro.addProperty("phase", r.phase)
+            ro.addProperty("status", r.status)
+            ro.addProperty("startedAt", r.startedAt)
+            if (r.pendingApproval != null) ro.addProperty("awaitingApprovalPlanPath", r.pendingApproval!!.planPath)
+            activeRuns.add(ro)
+        }
+        o.add("activeRuns", activeRuns)
 
         val hygiene = JsonObject()
         val wsRows = o.getAsJsonArray("workspaceServers")

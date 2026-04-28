@@ -10,11 +10,13 @@ import * as path from "node:path";
 import { agentsDirForScope, type AgentRole } from "./localAgents";
 import { atomicWriteText } from "./atomicFile";
 import {
-  SDLC_COMMANDS,
-  commandsPackDefaultSelection,
-  installCommandsPack,
-  type InstallCommandsPackResult,
+  listInstalledCommands,
 } from "./commandsPack";
+import {
+  createCommand,
+  updateCommand,
+  type CommandDraft,
+} from "./commandsMutations";
 
 export type StarterPackAgent = {
   /** Stable id used by the UI checkbox. Matches the agent `name` frontmatter. */
@@ -232,8 +234,8 @@ export type StarterPackInstallResult = {
   targetDir: string;
   /** Team JSON paths written during install (empty when no eligible preset teams). */
   teamsWritten: string[];
-  /** Slash-command bridge files written (e.g. /plan-team, /debate-team). */
-  commandsInstalled?: InstallCommandsPackResult;
+  /** Swarm slash commands synced for each written team. */
+  commandsSynced: string[];
 };
 
 /**
@@ -245,17 +247,18 @@ export const SDLC_STARTER_TEAMS: ReadonlyArray<{
   name: string;
   description: string;
   protocol: string;
-  runtime: "custom";
+  runtime: "native" | "custom";
   maxTurns: number;
   agents: string[];
   codePhaseAgents: string[];
   judge?: string;
   requires: string[];
+  defaultSelected: boolean;
 }> = [
   {
-    name: "sdlc-debate",
+    name: "debate-team",
     description:
-      "Debate: product-manager, architect, and security-reviewer argue the plan; architect judges.",
+      "Multi-agent debate: architect vs security-reviewer with product-manager context. Final verdict included.",
     protocol: "debate",
     runtime: "custom",
     maxTurns: 3,
@@ -263,6 +266,43 @@ export const SDLC_STARTER_TEAMS: ReadonlyArray<{
     codePhaseAgents: [],
     judge: "architect",
     requires: ["product-manager", "architect", "security-reviewer"],
+    defaultSelected: true,
+  },
+  {
+    name: "plan-team",
+    description:
+      "Plan-phase team (product-manager + architect) produces a design recommendation.",
+    protocol: "native-task",
+    runtime: "native",
+    maxTurns: 20,
+    agents: ["product-manager", "architect"],
+    codePhaseAgents: [],
+    requires: ["product-manager", "architect"],
+    defaultSelected: true,
+  },
+  {
+    name: "review-team",
+    description:
+      "Review the pending diff with code-reviewer then security-reviewer. Produces a blocking/nit grouped report.",
+    protocol: "native-task",
+    runtime: "native",
+    maxTurns: 20,
+    agents: ["code-reviewer", "security-reviewer"],
+    codePhaseAgents: [],
+    requires: ["code-reviewer", "security-reviewer"],
+    defaultSelected: true,
+  },
+  {
+    name: "security-team",
+    description:
+      "Threat-model the user's change with security-reviewer only. OWASP-oriented.",
+    protocol: "native-task",
+    runtime: "native",
+    maxTurns: 20,
+    agents: ["security-reviewer"],
+    codePhaseAgents: [],
+    requires: ["security-reviewer"],
+    defaultSelected: true,
   },
   {
     name: "sdlc-plan-then-code",
@@ -275,8 +315,92 @@ export const SDLC_STARTER_TEAMS: ReadonlyArray<{
     codePhaseAgents: ["backend-dev", "frontend-dev", "qa-test-engineer", "code-reviewer"],
     judge: "architect",
     requires: ["product-manager", "architect", "backend-dev"],
+    defaultSelected: true,
+  },
+  {
+    name: "refactor-team",
+    description:
+      "Refactor coordinator: backend-dev + frontend-dev + qa-test-engineer with a code-reviewer wrap-up.",
+    protocol: "native-task",
+    runtime: "native",
+    maxTurns: 20,
+    agents: ["backend-dev", "frontend-dev", "qa-test-engineer", "code-reviewer"],
+    codePhaseAgents: [],
+    requires: ["backend-dev", "frontend-dev", "qa-test-engineer", "code-reviewer"],
+    defaultSelected: false,
+  },
+  {
+    name: "spec-team",
+    description:
+      "Turn a rough idea into a spec: product-manager writes PRD, architect adds technical addendum.",
+    protocol: "native-task",
+    runtime: "native",
+    maxTurns: 20,
+    agents: ["product-manager", "architect"],
+    codePhaseAgents: [],
+    requires: ["product-manager", "architect"],
+    defaultSelected: false,
   },
 ];
+
+function buildSwarmCommandBody(teamName: string, agents: string[], protocol: string): string {
+  const lines: string[] = [];
+  lines.push(`You are the orchestrator for the **${teamName}** agent team (protocol: ${protocol}).`);
+  lines.push("");
+  lines.push("## Swarm dispatch");
+  lines.push("");
+  lines.push("Use the **Task** tool to dispatch ALL of these agents **in parallel** (send every Task call in a single response so they run concurrently):");
+  lines.push("");
+  for (const a of agents) {
+    lines.push(`- \`${a}\``);
+  }
+  lines.push("");
+  lines.push("Each agent receives the full task below. They work independently and simultaneously as a swarm.");
+  lines.push("");
+  lines.push("## After all agents respond");
+  lines.push("");
+  lines.push("1. Review every agent's output");
+  lines.push("2. Resolve conflicts or contradictions");
+  lines.push("3. Synthesize a single, cohesive response that incorporates the strongest contributions from each agent");
+  lines.push("");
+  lines.push("## Task");
+  lines.push("");
+  lines.push("$ARGUMENTS");
+  return lines.join("\n");
+}
+
+async function syncSwarmCommandForTeam(
+  teamName: string,
+  agents: string[],
+  protocol: string,
+  description: string,
+  scope: "user" | "workspace",
+  homeDir: string,
+  workspaceRoot?: string,
+): Promise<string | undefined> {
+  try {
+    const slug = teamName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const commands = await listInstalledCommands(homeDir, workspaceRoot);
+    const existing = commands.find((c) => c.id === slug);
+    const body = buildSwarmCommandBody(teamName, agents, protocol);
+    const draft: CommandDraft = {
+      name: slug,
+      description,
+      argumentHint: "<task description>",
+      agents,
+      instructions: body,
+      scope,
+    };
+    if (existing) {
+      await updateCommand(existing, draft, homeDir, workspaceRoot);
+    } else {
+      await createCommand(draft, homeDir, workspaceRoot);
+    }
+    return slug;
+  } catch {
+    return undefined;
+  }
+}
 
 export async function installSdlcStarterPack(
   opts: StarterPackInstallOptions
@@ -314,8 +438,8 @@ export async function installSdlcStarterPack(
     overwrite: opts.overwrite,
   });
 
-  /* Also install slash-command bridges whose required agents now exist. */
-  let commandsInstalled: InstallCommandsPackResult | undefined;
+  /* Sync swarm slash commands for each written team. */
+  const commandsSynced: string[] = [];
   try {
     const installedAgents = new Set<string>();
     for (const agent of SDLC_STARTER_PACK) {
@@ -326,25 +450,24 @@ export async function installSdlcStarterPack(
         /* not installed */
       }
     }
-    const eligible = SDLC_COMMANDS.filter(
-      (c) =>
-        commandsPackDefaultSelection().includes(c.id) &&
-        c.requires.every((a) => installedAgents.has(a))
-    ).map((c) => c.id);
-    if (eligible.length) {
-      commandsInstalled = await installCommandsPack({
-        selected: eligible,
-        scope: opts.scope,
-        homeDir: opts.homeDir,
-        workspaceRoot: opts.workspaceRoot,
-        overwrite: opts.overwrite,
-      });
+    for (const preset of SDLC_STARTER_TEAMS) {
+      if (!preset.requires.every((id) => installedAgents.has(id))) continue;
+      const synced = await syncSwarmCommandForTeam(
+        preset.name,
+        preset.agents,
+        preset.protocol,
+        preset.description,
+        opts.scope,
+        opts.homeDir,
+        opts.workspaceRoot,
+      );
+      if (synced) commandsSynced.push(synced);
     }
   } catch {
-    /* slash-command install is best-effort */
+    /* swarm command sync is best-effort */
   }
 
-  return { written, skipped, targetDir: dir, teamsWritten, commandsInstalled };
+  return { written, skipped, targetDir: dir, teamsWritten, commandsSynced };
 }
 
 export type WritePresetTeamsOptions = {
