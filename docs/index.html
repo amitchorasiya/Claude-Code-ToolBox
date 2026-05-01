@@ -144,8 +144,8 @@
               <p>Context packs and readiness flows with explicit choices so teams agree on what Claude Code is allowed to see.</p>
             </article>
             <article class="pillar">
-              <h3>Agentic Teams — swarm dispatch + multi-agent debate</h3>
-              <p>SDLC agents that <strong>debate a design</strong> and produce a <strong>plan you approve</strong> before code runs — eight collaboration protocols (including <strong>converge</strong>: parallel thinking → cross-pollination → synthesis). Every team <strong>is</strong> a slash command — creating a team auto-generates a <code>/command</code> that dispatches all agents <strong>in parallel</strong> (swarm pattern). 7 preset teams ship with the starter pack. Full parity on both <strong>VS Code</strong> and <strong>IntelliJ</strong>.</p>
+              <h3>Agentic Teams — skills, memory, swarm dispatch + multi-agent debate</h3>
+              <p>SDLC agents that <strong>debate a design</strong> and produce a <strong>plan you approve</strong> before code runs. <strong>Skill-backed agents</strong> point to SKILL.md instead of freeform prompts. <strong>Per-agent long-term memory</strong> lets agents learn and retain knowledge across runs (with a global toggle). Eight collaboration protocols, <strong>swarm dispatch</strong>, 7 preset teams, and <strong>collapsible sections</strong> for quick navigation. Full parity on both <strong>VS Code</strong> and <strong>IntelliJ</strong>.</p>
             </article>
           </div>
         </div>
@@ -191,16 +191,16 @@
         <div class="wrap">
           <h2 id="teams-heading">Agentic Teams — multi-agent planning &amp; debate</h2>
           <p class="sub">
-            The 🤝 <strong>Agentic Teams</strong> tab turns the hub into a <strong>multi-agent planning &amp; debate</strong> workbench on top of Claude Code's native subagent format. Specialised agents <strong>argue a design</strong>, produce a <strong>plan you approve</strong>, then <strong>execute</strong> — with a live transcript and persisted artifacts. Everything is <strong>opt-in</strong>, disclosed upfront, and reversible.
+            The 🤝 <strong>Agentic Teams</strong> tab (now the <strong>second tab</strong> for faster access) turns the hub into a <strong>multi-agent planning &amp; debate</strong> workbench. Agents can be backed by <strong>SKILL.md</strong> files and have <strong>per-agent long-term memory</strong> that persists learnings across runs (with a <strong>global toggle</strong>). Specialised agents <strong>argue a design</strong>, produce a <strong>plan you approve</strong>, then <strong>execute</strong> — with a live transcript and persisted artifacts. All sections are <strong>collapsible</strong>. Everything is <strong>opt-in</strong>, disclosed upfront, and reversible.
           </p>
           <div class="modes-grid">
             <article class="mode-card">
-              <h3>Agent Teams + 8 collaboration protocols</h3>
+              <h3>Agent Teams + skill-backed agents + long-term memory + 8 protocols</h3>
               <p>
-                <strong>What it does:</strong> CRUD for Claude Code subagents (YAML-frontmatter <code>.md</code> under <code>~/.claude/agents/</code>). A 9-agent <strong>SDLC starter pack</strong> (product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa-test-engineer, code-reviewer, devops, tech-writer) and two preset teams (<code>sdlc-debate</code>, <code>sdlc-plan-then-code</code>) land with one click. Eight collaboration protocols drive runs: <strong>native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge</strong> (writes <code>decision.md</code>), <strong>plan-then-code</strong> (produces <code>plan.md</code>, blocks on your approval, then runs the code phase), and <strong>converge</strong> (parallel diverge → cross-pollination rounds → judge synthesis → your approval → code execution). A live color-coded transcript shows pulsing status, tokens, cost, projection, and an approve-plan modal.
+                <strong>What it does:</strong> CRUD for Claude Code subagents (YAML-frontmatter <code>.md</code> under <code>~/.claude/agents/</code>). <strong>Skill-backed agents</strong>: point any agent to a <code>SKILL.md</code> instead of a freeform prompt (radio: Custom prompt vs Use skill with dropdown of all discovered skills). <strong>Per-agent long-term memory</strong>: agents learn from interactions and retain knowledge across runs as <code>&lt;agent&gt;.memory.md</code> alongside the agent file; a <strong>global toggle</strong> bulk-enables memory for all agents. A 9-agent <strong>SDLC starter pack</strong> and 7 preset teams land with one click. Eight collaboration protocols drive runs: <strong>native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge</strong>, <strong>plan-then-code</strong> (with your approval gate), and <strong>converge</strong> (parallel → cross-pollinate → synthesize → approve → execute). A live color-coded transcript shows pulsing status, tokens, cost, projection, and an approve-plan modal.
               </p>
               <p>
-                <strong>Why it matters:</strong> Planning and reviewing are the moments that most benefit from disagreement. Debates and plan-then-code flows make multiple perspectives explicit and auditable, and every run appends a JSONL transcript to <code>&lt;ws&gt;/.claude/runs/&lt;id&gt;/transcript.jsonl</code>.
+                <strong>Why it matters:</strong> Agents that remember what you taught them last time and can use curated skill instructions are far more effective. Planning and reviewing benefit from disagreement — debates and plan-then-code flows make multiple perspectives explicit and auditable, with JSONL transcripts per run.
               </p>
             </article>
             <article class="mode-card">

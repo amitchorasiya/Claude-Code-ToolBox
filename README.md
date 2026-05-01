@@ -1,18 +1,21 @@
 # Claude Code ToolBox
 
-**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.24`** · JetBrains plugin **`0.6.20`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
+**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.28`** · JetBrains plugin **`0.6.20`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 
-> ### 🤝 New: Agentic Teams — swarm dispatch + multi-agent planning & debate
+> ### 🤝 New: Agentic Teams — skill-backed agents, long-term memory, swarm dispatch + multi-agent debate
 >
-> The **🤝 Agentic Teams** tab makes Claude Code **think in a team**. Specialised agents (product-manager, architect, security-reviewer, backend/frontend/qa/code-reviewer) **debate a design**, produce a **plan you review and approve**, then **execute** — with a live color-coded transcript, per-turn tokens + cost, and persisted `plan.md` / `decision.md` per run.
+> The **🤝 Agentic Teams** tab (now the **second tab**) makes Claude Code **think in a team**. Specialised agents **debate a design**, produce a **plan you review and approve**, then **execute** — with a live color-coded transcript, per-turn tokens + cost, and persisted `plan.md` / `decision.md` per run.
 >
+> - **Skill-backed agents** — point any agent to a **SKILL.md** instead of a freeform prompt. Radio choice: **Custom prompt** vs **Use skill** (dropdown of all discovered skills). Runtime resolves skill content with inline prompt as fallback.
+> - **Per-agent long-term memory** — agents learn from interactions and retain knowledge across runs. Memory stored as `<agent>.memory.md` alongside the agent file. **Global toggle** to bulk-enable/disable for all agents.
 > - **Eight collaboration protocols** — native-task, round-robin, handoff, orchestrator, parallel fan-out, **debate + judge**, **plan-then-code (with your approval gate)**, **converge (parallel → cross-pollinate → synthesize)**.
 > - **Swarm dispatch** — every team **is** a slash command. Creating or editing a team auto-generates a `/command` that dispatches all agents **in parallel** via the Task tool (swarm pattern). No separate command editing needed.
 > - **7 preset teams** — `debate-team`, `plan-team`, `review-team`, `security-team`, `sdlc-plan-then-code`, `refactor-team`, `spec-team` — installed with the starter pack, each with its own swarm `/command`.
 > - **Agent Dashboard** (opt-in) — live cards for every Claude Code session on your machine, whether started by the Toolbox or by `claude` in a terminal.
-> - **Full IntelliJ parity** — the JetBrains plugin now ships the complete Agentic Teams runtime (Kotlin port of all 8 protocols, agent/team/command CRUD, live transcript, approval gate).
+> - **Collapsible sections** — all major sections across all tabs collapse/expand for quick navigation.
+> - **Full IntelliJ parity** — the JetBrains plugin ships the complete Agentic Teams runtime (Kotlin port of all 8 protocols, agent/team/command CRUD, live transcript, approval gate).
 > - **Cross-platform** — macOS, Windows, Linux.
 >
 > Skip to the full walkthrough: [Agentic Teams — multi-agent planning &amp; debate](#agentic-teams--multi-agent-planning--debate).
@@ -146,11 +149,11 @@ Open the **MCP & skills** hub from the **Side Bar** after you click **Claude Cod
 
 | Tab | Purpose |
 |-----|---------|
-| **Intelligence** | Bridges (**Cursor → Claude Code**; optional **GitHub Copilot → Claude Code**), **Context hygiene** tiles, **Context & readiness** actions, plus auto-scan controls. Default tab. |
-| **MCP** | **Browse** official registry search or **Installed** workspace + user servers from `mcp.json`. |
-| **Skills** | **Browse** [skills.sh](https://skills.sh) catalog or **Installed** local folders that contain `SKILL.md` under standard roots. |
-| **Workspace** | **Workspace checklist** (One Click Setup, rules, memory bank, **`CLAUDE.md`**, `mcp.json`) and **All toolbox commands** (searchable tiles). |
-| **🤝 Agentic Teams** | **Multi-agent planning &amp; debate** — subagent CRUD, team composition, 8 collaboration protocols incl. **debate (+ judge)**, **plan-then-code (with your approval gate)**, and **converge** (parallel → cross-pollinate → synthesize), **swarm dispatch** (every team auto-generates a `/command` that dispatches all agents in parallel), opt-in **Agent Dashboard** (live cards for every Claude Code session), **SDLC starter pack** (9 agents + 7 preset teams with swarm commands). Full **IntelliJ parity** (Kotlin port of all protocols + CRUD). See the [Agentic Teams — multi-agent planning &amp; debate](#agentic-teams--multi-agent-planning--debate) section below. |
+| **Intelligence** | Bridges (**Cursor → Claude Code**; optional **GitHub Copilot → Claude Code**), **Context hygiene** tiles, **Context & readiness** actions, plus auto-scan controls. Default tab. Sections are **collapsible**. |
+| **🤝 Agentic Teams** (2nd tab) | **Multi-agent planning &amp; debate** — subagent CRUD with **skill-backed agents** (point to SKILL.md) and **per-agent long-term memory** (global toggle), team composition, 8 collaboration protocols incl. **debate (+ judge)**, **plan-then-code (with your approval gate)**, and **converge** (parallel → cross-pollinate → synthesize), **swarm dispatch** (every team auto-generates a `/command` dispatching all agents in parallel), opt-in **Agent Dashboard**, **SDLC starter pack** (9 agents + 7 preset teams). Sections are **collapsible**. See the [Agentic Teams section](#agentic-teams--multi-agent-planning--debate) below. |
+| **MCP** | **Browse** official registry search or **Installed** workspace + user servers from `mcp.json`. Sections are **collapsible**. |
+| **Skills** | **Browse** [skills.sh](https://skills.sh) catalog or **Installed** local folders that contain `SKILL.md` under standard roots. Sections are **collapsible**. |
+| **Workspace** | **Workspace checklist** (One Click Setup, rules, memory bank, **`CLAUDE.md`**, `mcp.json`) and **All toolbox commands** (searchable tiles, already collapsible). |
 
 ### Browse vs Installed (MCP and Skills only)
 
@@ -296,7 +299,7 @@ The **MCP & skills** and **Workspace kit** views expose a **Refresh** action in 
 
 ## Agentic Teams — multi-agent planning & debate
 
-> **New in 1.0.17; swarm dispatch + 7 preset teams in 1.0.24.** The **🤝 Agentic Teams** tab turns the hub into a **multi-agent planning &amp; debate** workbench on top of Claude Code's native subagent format. Instead of one model doing everything, you get specialised agents (product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa, code-reviewer, …) that can **argue a design**, **produce a plan for you to approve**, and then **execute the approved plan** with a live color-coded transcript of every turn. Every team **is** a slash command — creating or editing a team auto-generates a `/command` that dispatches all agents **in parallel** via the Task tool (swarm pattern). Everything is **opt-in** — nothing is written to `~/.claude/settings.json` until you click **Enable**. **Full IntelliJ parity** ships in 0.6.20.
+> **New in 1.0.17; skill-backed agents + long-term memory in 1.0.28.** The **🤝 Agentic Teams** tab (now the **second tab** for faster access) turns the hub into a **multi-agent planning &amp; debate** workbench on top of Claude Code's native subagent format. Agents can be backed by **SKILL.md** files and have **per-agent long-term memory** that persists learnings across runs (with a **global toggle** to bulk-enable). Specialised agents **argue a design**, **produce a plan for you to approve**, and then **execute the approved plan** with a live color-coded transcript. Every team **is** a slash command (swarm dispatch). All sections are **collapsible** for quick navigation. Everything is **opt-in**. **Full IntelliJ parity** ships in 0.6.20.
 
 **TL;DR — three ways to use it**
 
@@ -306,7 +309,7 @@ The **MCP & skills** and **Workspace kit** views expose a **Refresh** action in 
 
 ### Agent Teams — what ships
 
-- **Agent CRUD** using Claude Code's native YAML-frontmatter `.md` format. Agents live in `~/.claude/agents/` (user scope) or `<workspace>/.claude/agents/` and are immediately invokable from any `claude` session via the Task tool.
+- **Agent CRUD** using Claude Code's native YAML-frontmatter `.md` format. Agents live in `~/.claude/agents/` (user scope) or `<workspace>/.claude/agents/` and are immediately invokable from any `claude` session via the Task tool. **Skill-backed agents**: point an agent to a SKILL.md file instead of a freeform prompt (radio: Custom prompt vs Use skill with dropdown). **Per-agent long-term memory**: agents learn from interactions and retain knowledge as `<agent>.memory.md` alongside the agent file. A **global memory toggle** in the summary strip bulk-enables/disables for all agents.
 - **SDLC starter pack** — 9 ready-made agents: `product-manager`, `architect`, `security-reviewer`, `backend-dev`, `frontend-dev`, `qa-test-engineer`, `code-reviewer`, `devops`, `tech-writer`. Each gets a role tag (`plan`, `code`, `review`), model default, and tool whitelist.
 - **7 preset teams** (JSON under `~/.claude/teams/`) — `debate-team`, `plan-team`, `review-team`, `security-team`, `sdlc-plan-then-code`, `refactor-team`, `spec-team` — installed with the starter pack, each auto-generating a swarm `/command`.
 - **8 collaboration protocols** driven by the Toolbox orchestrator:

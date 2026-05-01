@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.28
+
+- **Skill-backed agents.** Agents can now point to a **SKILL.md** instead of a freeform prompt. Radio buttons in the agent form: **Custom prompt** vs **Use skill** (searchable dropdown of all discovered skills from `~/.agents/skills/`, `~/.claude/skills/`, `~/.cursor/skills/`, and workspace equivalents). Runtime resolves skill content at spawn time with the inline prompt as fallback.
+- **Per-agent long-term memory.** Checkbox on each agent to enable persistent memory. Memory is stored as `<agent>.memory.md` alongside the agent file (scoped to user or workspace). At spawn time, existing memory is injected into the system prompt with self-update instructions. Memory file auto-deleted on agent delete, auto-renamed on rename. Scanner excludes `.memory.md` files from agent discovery.
+- **Global long-term memory toggle.** Checkbox in the Agentic Teams summary strip: "Long-term memory for all agents (N/M)" with indeterminate state. Bulk-enables or bulk-disables memory across all agents in one click.
+- **Collapsible sections.** Intelligence (Cursor bridges, Copilot bridges, Context & readiness), Agentic Teams (Agents, Teams & Commands), MCP (Workspace, User), and Skills (Local/Installed) sections are now collapsible `<details>` elements. Click the section heading to collapse or expand.
+- **Tab reorder.** Agentic Teams moved to second tab position (Intelligence > **Agentic Teams** > MCP > Skills > Workspace) for faster access.
+- Release: **1.0.28** (VS Code).
+
 ## 1.0.24
 
 - **Swarm dispatch.** Every team is now a slash command. Creating or editing a team auto-generates a `/command` that dispatches all agents **in parallel** via the Task tool (swarm pattern). No separate "Create /command" button or sync checkbox — team cards show a `/slug` pill and "Swarm agents dispatched in parallel" badge.

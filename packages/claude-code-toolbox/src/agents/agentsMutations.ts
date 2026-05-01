@@ -18,10 +18,16 @@ export type AgentDraft = {
   tools?: string[];
   color?: string;
   systemPrompt: string;
+  skillPath?: string;
   scope: "user" | "workspace";
+  longTermMemory?: boolean;
 };
 
 export class AgentsMutationError extends Error {}
+
+export function memoryPathForAgent(agentFilePath: string): string {
+  return agentFilePath.replace(/\.md$/i, ".memory.md");
+}
 
 function sanitizeFileName(name: string): string {
   const cleaned = name
@@ -68,6 +74,12 @@ export function renderAgentMarkdown(draft: AgentDraft): string {
   }
   lines.push(`tools: ${renderTools(draft.tools)}`);
   lines.push(`color: ${escapeYamlScalar(color)}`);
+  if (draft.skillPath && draft.skillPath.trim()) {
+    lines.push(`skillPath: ${escapeYamlScalar(draft.skillPath.trim())}`);
+  }
+  if (draft.longTermMemory) {
+    lines.push(`longTermMemory: true`);
+  }
   lines.push("---");
   lines.push("");
   lines.push(draft.systemPrompt.trim());
@@ -148,6 +160,11 @@ export async function updateAgent(
     } catch {
       /* already gone */
     }
+    try {
+      await fs.rename(memoryPathForAgent(existing.filePath), memoryPathForAgent(targetPath));
+    } catch {
+      /* no memory file to rename */
+    }
   }
   const found = await collectLocalAgents(homeDir, workspaceRoot);
   const updated = found.find(
@@ -168,5 +185,10 @@ export async function deleteAgent(agent: AgentEntry): Promise<void> {
       return;
     }
     throw new AgentsMutationError(`Could not delete ${agent.filePath}: ${err?.message ?? String(e)}`);
+  }
+  try {
+    await fs.unlink(memoryPathForAgent(agent.filePath));
+  } catch {
+    /* no memory file */
   }
 }

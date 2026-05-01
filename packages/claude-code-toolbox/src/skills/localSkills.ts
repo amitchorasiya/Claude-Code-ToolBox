@@ -93,6 +93,20 @@ function joinSegments(base: string, segments: readonly string[]): string {
 }
 
 /**
+ * Read the full body content of a SKILL.md file, stripping YAML frontmatter.
+ * Returns undefined if the file is missing or unreadable.
+ */
+export async function readSkillContent(skillMdPath: string): Promise<string | undefined> {
+  try {
+    const text = await fs.readFile(skillMdPath, "utf8");
+    const body = text.replace(/^---[\s\S]*?---\s*/, "").trim();
+    return body || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Collect skill entries from all configured user and (optional) workspace roots.
  * Order: workspace roots first (github → claude → agents → cursor), then user roots (same order).
  */

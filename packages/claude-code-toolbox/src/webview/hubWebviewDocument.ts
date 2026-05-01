@@ -210,6 +210,27 @@ export function getHubWebviewHtml(csp: string): string {
       margin: 16px 0 10px;
     }
     .section-title:first-child { margin-top: 4px; }
+    details.section-collapse {
+      margin: 0 0 4px;
+    }
+    details.section-collapse > summary {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 16px 0 10px;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    details.section-collapse > summary:first-child { margin-top: 4px; }
+    details.section-collapse > summary::-webkit-details-marker { display: none; }
+    details.section-collapse > summary::before { content: "▸"; font-size: 9px; opacity: 0.5; }
+    details.section-collapse[open] > summary::before { content: "▾"; }
     .callout {
       border-radius: var(--r-lg);
       border: 1px solid var(--border);
@@ -1041,10 +1062,10 @@ export function getHubWebviewHtml(csp: string): string {
     <p class="hub-tabs-hint" id="hub-tabs-hint">Click a tab to switch sections — each has different tools.</p>
     <nav class="pages" id="pages" aria-label="Hub sections">
       <button type="button" class="page-btn active" data-page="intel" aria-label="Intelligence" title="Bridges, One Click, Thinking Machine, readiness, scans">🧠 Intelligence</button>
+      <button type="button" class="page-btn" data-page="agentteams" aria-label="Agentic Teams" title="Multi-agent planning &amp; debate: agents, teams, live transcript, debate + plan-then-code, dashboard, slash commands">🤝 Agentic Teams</button>
       <button type="button" class="page-btn" data-page="mcp" aria-label="MCP" title="Registry search and MCP servers (workspace + user)">🔌 MCP</button>
       <button type="button" class="page-btn" data-page="skills" aria-label="Skills" title="skills.sh catalog and local SKILL.md folders">📚 Skills</button>
       <button type="button" class="page-btn" data-page="workspace" aria-label="Workspace" title="Workspace checklist and all toolbox commands">📋 Workspace</button>
-      <button type="button" class="page-btn" data-page="agentteams" aria-label="Agentic Teams" title="Multi-agent planning &amp; debate: agents, teams, live transcript, debate + plan-then-code, dashboard, slash commands">🤝 Agentic Teams</button>
     </nav>
     <nav class="subpages" id="subpages" aria-label="Browse or installed">
       <button type="button" class="sub-btn active" data-sub="browse">Browse</button>
@@ -1703,6 +1724,16 @@ export function getHubWebviewHtml(csp: string): string {
     return n;
   }
 
+  function collapsibleSection(title, openByDefault) {
+    var det = document.createElement("details");
+    det.className = "section-collapse";
+    if (openByDefault !== false) det.open = true;
+    var sum = document.createElement("summary");
+    sum.textContent = title;
+    det.appendChild(sum);
+    return det;
+  }
+
   function filterWorkspaceTools() {
     var q = norm(qTrim());
     document.querySelectorAll(".tile").forEach(function (tile) {
@@ -1922,7 +1953,7 @@ export function getHubWebviewHtml(csp: string): string {
 
   function renderIntel() {
     renderContextHygiene();
-    $("#root").appendChild(el("div", "section-title", "Cursor \\u2192 VS Code & Claude Code"));
+    var cursorSec = collapsibleSection("Cursor → VS Code & Claude Code");
 
     var ij = state && state.hubHost === "intellij";
     var bridges = [
@@ -1993,10 +2024,11 @@ export function getHubWebviewHtml(csp: string): string {
         row.appendChild(b3);
       }
       h.appendChild(row);
-      $("#root").appendChild(h);
+      cursorSec.appendChild(h);
     });
+    $("#root").appendChild(cursorSec);
 
-    $("#root").appendChild(el("div", "section-title", "GitHub Copilot \\u2192 Claude Code"));
+    var copilotSec = collapsibleSection("GitHub Copilot → Claude Code");
 
     var copilotBridges = [
       {
@@ -2044,10 +2076,11 @@ export function getHubWebviewHtml(csp: string): string {
         row.appendChild(b3);
       }
       h.appendChild(row);
-      $("#root").appendChild(h);
+      copilotSec.appendChild(h);
     });
+    $("#root").appendChild(copilotSec);
 
-    $("#root").appendChild(el("div", "section-title", "Context & readiness"));
+    var ctxSec = collapsibleSection("Context & readiness");
 
     var heroes = [
       { ic: "\\uD83D\\uDE80", t: "Prime session", p: "Optional MCP & Skills scan, then context pack to clipboard (enable Thinking Machine Mode in settings first).", c: "CloudeCodeToolBox.runThinkingMachinePriming", b: "Prime" },
@@ -2066,10 +2099,10 @@ export function getHubWebviewHtml(csp: string): string {
         vscode.postMessage({ type: "runCommand", command: h0.c });
       });
       h.appendChild(btn);
-      $("#root").appendChild(h);
+      ctxSec.appendChild(h);
     });
-
-    $("#root").appendChild(el("div", "empty", "Tip: run Thinking Machine Mode actions from the Command Palette anytime — they live here for quick access."));
+    ctxSec.appendChild(el("div", "empty", "Tip: run Thinking Machine Mode actions from the Command Palette anytime — they live here for quick access."));
+    $("#root").appendChild(ctxSec);
   }
 
   function renderWorkspace() {
@@ -2483,6 +2516,31 @@ export function getHubWebviewHtml(csp: string): string {
     summary.appendChild(atSummaryItem("~/.claude/agents", st.agentsDirExists ? "exists" : "missing"));
     root.appendChild(summary);
 
+    /* Global long-term memory toggle */
+    var agents = s.agents || [];
+    var memOnCount = agents.filter(function (a) { return !!a.longTermMemory; }).length;
+    var allMemOn = agents.length > 0 && memOnCount === agents.length;
+    var globalMemRow = el("div", "at-form-row");
+    globalMemRow.style.margin = "8px 0";
+    globalMemRow.style.alignItems = "center";
+    var globalMemLabel = document.createElement("label");
+    globalMemLabel.style.display = "inline-flex";
+    globalMemLabel.style.alignItems = "center";
+    globalMemLabel.style.gap = "6px";
+    globalMemLabel.style.cursor = "pointer";
+    globalMemLabel.style.fontSize = "11px";
+    var globalMemCb = document.createElement("input");
+    globalMemCb.type = "checkbox";
+    globalMemCb.checked = allMemOn;
+    globalMemCb.indeterminate = memOnCount > 0 && !allMemOn;
+    globalMemCb.addEventListener("change", function () {
+      vscode.postMessage({ type: "agentTeams.bulkToggleMemory", enable: globalMemCb.checked });
+    });
+    globalMemLabel.appendChild(globalMemCb);
+    globalMemLabel.appendChild(document.createTextNode("Long-term memory for all agents (" + memOnCount + "/" + agents.length + ")"));
+    globalMemRow.appendChild(globalMemLabel);
+    root.appendChild(globalMemRow);
+
     /* Agent Dashboard strip (cards for every running Claude session). */
     renderAgentDashboard(root, s);
 
@@ -2522,15 +2580,16 @@ export function getHubWebviewHtml(csp: string): string {
     });
 
     /* AGENTS */
-    var agentsSection = el("div", "at-section");
-    agentsSection.appendChild(el("span", null, "Agents (" + (s.agents || []).length + ")"));
+    var agentsDet = collapsibleSection("Agents (" + (s.agents || []).length + ")");
     var agentsRight = el("div");
+    agentsRight.style.display = "inline-flex";
+    agentsRight.style.gap = "6px";
+    agentsRight.style.marginBottom = "8px";
     var bPack = el("button", "btn", "Install starter pack");
     bPack.addEventListener("click", function () {
       atInstallStarterPackPrompt(s.starterPack || []);
     });
     var bNewA = el("button", "btn primary", "+ New agent");
-    bNewA.style.marginLeft = "6px";
     bNewA.addEventListener("click", function () {
       atEdit.mode = "agent-new";
       atEdit.agentId = null;
@@ -2538,25 +2597,27 @@ export function getHubWebviewHtml(csp: string): string {
     });
     agentsRight.appendChild(bPack);
     agentsRight.appendChild(bNewA);
-    agentsSection.appendChild(agentsRight);
-    root.appendChild(agentsSection);
+    agentsDet.appendChild(agentsRight);
 
     var agents = s.agents || [];
     if (!agents.length) {
-      root.appendChild(el("div", "empty", "No agents yet. Create one or install the starter pack."));
+      agentsDet.appendChild(el("div", "empty", "No agents yet. Create one or install the starter pack."));
     } else {
       agents.forEach(function (a) {
-        root.appendChild(agentCard(a));
+        agentsDet.appendChild(agentCard(a));
       });
     }
+    root.appendChild(agentsDet);
 
     /* TEAMS & SLASH COMMANDS (unified section) */
     var teams = s.teams || [];
     var cmds = s.slashCommands || [];
     var totalCount = teams.length + cmds.length;
-    var teamsSection = el("div", "at-section");
-    teamsSection.appendChild(el("span", null, "Teams & Commands (" + totalCount + ")"));
+    var teamsDet = collapsibleSection("Teams & Commands (" + totalCount + ")");
     var teamsRight = el("div");
+    teamsRight.style.display = "inline-flex";
+    teamsRight.style.gap = "6px";
+    teamsRight.style.marginBottom = "8px";
     var bNewT = el("button", "btn primary", "+ New team");
     bNewT.addEventListener("click", function () {
       atEdit.mode = "team-new";
@@ -2565,7 +2626,6 @@ export function getHubWebviewHtml(csp: string): string {
     });
     teamsRight.appendChild(bNewT);
     var bNewCmd = el("button", "btn primary", "+ New command");
-    bNewCmd.style.marginLeft = "6px";
     bNewCmd.addEventListener("click", function () {
       atEdit.mode = "command-new";
       atEdit.commandFilePath = null;
@@ -2575,28 +2635,27 @@ export function getHubWebviewHtml(csp: string): string {
     });
     teamsRight.appendChild(bNewCmd);
     var bTeamPack = el("button", "btn", "Install starter pack");
-    bTeamPack.style.marginLeft = "6px";
     bTeamPack.title = "Install SDLC teams (debate, plan, review, security, etc.) with swarm slash commands";
     bTeamPack.addEventListener("click", function () {
       atInstallStarterPackPrompt(s.starterPack || []);
     });
     teamsRight.appendChild(bTeamPack);
-    teamsSection.appendChild(teamsRight);
-    root.appendChild(teamsSection);
+    teamsDet.appendChild(teamsRight);
 
     var linkedCmdPaths = {};
     if (!teams.length && !cmds.length) {
-      root.appendChild(el("div", "empty", "No teams or commands yet. Create a team or slash command, or install the starter pack."));
+      teamsDet.appendChild(el("div", "empty", "No teams or commands yet. Create a team or slash command, or install the starter pack."));
     }
     teams.forEach(function (t) {
       var linkedCmd = findLinkedCommand(cmds, t.name);
       if (linkedCmd) linkedCmdPaths[linkedCmd.filePath] = true;
-      root.appendChild(teamCard(t, linkedCmd));
+      teamsDet.appendChild(teamCard(t, linkedCmd));
     });
     var standaloneCmds = cmds.filter(function (c) { return !linkedCmdPaths[c.filePath]; });
     standaloneCmds.forEach(function (c) {
-      root.appendChild(standaloneCmdCard(c));
+      teamsDet.appendChild(standaloneCmdCard(c));
     });
+    root.appendChild(teamsDet);
   }
 
   function standaloneCmdCard(c) {
@@ -2778,7 +2837,16 @@ export function getHubWebviewHtml(csp: string): string {
     card.appendChild(top);
     var modelStr = a.model ? a.model : "inherit";
     var toolsStr = (a.tools && a.tools.length) ? a.tools.join(", ") : "(none)";
-    card.appendChild(el("div", "at-meta", "Model: " + modelStr + "  •  Tools: " + toolsStr + "  •  " + a.filePath));
+    var metaStr = "Model: " + modelStr + "  •  Tools: " + toolsStr;
+    if (a.skillPath) {
+      var skillName = a.skillPath.split("/").slice(-2, -1)[0] || "skill";
+      metaStr += "  •  Skill: " + skillName;
+    }
+    if (a.longTermMemory) {
+      metaStr += "  •  Memory: on";
+    }
+    metaStr += "  •  " + a.filePath;
+    card.appendChild(el("div", "at-meta", metaStr));
     if (a.description) {
       card.appendChild(el("div", "at-desc", a.description));
     }
@@ -2991,10 +3059,116 @@ export function getHubWebviewHtml(csp: string): string {
     });
     form.appendChild(toolsWrap);
 
-    form.appendChild(el("label", null, "System prompt"));
+    // Long-term memory checkbox
+    var memWrap = el("div", "at-form-row");
+    memWrap.style.alignItems = "center";
+    var memLabel = document.createElement("label");
+    memLabel.style.display = "inline-flex";
+    memLabel.style.alignItems = "center";
+    memLabel.style.gap = "6px";
+    memLabel.style.cursor = "pointer";
+    var memCb = document.createElement("input");
+    memCb.type = "checkbox";
+    memCb.id = "agent-ltm-cb";
+    if (editing && editing.longTermMemory) memCb.checked = true;
+    memLabel.appendChild(memCb);
+    memLabel.appendChild(document.createTextNode("Enable long-term memory"));
+    memWrap.appendChild(memLabel);
+    var memNote = el("div", "at-note");
+    memNote.textContent = "Agent learns from interactions and retains knowledge for future runs. Memory file stored alongside the agent.";
+    memNote.style.fontSize = "0.85em";
+    memNote.style.opacity = "0.7";
+    memNote.style.marginLeft = "22px";
+    memWrap.appendChild(memNote);
+    form.appendChild(memWrap);
+
+    // Prompt source: radio buttons
+    form.appendChild(el("label", null, "Prompt source"));
+    var promptSourceRow = el("div", "at-form-row");
+    var radioCustom = document.createElement("input");
+    radioCustom.type = "radio";
+    radioCustom.name = "promptSource";
+    radioCustom.value = "custom";
+    radioCustom.checked = !(editing && editing.skillPath);
+    var lblCustom = document.createElement("label");
+    lblCustom.style.display = "inline-flex";
+    lblCustom.style.alignItems = "center";
+    lblCustom.style.gap = "4px";
+    lblCustom.style.cursor = "pointer";
+    lblCustom.appendChild(radioCustom);
+    lblCustom.appendChild(document.createTextNode(" Custom prompt"));
+    promptSourceRow.appendChild(lblCustom);
+
+    var radioSkill = document.createElement("input");
+    radioSkill.type = "radio";
+    radioSkill.name = "promptSource";
+    radioSkill.value = "skill";
+    radioSkill.checked = !!(editing && editing.skillPath);
+    var lblSkill = document.createElement("label");
+    lblSkill.style.display = "inline-flex";
+    lblSkill.style.alignItems = "center";
+    lblSkill.style.gap = "4px";
+    lblSkill.style.cursor = "pointer";
+    lblSkill.appendChild(radioSkill);
+    lblSkill.appendChild(document.createTextNode(" Use skill"));
+    promptSourceRow.appendChild(lblSkill);
+    form.appendChild(promptSourceRow);
+
+    // Skill dropdown (visible when "Use skill" is selected)
+    var skillWrap = el("div", "at-skill-select");
+    skillWrap.style.display = radioSkill.checked ? "block" : "none";
+    skillWrap.appendChild(el("label", null, "Skill"));
+    var skillSelect = document.createElement("select");
+    var emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.textContent = "-- select a skill --";
+    skillSelect.appendChild(emptyOpt);
+    var allSkills = (s && s.skills) || [];
+    allSkills.forEach(function (sk) {
+      if (sk.disabled) return;
+      var opt = document.createElement("option");
+      opt.value = sk.skillMdPath;
+      opt.textContent = sk.name + " (" + sk.scope + ")";
+      if (editing && editing.skillPath === sk.skillMdPath) opt.selected = true;
+      skillSelect.appendChild(opt);
+    });
+    skillWrap.appendChild(skillSelect);
+    form.appendChild(skillWrap);
+
+    // Custom prompt textarea (visible when "Custom prompt" is selected)
+    var promptWrap = el("div", "at-prompt-wrap");
+    promptWrap.style.display = radioCustom.checked ? "block" : "none";
+    promptWrap.appendChild(el("label", null, "System prompt"));
     var prompt = document.createElement("textarea");
     prompt.value = editing ? editing.systemPrompt : "You are…";
-    form.appendChild(prompt);
+    promptWrap.appendChild(prompt);
+    form.appendChild(promptWrap);
+
+    // Fallback prompt (visible when "Use skill" is selected)
+    var fallbackWrap = el("div", "at-fallback-wrap");
+    fallbackWrap.style.display = radioSkill.checked ? "block" : "none";
+    fallbackWrap.appendChild(el("label", null, "Fallback prompt (optional)"));
+    var fallbackNote = el("div", "at-note");
+    fallbackNote.textContent = "Used if the skill file is missing at runtime.";
+    fallbackNote.style.fontSize = "0.85em";
+    fallbackNote.style.opacity = "0.7";
+    fallbackNote.style.marginBottom = "6px";
+    fallbackWrap.appendChild(fallbackNote);
+    var fallback = document.createElement("textarea");
+    fallback.rows = 3;
+    fallback.value = editing ? editing.systemPrompt : "";
+    fallbackWrap.appendChild(fallback);
+    form.appendChild(fallbackWrap);
+
+    // Toggle visibility on radio change
+    function togglePromptSource() {
+      var useSkill = radioSkill.checked;
+      skillWrap.style.display = useSkill ? "block" : "none";
+      promptWrap.style.display = useSkill ? "none" : "block";
+      fallbackWrap.style.display = useSkill ? "block" : "none";
+    }
+    radioCustom.addEventListener("change", togglePromptSource);
+    radioSkill.addEventListener("change", togglePromptSource);
 
     var actions = el("div", "at-form-actions");
     var bSave = el("button", "btn primary", editing ? "Save changes" : "Create agent");
@@ -3003,6 +3177,7 @@ export function getHubWebviewHtml(csp: string): string {
       toolsWrap.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
         if (cb.checked) tools.push(cb.getAttribute("data-tool"));
       });
+      var useSkill = radioSkill.checked;
       var draft = {
         name: name.value.trim(),
         description: desc.value.trim(),
@@ -3010,11 +3185,17 @@ export function getHubWebviewHtml(csp: string): string {
         model: model.value,
         tools: tools,
         color: color.value.trim(),
-        systemPrompt: prompt.value,
-        scope: scope.value
+        systemPrompt: useSkill ? fallback.value : prompt.value,
+        skillPath: useSkill ? skillSelect.value : "",
+        scope: scope.value,
+        longTermMemory: memCb.checked
       };
       if (!draft.name) {
         alert("Name is required.");
+        return;
+      }
+      if (useSkill && !draft.skillPath) {
+        alert("Select a skill.");
         return;
       }
       if (editing) {
@@ -3905,15 +4086,16 @@ export function getHubWebviewHtml(csp: string): string {
       var skills = filterText(state.skills || [], function (s) {
         return s.name + " " + s.description + " " + s.rootPath + (s.disabled ? " off hidden" : "");
       });
-      $("#root").appendChild(el("div", "section-title", sub === "browse" ? "Local skills (this machine)" : "Installed skills"));
-      $("#root").appendChild(el("div", "empty", "Browsing only — attach SKILL.md in chat when you need it."));
+      var skillsSec = collapsibleSection(sub === "browse" ? "Local skills (this machine)" : "Installed skills");
+      skillsSec.appendChild(el("div", "empty", "Browsing only — attach SKILL.md in chat when you need it."));
       if (!skills.length) {
-        $("#root").appendChild(el("div", "empty", "No SKILL.md skill folders found. Add subfolders with SKILL.md under project roots (.github/skills, .claude/skills, .agents/skills, .cursor/skills) or user roots under .claude/skills, .agents/skills, .cursor/skills (and legacy editor skill dirs if present)."));
-        return;
+        skillsSec.appendChild(el("div", "empty", "No SKILL.md skill folders found. Add subfolders with SKILL.md under project roots (.github/skills, .claude/skills, .agents/skills, .cursor/skills) or user roots under .claude/skills, .agents/skills, .cursor/skills (and legacy editor skill dirs if present)."));
+      } else {
+        skills.forEach(function (s) {
+          skillsSec.appendChild(skillCard(s));
+        });
       }
-      skills.forEach(function (s) {
-        $("#root").appendChild(skillCard(s));
-      });
+      $("#root").appendChild(skillsSec);
       return;
     }
 
@@ -3925,68 +4107,72 @@ export function getHubWebviewHtml(csp: string): string {
 
     if (browse) {
       appendRegistryCatalog(rootEl);
-      rootEl.appendChild(el("div", "section-title", "Workspace MCP"));
+      var wsSec = collapsibleSection("Workspace MCP");
       if (!state.workspaceName) {
-        rootEl.appendChild(callout("No folder open", "Open a workspace folder to edit .vscode/mcp.json and list workspace-scoped servers.", "workbench.mcp.openWorkspaceFolderMcpJson", "Open workspace mcp.json"));
+        wsSec.appendChild(callout("No folder open", "Open a workspace folder to edit .vscode/mcp.json and list workspace-scoped servers.", "workbench.mcp.openWorkspaceFolderMcpJson", "Open workspace mcp.json"));
       } else if (state.workspaceMcp === "missing") {
-        rootEl.appendChild(callout("Workspace mcp.json missing", "Create .vscode/mcp.json to register MCP servers for this project.", "workbench.mcp.openWorkspaceFolderMcpJson", "Create workspace mcp.json"));
+        wsSec.appendChild(callout("Workspace mcp.json missing", "Create .vscode/mcp.json to register MCP servers for this project.", "workbench.mcp.openWorkspaceFolderMcpJson", "Create workspace mcp.json"));
       } else if (state.workspaceMcp === "empty") {
         if ((ws || []).length === 0) {
-          rootEl.appendChild(callout("No servers yet", "Your mcp.json exists but defines no servers.", "workbench.mcp.openWorkspaceFolderMcpJson", "Edit workspace mcp.json"));
+          wsSec.appendChild(callout("No servers yet", "Your mcp.json exists but defines no servers.", "workbench.mcp.openWorkspaceFolderMcpJson", "Edit workspace mcp.json"));
         }
         filterText(ws, function (x) { return x.id + x.kind + x.detail + (x.disabled ? " off disabled" : ""); }).forEach(function (s) {
-          rootEl.appendChild(mcpCard(s));
+          wsSec.appendChild(mcpCard(s));
         });
       } else {
         filterText(ws, function (x) { return x.id + x.kind + x.detail + (x.disabled ? " off disabled" : ""); }).forEach(function (s) {
-          rootEl.appendChild(mcpCard(s));
+          wsSec.appendChild(mcpCard(s));
         });
       }
+      rootEl.appendChild(wsSec);
 
-      rootEl.appendChild(el("div", "section-title", "User MCP"));
+      var usSec = collapsibleSection("User MCP");
       if (state.userMcp === "missing") {
         if ((us || []).length === 0) {
-          rootEl.appendChild(callout("User mcp.json missing", "Opens your global MCP config (VS Code will create the file if needed).", "workbench.mcp.openUserMcpJson", "Open user mcp.json"));
+          usSec.appendChild(callout("User mcp.json missing", "Opens your global MCP config (VS Code will create the file if needed).", "workbench.mcp.openUserMcpJson", "Open user mcp.json"));
         }
         filterText(us, function (x) { return x.id + x.kind + x.detail + (x.disabled ? " off disabled" : ""); }).forEach(function (s) {
-          rootEl.appendChild(mcpCard(s));
+          usSec.appendChild(mcpCard(s));
         });
       } else if (state.userMcp === "empty") {
         if ((us || []).length === 0) {
-          rootEl.appendChild(callout("No user servers", "Add servers to your user mcp.json for every workspace.", "workbench.mcp.openUserMcpJson", "Edit user mcp.json"));
+          usSec.appendChild(callout("No user servers", "Add servers to your user mcp.json for every workspace.", "workbench.mcp.openUserMcpJson", "Edit user mcp.json"));
         }
         filterText(us, function (x) { return x.id + x.kind + x.detail + (x.disabled ? " off disabled" : ""); }).forEach(function (s) {
-          rootEl.appendChild(mcpCard(s));
+          usSec.appendChild(mcpCard(s));
         });
       } else {
         filterText(us, function (x) { return x.id + x.kind + x.detail + (x.disabled ? " off disabled" : ""); }).forEach(function (s) {
-          rootEl.appendChild(mcpCard(s));
+          usSec.appendChild(mcpCard(s));
         });
       }
+      rootEl.appendChild(usSec);
     } else {
-      rootEl.appendChild(el("div", "section-title", "Workspace servers"));
+      var wsInstSec = collapsibleSection("Workspace servers");
       if (!state.workspaceName) {
-        rootEl.appendChild(el("div", "empty", "No workspace folder."));
+        wsInstSec.appendChild(el("div", "empty", "No workspace folder."));
       } else if ((ws || []).length > 0) {
         filterText(ws, function (x) { return x.id + x.kind + x.detail + (x.disabled ? " off disabled" : ""); }).forEach(function (s) {
-          rootEl.appendChild(mcpCard(s));
+          wsInstSec.appendChild(mcpCard(s));
         });
       } else if (state.workspaceMcp === "missing") {
-        rootEl.appendChild(el("div", "empty", "Missing mcp.json"));
+        wsInstSec.appendChild(el("div", "empty", "Missing mcp.json"));
       } else {
-        rootEl.appendChild(el("div", "empty", "No servers defined"));
+        wsInstSec.appendChild(el("div", "empty", "No servers defined"));
       }
+      rootEl.appendChild(wsInstSec);
 
-      rootEl.appendChild(el("div", "section-title", "User servers"));
+      var usInstSec = collapsibleSection("User servers");
       if ((us || []).length > 0) {
         filterText(us, function (x) { return x.id + x.kind + x.detail + (x.disabled ? " off disabled" : ""); }).forEach(function (s) {
-          rootEl.appendChild(mcpCard(s));
+          usInstSec.appendChild(mcpCard(s));
         });
       } else if (state.userMcp === "missing") {
-        rootEl.appendChild(el("div", "empty", "Missing user mcp.json"));
+        usInstSec.appendChild(el("div", "empty", "Missing user mcp.json"));
       } else {
-        rootEl.appendChild(el("div", "empty", "No servers"));
+        usInstSec.appendChild(el("div", "empty", "No servers"));
       }
+      rootEl.appendChild(usInstSec);
     }
   }
 

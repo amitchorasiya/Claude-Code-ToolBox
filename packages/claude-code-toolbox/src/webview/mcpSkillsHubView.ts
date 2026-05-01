@@ -864,6 +864,38 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
           this._postState();
           break;
         }
+        case "agentTeams.bulkToggleMemory": {
+          try {
+            const enable = !!msg.enable;
+            const folder = mcpPaths.getPrimaryWorkspaceFolder();
+            const agents = await collectLocalAgents(os.homedir(), folder?.uri.fsPath);
+            let count = 0;
+            for (const agent of agents) {
+              if (!!agent.longTermMemory !== enable) {
+                const draft: AgentDraft = {
+                  name: agent.name,
+                  description: agent.description,
+                  role: agent.role,
+                  model: agent.model,
+                  tools: agent.tools,
+                  color: agent.color,
+                  systemPrompt: agent.systemPrompt,
+                  skillPath: agent.skillPath,
+                  scope: agent.scope,
+                  longTermMemory: enable,
+                };
+                await updateAgent(agent, draft, os.homedir(), folder?.uri.fsPath);
+                count++;
+              }
+            }
+            vscode.window.showInformationMessage(`Long-term memory ${enable ? "enabled" : "disabled"} for ${count} agent(s).`);
+          } catch (e) {
+            const m = e instanceof Error ? e.message : String(e);
+            vscode.window.showErrorMessage(`Bulk memory toggle failed: ${m}`);
+          }
+          this._postState();
+          break;
+        }
         case "agentTeams.deleteAgent": {
           try {
             const id = typeof msg.id === "string" ? msg.id : "";

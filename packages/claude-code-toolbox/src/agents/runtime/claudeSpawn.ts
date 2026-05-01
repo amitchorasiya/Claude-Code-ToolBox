@@ -10,8 +10,11 @@
  *     Windows spawns `taskkill /pid … /T /F`.
  */
 import { spawn, type ChildProcess } from "node:child_process";
+import * as fs from "node:fs/promises";
 import { resolveClaudeBin } from "../claudeCliResolver";
 import type { AgentEntry } from "../localAgents";
+import { memoryPathForAgent } from "../agentsMutations";
+import { readSkillContent } from "../../skills/localSkills";
 import type { AgentRunEvent, RunPhase } from "./eventTypes";
 import { nowIso, summarizeForTranscript } from "./eventTypes";
 
@@ -54,6 +57,15 @@ export type SpawnSessionOptions = {
 export class ClaudeCliMissingError extends Error {
   constructor() {
     super("claude CLI not found on PATH. Install Claude Code or set agentTeams.claudeBinOverride.");
+  }
+}
+
+async function readAgentMemory(memoryPath: string): Promise<string | undefined> {
+  try {
+    const text = await fs.readFile(memoryPath, "utf8");
+    return text.trim() || undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -378,8 +390,38 @@ export async function* spawnAgentTurn(
   if (!binPath) {
     throw new ClaudeCliMissingError();
   }
+  let resolvedPrompt = opts.agent.systemPrompt.trim();
+  if (opts.agent.skillPath) {
+    const skillContent = await readSkillContent(opts.agent.skillPath);
+    if (skillContent) {
+      resolvedPrompt = skillContent;
+    }
+  }
+  let memorySection = "";
+  if (opts.agent.longTermMemory && opts.agent.filePath) {
+    const memPath = memoryPathForAgent(opts.agent.filePath);
+    const existing = await readAgentMemory(memPath);
+    const lines: string[] = [
+      "",
+      "## Long-term memory",
+      `You have persistent memory stored at: ${memPath}`,
+    ];
+    if (existing) {
+      lines.push("");
+      lines.push(existing);
+    }
+    lines.push("");
+    lines.push(
+      "After completing your task, update your memory file at the path above " +
+      "with key learnings, user preferences, codebase patterns, and decisions you observed. " +
+      "Keep entries concise. Append new entries under a date heading (e.g. ### YYYY-MM-DD). " +
+      "Do not delete existing entries unless they are clearly outdated or contradicted."
+    );
+    memorySection = lines.join("\n");
+  }
   const systemPrompt = [
-    opts.agent.systemPrompt.trim(),
+    resolvedPrompt,
+    memorySection,
     "",
     `## Your identity`,
     `You are the agent "${opts.agent.name}" with role "${opts.agent.role}" in a multi-agent team run.`,

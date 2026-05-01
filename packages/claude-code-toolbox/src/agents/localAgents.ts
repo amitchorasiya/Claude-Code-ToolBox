@@ -33,9 +33,13 @@ export type AgentEntry = {
   filePath: string;
   /** Body of the agent file after the frontmatter (the system prompt). */
   systemPrompt: string;
+  /** Optional absolute path to a SKILL.md. Runtime reads this instead of systemPrompt when set. */
+  skillPath?: string;
   scope: "user" | "workspace";
   /** Hub-only: user hid it in the hub (file still on disk). */
   disabled?: boolean;
+  /** When true, agent has persistent long-term memory injected at spawn time. */
+  longTermMemory?: boolean;
 };
 
 const DEFAULT_COLORS = [
@@ -138,6 +142,8 @@ async function readAgentFile(filePath: string, scope: "user" | "workspace"): Pro
   const tools = Array.isArray(parsed.tools) ? parsed.tools : [];
   const declaredColor = typeof parsed.color === "string" ? parsed.color.trim() : "";
   const color = /^#[0-9a-fA-F]{3,8}$/.test(declaredColor) ? declaredColor : colorForAgentName(name);
+  const skillPath = typeof parsed.skillpath === "string" && parsed.skillpath ? parsed.skillpath : undefined;
+  const longTermMemory = parsed.longtermmemory === "true" || undefined;
   return {
     id: `${scope}:${path.normalize(filePath).toLowerCase()}`,
     name,
@@ -148,7 +154,9 @@ async function readAgentFile(filePath: string, scope: "user" | "workspace"): Pro
     color,
     filePath,
     systemPrompt: body.trim(),
+    skillPath,
     scope,
+    longTermMemory,
   };
 }
 
@@ -165,6 +173,9 @@ async function scanAgentsUnderRoot(root: string, scope: "user" | "workspace"): P
       continue;
     }
     if (!/\.md$/i.test(e.name)) {
+      continue;
+    }
+    if (/\.memory\.md$/i.test(e.name)) {
       continue;
     }
     const agent = await readAgentFile(path.join(root, e.name), scope);
