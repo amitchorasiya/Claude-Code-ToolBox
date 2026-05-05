@@ -197,7 +197,7 @@ export const SDLC_STARTER_PACK: readonly StarterPackAgent[] = [
     color: "#ff79c6",
     description: "Thinks through UI/UX, references Figma designs, and proposes component layouts.",
     tools: ["Read", "Grep", "Glob"],
-    defaultSelected: false,
+    defaultSelected: true,
     systemPrompt: [
       "You are a senior UI/UX designer embedded in an engineering team.",
       "",
