@@ -71,14 +71,28 @@ async function probeExternalWhich(cmd: string): Promise<string | undefined> {
   });
 }
 
-const COMMON_INSTALL_PATHS = isWindows()
-  ? []
-  : [
-      "/opt/homebrew/bin/claude",
-      "/usr/local/bin/claude",
-      path.join(process.env.HOME ?? "", ".local/bin/claude"),
-      path.join(process.env.HOME ?? "", ".claude/bin/claude"),
+function commonInstallPaths(): string[] {
+  if (isWindows()) {
+    const appData = process.env.APPDATA ?? path.join(process.env.USERPROFILE ?? "", "AppData", "Roaming");
+    const localAppData = process.env.LOCALAPPDATA ?? path.join(process.env.USERPROFILE ?? "", "AppData", "Local");
+    return [
+      path.join(appData, "Claude", "claude.exe"),
+      path.join(localAppData, "Programs", "claude", "claude.exe"),
+      path.join(localAppData, "Microsoft", "WinGet", "Links", "claude.exe"),
+      path.join(process.env.USERPROFILE ?? "", ".claude", "bin", "claude.exe"),
+      path.join(process.env.USERPROFILE ?? "", "scoop", "shims", "claude.exe"),
     ];
+  }
+  const home = process.env.HOME ?? "";
+  return [
+    "/opt/homebrew/bin/claude",
+    "/usr/local/bin/claude",
+    path.join(home, ".local/bin/claude"),
+    path.join(home, ".claude/bin/claude"),
+  ];
+}
+
+const COMMON_INSTALL_PATHS = commonInstallPaths();
 
 /** Resolve the `claude` binary path; returns `undefined` when not found. */
 export async function resolveClaudeBin(override?: string): Promise<string | undefined> {
