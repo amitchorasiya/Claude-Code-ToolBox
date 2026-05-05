@@ -3,7 +3,7 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 import { TOOLBOX_SETTINGS_PREFIX } from "./toolboxSettings";
 
-export function userMcpJsonPath(insiders: boolean): string {
+export function vsCodeUserMcpJsonPath(insiders: boolean): string {
   const home = os.homedir();
   const dir = insiders ? "Code - Insiders" : "Code";
   const plat = process.platform;
@@ -18,8 +18,16 @@ export function userMcpJsonPath(insiders: boolean): string {
   return path.join(home, ".config", dir, "User", "mcp.json");
 }
 
-export function workspaceMcpUri(folder: vscode.WorkspaceFolder): vscode.Uri {
+export function userMcpJsonPath(_insiders: boolean): string {
+  return path.join(os.homedir(), ".claude.json");
+}
+
+export function vsCodeWorkspaceMcpUri(folder: vscode.WorkspaceFolder): vscode.Uri {
   return vscode.Uri.joinPath(folder.uri, ".vscode", "mcp.json");
+}
+
+export function workspaceMcpUri(folder: vscode.WorkspaceFolder): vscode.Uri {
+  return vscode.Uri.joinPath(folder.uri, ".mcp.json");
 }
 
 export function getPrimaryWorkspaceFolder(): vscode.WorkspaceFolder | undefined {

@@ -71,7 +71,7 @@ export async function gatherReadinessInput(folder: vscode.WorkspaceFolder): Prom
     }
   }
   const agentsMd = await fileFact(vscode.Uri.joinPath(root, "AGENTS.md"));
-  const workspaceMcpJson = await fileFact(vscode.Uri.joinPath(root, ".vscode", "mcp.json"));
+  const workspaceMcpJson = await fileFact(vscode.Uri.joinPath(root, ".mcp.json"));
   const cursorrules = await fileFact(vscode.Uri.joinPath(root, ".cursorrules"));
   const copilotInstructionsMd = await fileFact(
     vscode.Uri.joinPath(root, ".github", "copilot-instructions.md")

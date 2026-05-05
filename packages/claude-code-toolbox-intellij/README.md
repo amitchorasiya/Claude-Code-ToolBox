@@ -60,7 +60,7 @@ The 🤝 **Agentic Teams** tab ships with full feature parity to the VS Code ext
 - **All 8 collaboration protocols** — native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge, plan-then-code (with approval gate), converge (parallel → cross-pollinate → synthesize).
 - **`ProcessBuilder`-based runtime** — `ClaudeSpawn` spawns `claude` CLI processes, `RunBus` streams events to the JCEF transcript, `RunRegistry` tracks active runs, `RunOrchestrator` coordinates multi-agent workflows with `CompletableFuture` and thread pools.
 - **Unified teams + slash commands** — each team card shows a `/command-name` pill; creating a team can auto-sync a matching slash command.
-- **SDLC starter pack** — 9 agents + 6 preset commands, installable with one click.
+- **SDLC starter pack** — 10 agents (incl. UI/UX Designer) + 6 preset commands, installable with one click. Default model: **(inherit caller default)**.
 - **Live transcript** — color-coded, per-turn tokens + cost, approve/reject plan modal, Stop button.
 - **Approval gate** — `CountDownLatch`-based blocking in the protocol thread, resolved by the UI thread via `RunOrchestrator.resolvePendingApproval()`.
 

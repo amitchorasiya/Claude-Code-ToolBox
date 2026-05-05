@@ -1,4 +1,9 @@
 import * as vscode from "vscode";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import { atomicWriteText } from "../agents/atomicFile";
+import { workspaceMcpUri, getPrimaryWorkspaceFolder } from "../mcpPaths";
 
 /** Shape passed to vscode:mcp/install (VS Code merges this into MCP setup). */
 export type VscodeMcpInstallConfig = {
@@ -265,6 +270,61 @@ export function unwrapRegistryEntry(entry: unknown): { server: Record<string, un
   return { server: { ...server, name }, remotes, packages };
 }
 
+type InstallScope = "user" | "project";
+
+async function writeToClaudeConfig(
+  scope: InstallScope,
+  serverName: string,
+  serverConfig: Record<string, unknown>
+): Promise<boolean> {
+  if (scope === "user") {
+    const claudeJsonPath = path.join(os.homedir(), ".claude.json");
+    let existing: Record<string, unknown> = {};
+    try {
+      const raw = fs.readFileSync(claudeJsonPath, "utf8");
+      existing = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      // file missing or invalid — start fresh
+    }
+    const mcpServers = (existing.mcpServers as Record<string, unknown>) ?? {};
+    if (serverName in mcpServers) {
+      const overwrite = await vscode.window.showWarningMessage(
+        `Server "${serverName}" already exists in ~/.claude.json. Overwrite?`,
+        "Yes",
+        "No"
+      );
+      if (overwrite !== "Yes") {
+        return false;
+      }
+    }
+    mcpServers[serverName] = serverConfig;
+    existing.mcpServers = mcpServers;
+    await atomicWriteText(claudeJsonPath, JSON.stringify(existing, null, 2) + "\n");
+    return true;
+  }
+
+  // project scope
+  const folder = getPrimaryWorkspaceFolder();
+  if (!folder) {
+    void vscode.window.showErrorMessage("No workspace folder open for project MCP install.");
+    return false;
+  }
+  const mcpUri = workspaceMcpUri(folder);
+  const mcpPath = mcpUri.fsPath;
+  let existing: Record<string, unknown> = {};
+  try {
+    const raw = fs.readFileSync(mcpPath, "utf8");
+    existing = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    // file missing — start fresh
+  }
+  const mcpServers = (existing.mcpServers as Record<string, unknown>) ?? {};
+  mcpServers[serverName] = serverConfig;
+  existing.mcpServers = mcpServers;
+  await atomicWriteText(mcpPath, JSON.stringify(existing, null, 2) + "\n");
+  return true;
+}
+
 export async function installMcpFromRegistryEntry(entry: unknown): Promise<boolean> {
   const { server, remotes, packages } = unwrapRegistryEntry(entry);
   const serverName = typeof server.name === "string" ? server.name : "mcp-server";
@@ -324,10 +384,46 @@ export async function installMcpFromRegistryEntry(entry: unknown): Promise<boole
     }
   }
 
-  const uriStr = `vscode:mcp/install?${encodeURIComponent(JSON.stringify(config))}`;
-  const ok = await vscode.env.openExternal(vscode.Uri.parse(uriStr));
+  // Ask user which scope to install to
+  const scopePick = await vscode.window.showQuickPick(
+    [
+      { label: "User (~/.claude.json)", description: "Available in all projects", value: "user" as InstallScope },
+      { label: "Project (.mcp.json)", description: "This workspace only", value: "project" as InstallScope },
+    ],
+    { title: `Install "${config.name}" to…`, placeHolder: "Choose scope" }
+  );
+  if (!scopePick) {
+    return false;
+  }
+
+  // Build Claude Code server config object
+  const serverConfig: Record<string, unknown> = {};
+  if (config.command) {
+    serverConfig.type = "stdio";
+    serverConfig.command = config.command;
+    if (config.args) {
+      serverConfig.args = config.args;
+    }
+    if (config.env) {
+      serverConfig.env = config.env;
+    }
+  } else if (config.url) {
+    serverConfig.type = config.type === "sse" ? "sse" : "http";
+    serverConfig.url = config.url;
+    if (config.headers) {
+      const headersObj: Record<string, string> = {};
+      for (const h of config.headers) {
+        headersObj[h.name] = h.value;
+      }
+      serverConfig.headers = headersObj;
+    }
+  }
+
+  const ok = await writeToClaudeConfig(scopePick.value, config.name, serverConfig);
   if (ok) {
-    void vscode.window.showInformationMessage(`Opening VS Code MCP install for "${config.name}"…`);
+    void vscode.window.showInformationMessage(
+      `Installed "${config.name}" to ${scopePick.value === "user" ? "~/.claude.json" : ".mcp.json"}`
+    );
   }
   return ok;
 }

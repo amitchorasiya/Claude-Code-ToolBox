@@ -1,6 +1,6 @@
 # Claude Code ToolBox
 
-**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.28`** · JetBrains plugin **`0.6.20`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
+**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.31`** · JetBrains plugin **`0.6.20`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 
@@ -13,6 +13,8 @@
 > - **Eight collaboration protocols** — native-task, round-robin, handoff, orchestrator, parallel fan-out, **debate + judge**, **plan-then-code (with your approval gate)**, **converge (parallel → cross-pollinate → synthesize)**.
 > - **Swarm dispatch** — every team **is** a slash command. Creating or editing a team auto-generates a `/command` that dispatches all agents **in parallel** via the Task tool (swarm pattern). No separate command editing needed.
 > - **7 preset teams** — `debate-team`, `plan-team`, `review-team`, `security-team`, `sdlc-plan-then-code`, `refactor-team`, `spec-team` — installed with the starter pack, each with its own swarm `/command`.
+> - **10-agent SDLC starter pack** — product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa-test-engineer, code-reviewer, devops, tech-writer, and **UI/UX designer** (reviews Figma designs, proposes layouts, flags a11y). All default to **(inherit caller default)** model.
+> - **MCP reads Claude Code native config** — hub, registry install, awareness scan, and port all read/write `~/.claude.json` and `.mcp.json` directly. One Click merges from **both** Cursor and VS Code/Copilot MCPs with case-insensitive dedup.
 > - **Agent Dashboard** (opt-in) — live cards for every Claude Code session on your machine, whether started by the Toolbox or by `claude` in a terminal.
 > - **Collapsible sections** — all major sections across all tabs collapse/expand for quick navigation.
 > - **Full IntelliJ parity** — the JetBrains plugin ships the complete Agentic Teams runtime (Kotlin port of all 8 protocols, agent/team/command CRUD, live transcript, approval gate).

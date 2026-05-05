@@ -29,11 +29,11 @@ export async function parseMcpServers(
   try {
     const doc = await vscode.workspace.fs.readFile(uri);
     const text = new TextDecoder().decode(doc);
-    const json = JSON.parse(text) as { servers?: Record<string, unknown> };
-    if (!json.servers || typeof json.servers !== "object") {
+    const json = JSON.parse(text) as { mcpServers?: Record<string, unknown> };
+    if (!json.mcpServers || typeof json.mcpServers !== "object") {
       return [];
     }
-    return Object.entries(json.servers).map(([id, cfg]) => summarizeServer(id, cfg));
+    return Object.entries(json.mcpServers).map(([id, cfg]) => summarizeServer(id, cfg));
   } catch {
     return undefined;
   }

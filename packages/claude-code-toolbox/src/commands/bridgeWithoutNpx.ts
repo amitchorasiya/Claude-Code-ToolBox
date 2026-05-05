@@ -2,7 +2,8 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as vscode from "vscode";
 import * as mcpPaths from "../mcpPaths";
-import type { InitMemoryBankNpxOptions } from "./memoryBankInit";
+import type { InitMemoryBankOptions } from "./memoryBankInit";
+import { runInitMemoryBankInProcess } from "./memoryBankInit";
 import type { PortCursorMcpMode } from "./portFromCursor";
 import {
   agentsSkillsDir,
@@ -15,6 +16,7 @@ import {
   TOOLBOX_BRIDGE_BINS,
   tryResolveToolboxPackageBin,
 } from "../terminal/runEmbeddedToolboxCli";
+import { portMcpToClaudeCode } from "../claudeCodeMcp";
 
 function missingBundledCliMessage(packageName: string): void {
   vscode.window.showErrorMessage(
@@ -41,13 +43,38 @@ export async function manualPortCursorMcpWithoutNpx(): Promise<void> {
 
   const mode = await vscode.window.showQuickPick(
     [
-      { label: "User mcp.json (merge with existing)", value: "user" as const },
-      { label: "Workspace .vscode/mcp.json (merge with existing)", value: "workspace" as const },
+      { label: "Claude Code ~/.claude.json (merge)", value: "claude" as const },
+      { label: "Claude Code workspace .mcp.json (merge)", value: "claudeProject" as const },
+      { label: "VS Code user mcp.json (merge)", value: "user" as const },
+      { label: "VS Code workspace .vscode/mcp.json (merge)", value: "workspace" as const },
       { label: "Dry run (print JSON only)", value: "dry" as const },
     ],
-    { title: "Port Cursor MCP → VS Code (bundled CLI)" }
+    { title: "Port Cursor MCP (bundled)" }
   );
   if (!mode) {
+    return;
+  }
+
+  const m: PortCursorMcpMode = mode.value;
+
+  if (m === "claude" || m === "claudeProject") {
+    try {
+      const result = await portMcpToClaudeCode({
+        scope: m === "claude" ? "user" : "project",
+        workspacePath: folder.uri.fsPath,
+      });
+      const msg =
+        result.merged.length > 0
+          ? `Ported ${result.merged.length} MCP server(s) to ${result.targetPath}. ${
+              result.skipped.length > 0 ? `Skipped ${result.skipped.length} existing.` : ""
+            }`
+          : `No new servers to port. ${result.skipped.length} already exist in ${result.targetPath}.`;
+      vscode.window.showInformationMessage(msg);
+    } catch (e) {
+      vscode.window.showErrorMessage(
+        `Claude Code MCP port failed: ${e instanceof Error ? e.message : String(e)}`
+      );
+    }
     return;
   }
 
@@ -55,7 +82,6 @@ export async function manualPortCursorMcpWithoutNpx(): Promise<void> {
   const insiders = cfg.get<boolean>("cloude-code-toolbox.useInsidersPaths") === true;
 
   const args: string[] = [];
-  const m: PortCursorMcpMode = mode.value;
   if (m === "dry") {
     args.push("--dry-run");
   } else if (m === "user") {
@@ -66,19 +92,12 @@ export async function manualPortCursorMcpWithoutNpx(): Promise<void> {
 }
 
 /**
- * Same behavior as npx cloude-code-memory-bank init, using the CLI shipped with the extension.
+ * Memory bank init in-process (no npx, no terminal).
  */
 export async function memoryBankWithoutNpx(): Promise<void> {
   const folder = mcpPaths.getPrimaryWorkspaceFolder();
   if (!folder) {
     vscode.window.showErrorMessage("Open a workspace folder first.");
-    return;
-  }
-
-  const { packageName, bin } = TOOLBOX_BRIDGE_BINS.memoryBank;
-  const cli = tryResolveToolboxPackageBin(packageName, bin);
-  if (!cli) {
-    missingBundledCliMessage(packageName);
     return;
   }
 
@@ -92,7 +111,7 @@ export async function memoryBankWithoutNpx(): Promise<void> {
       },
       {
         label: "Yes (dry-run only)",
-        description: "Preview in terminal; no files changed",
+        description: "Preview only; no files changed",
         alwaysShow: true,
         value: true as const,
       },
@@ -114,15 +133,10 @@ export async function memoryBankWithoutNpx(): Promise<void> {
     return;
   }
 
-  const flags: string[] = ["init", "--cwd", folder.uri.fsPath];
-  if (dryPick.value) {
-    flags.push("--dry-run");
-  }
-  if (cursorRulesPick.value) {
-    flags.push("--cursor-rules");
-  }
-
-  runNodeCliInTerminal(folder.uri.fsPath, cli, flags, "Memory bank (bundled)");
+  await runInitMemoryBankInProcess(folder, {
+    dryRun: dryPick.value,
+    cursorRules: cursorRulesPick.value,
+  });
 }
 
 /**
@@ -297,31 +311,27 @@ export async function revealCopilotSkillFoldersWithoutNpx(): Promise<void> {
 export type BundledBridgeQuiet = { quietMissing?: boolean };
 
 /**
- * Same argv as {@link runInitMemoryBankWithOptions} / npx, using the extension-bundled CLI (no npx, no network).
- * @returns false if the CLI path could not be resolved.
+ * Init memory bank in-process for One Click Setup.
+ * @returns Promise<boolean> - true if successful, false if error
  */
-export function runInitMemoryBankBundledWithOptions(
+export async function runInitMemoryBankBundledWithOptions(
   folder: vscode.WorkspaceFolder,
-  opts: InitMemoryBankNpxOptions,
+  opts: InitMemoryBankOptions,
   quiet?: BundledBridgeQuiet
-): boolean {
-  const { packageName, bin } = TOOLBOX_BRIDGE_BINS.memoryBank;
-  const cli = tryResolveToolboxPackageBin(packageName, bin);
-  if (!cli) {
+): Promise<boolean> {
+  try {
+    await runInitMemoryBankInProcess(folder, {
+      dryRun: opts.dryRun,
+      cursorRules: opts.cursorRules,
+    });
+    return true;
+  } catch (err) {
     if (!quiet?.quietMissing) {
-      missingBundledCliMessage(packageName);
+      const msg = err instanceof Error ? err.message : String(err);
+      vscode.window.showErrorMessage(`Memory bank init failed: ${msg}`);
     }
     return false;
   }
-  const flags: string[] = ["init", "--cwd", folder.uri.fsPath];
-  if (opts.dryRun) {
-    flags.push("--dry-run");
-  }
-  if (opts.cursorRules) {
-    flags.push("--cursor-rules");
-  }
-  runNodeCliInTerminal(folder.uri.fsPath, cli, flags, "Memory bank (bundled)");
-  return true;
 }
 
 /** Same argv as {@link runSyncCursorRulesWithOptions} / npx; bundled CLI only. */
@@ -347,11 +357,37 @@ export function runSyncCursorRulesBundledWithOptions(
 }
 
 /** Same argv as {@link runPortCursorMcpWithMode} / npx; bundled CLI only. */
-export function runPortCursorMcpBundledWithMode(
+export async function runPortCursorMcpBundledWithMode(
   folder: vscode.WorkspaceFolder,
   mode: PortCursorMcpMode,
   quiet?: BundledBridgeQuiet
-): boolean {
+): Promise<boolean> {
+  if (mode === "claude" || mode === "claudeProject") {
+    try {
+      const result = await portMcpToClaudeCode({
+        scope: mode === "claude" ? "user" : "project",
+        workspacePath: folder.uri.fsPath,
+      });
+      if (!quiet?.quietMissing) {
+        const msg =
+          result.merged.length > 0
+            ? `Ported ${result.merged.length} MCP server(s) to ${result.targetPath}. ${
+                result.skipped.length > 0 ? `Skipped ${result.skipped.length} existing.` : ""
+              }`
+            : `No new servers to port. ${result.skipped.length} already exist in ${result.targetPath}.`;
+        vscode.window.showInformationMessage(msg);
+      }
+      return true;
+    } catch (e) {
+      if (!quiet?.quietMissing) {
+        vscode.window.showErrorMessage(
+          `Claude Code MCP port failed: ${e instanceof Error ? e.message : String(e)}`
+        );
+      }
+      return false;
+    }
+  }
+
   const { packageName, bin } = TOOLBOX_BRIDGE_BINS.mcpPort;
   const cli = tryResolveToolboxPackageBin(packageName, bin);
   if (!cli) {

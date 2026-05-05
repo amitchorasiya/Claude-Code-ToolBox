@@ -62,7 +62,7 @@ const KIT_CHECKS: KitCheckDef[] = [
   {
     id: "mcp-json",
     key: "Workspace mcp.json",
-    rel: ".vscode/mcp.json",
+    rel: ".mcp.json",
     runCommand: "CloudeCodeToolBox.portCursorMcp",
   },
 ];

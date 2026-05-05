@@ -412,7 +412,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const folder = vscode.workspace.workspaceFolders?.[0];
   if (folder) {
     const w = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(folder, ".vscode/mcp.json")
+      new vscode.RelativePattern(folder, "**/.mcp.json")
     );
     w.onDidChange(() => refreshMcpHubs());
     w.onDidCreate(() => refreshMcpHubs());

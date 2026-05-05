@@ -2476,6 +2476,7 @@ export function getHubWebviewHtml(csp: string): string {
   var AT_MODELS = [
     { id: "", label: "(inherit caller default)" },
     { id: "claude-opus-4-7", label: "Opus 4.7" },
+    { id: "claude-sonnet-4-6", label: "Sonnet 4.6" },
     { id: "claude-sonnet-4-5", label: "Sonnet 4.5" },
     { id: "claude-haiku-4-5-20251001", label: "Haiku 4.5" }
   ];
@@ -2964,7 +2965,7 @@ export function getHubWebviewHtml(csp: string): string {
 
   function renderAgentForm(root, s) {
     var editing = atEdit.mode === "agent-edit" ? findAgentById(s, atEdit.agentId) : null;
-    var defaultModel = (s && s.agentTeamsDefaultModel) || "claude-sonnet-4-5";
+    var defaultModel = (s && s.agentTeamsDefaultModel) || "";
     var form = el("div", "at-form");
     form.appendChild(el("h3", null, editing ? "Edit agent: " + editing.name : "New agent"));
 

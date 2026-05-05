@@ -84,12 +84,12 @@ export async function showMcpSkillsAwareness(
     const next = await vscode.window.showInformationMessage(
       `MCP & Skills awareness saved to ${MCP_SKILLS_AWARENESS_RELATIVE}. Claude Code reads \`CLAUDE.md\` when auto-merge is on; open the report only if you want to read it.`,
       "Open report",
-      "Open workspace mcp.json",
+      "Open .mcp.json",
       "Readiness summary"
     );
     if (next === "Open report") {
       await vscode.window.showTextDocument(openPath, { preview: true });
-    } else if (next === "Open workspace mcp.json") {
+    } else if (next === "Open .mcp.json") {
       await vscode.commands.executeCommand("CloudeCodeToolBox.openWorkspaceMcp");
     } else if (next === "Readiness summary") {
       await vscode.commands.executeCommand("CloudeCodeToolBox.showIntelligenceReadiness");

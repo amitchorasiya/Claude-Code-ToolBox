@@ -2,7 +2,7 @@
   "name": "cloude-code-toolbox-vscode",
   "displayName": "Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)",
   "description": "Claude Code ToolBox: MCP hub, workspace helpers, Thinking Machine Mode (context packs & priming), readiness, and bridges from Cursor to Claude Code in VS Code. Not affiliated with Microsoft, GitHub, or Anthropic. See README disclaimer. Workflow ideas credited in NOTICE (everything-claude-code, MIT).",
-  "version": "1.0.28",
+  "version": "1.0.31",
   "publisher": "amitchorasiya",
   "author": "amitchorasiya",
   "license": "MIT",
@@ -251,17 +251,21 @@
           "cloude-code-toolbox.oneClickSetup.portCursorMcp": {
             "type": "string",
             "enum": [
+              "claude",
+              "claudeProject",
               "user",
               "workspaceMerge",
               "dry",
               "skip"
             ],
-            "default": "user",
-            "description": "Port Cursor MCP → VS Code mcp.json: pick one target (One Click and default for Settings). The port CLI always merges with an existing mcp.json (never replaces the whole file).",
+            "default": "claude",
+            "description": "Port Cursor MCP target. Default: Claude Code user config (~/.claude.json). Legacy VS Code targets still available.",
             "enumDescriptions": [
-              "Merge into user mcp.json (all workspaces).",
-              "Merge into workspace .vscode/mcp.json.",
-              "Print JSON only (dry).",
+              "Merge into Claude Code user config (~/.claude.json) — recommended.",
+              "Merge into Claude Code project config (.mcp.json in workspace).",
+              "Merge into VS Code user mcp.json (legacy).",
+              "Merge into VS Code workspace .vscode/mcp.json (legacy).",
+              "Print JSON only (dry run).",
               "Skip MCP port."
             ]
           }
@@ -448,12 +452,21 @@
           "cloude-code-toolbox.agentTeams.defaultModel": {
             "type": "string",
             "enum": [
+              "",
               "claude-opus-4-7",
+              "claude-sonnet-4-6",
               "claude-sonnet-4-5",
               "claude-haiku-4-5-20251001"
             ],
-            "default": "claude-sonnet-4-5",
-            "description": "Model pre-filled in the New Agent form."
+            "default": "",
+            "markdownEnumDescriptions": [
+              "(inherit caller default)",
+              "Opus 4.7",
+              "Sonnet 4.6",
+              "Sonnet 4.5",
+              "Haiku 4.5"
+            ],
+            "description": "Model pre-filled in the New Agent form. Empty string means inherit from the calling session's default model."
           },
           "cloude-code-toolbox.agentTeams.defaultProtocol": {
             "type": "string",
@@ -486,6 +499,11 @@
             "default": 5,
             "minimum": 0,
             "description": "Hard-stop a run when estimated spend exceeds this USD amount. 0 disables the cap."
+          },
+          "cloude-code-toolbox.agentTeams.runArtifactsDir": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Custom directory for team run artifacts (transcript, plan, decision). Leave empty for default: `{workspace}/.claude/runs/`. Supports `${workspaceFolder}` variable."
           }
         }
       },

@@ -129,11 +129,11 @@
           <div class="pillar-grid">
             <article class="pillar">
               <h3>Faster path from Cursor to Claude Code</h3>
-              <p>Guided actions to port connections (MCP), rules, and scaffold a memory bank—without memorizing file formats.</p>
+              <p>One Click merges MCP from <strong>both</strong> Cursor and VS Code/Copilot into Claude Code's native config (<code>~/.claude.json</code>) with case-insensitive dedup. Sync rules and scaffold a memory bank — all in-process, no npx needed.</p>
             </article>
             <article class="pillar">
               <h3>Discover and add from one hub</h3>
-              <p>Browse MCP registry and skills catalogs, see what’s installed, fewer raw JSON edits by hand.</p>
+              <p>Browse MCP registry and skills catalogs, install servers directly to <code>~/.claude.json</code> or <code>.mcp.json</code> with a scope picker — fewer raw JSON edits by hand.</p>
             </article>
             <article class="pillar">
               <h3>One checklist view</h3>
@@ -145,7 +145,7 @@
             </article>
             <article class="pillar">
               <h3>Agentic Teams — skills, memory, swarm dispatch + multi-agent debate</h3>
-              <p>SDLC agents that <strong>debate a design</strong> and produce a <strong>plan you approve</strong> before code runs. <strong>Skill-backed agents</strong> point to SKILL.md instead of freeform prompts. <strong>Per-agent long-term memory</strong> lets agents learn and retain knowledge across runs (with a global toggle). Eight collaboration protocols, <strong>swarm dispatch</strong>, 7 preset teams, and <strong>collapsible sections</strong> for quick navigation. Full parity on both <strong>VS Code</strong> and <strong>IntelliJ</strong>.</p>
+              <p>10-agent SDLC starter pack (incl. <strong>UI/UX Designer</strong>) that <strong>debate a design</strong> and produce a <strong>plan you approve</strong> before code runs. <strong>Skill-backed agents</strong> point to SKILL.md instead of freeform prompts. <strong>Per-agent long-term memory</strong> lets agents learn and retain knowledge across runs. Default model: <strong>inherit caller default</strong> (agents use whatever model your session is configured with). Eight collaboration protocols, <strong>swarm dispatch</strong>, 7 preset teams, and <strong>collapsible sections</strong>. Full parity on both <strong>VS Code</strong> and <strong>IntelliJ</strong>.</p>
             </article>
           </div>
         </div>
@@ -197,7 +197,7 @@
             <article class="mode-card">
               <h3>Agent Teams + skill-backed agents + long-term memory + 8 protocols</h3>
               <p>
-                <strong>What it does:</strong> CRUD for Claude Code subagents (YAML-frontmatter <code>.md</code> under <code>~/.claude/agents/</code>). <strong>Skill-backed agents</strong>: point any agent to a <code>SKILL.md</code> instead of a freeform prompt (radio: Custom prompt vs Use skill with dropdown of all discovered skills). <strong>Per-agent long-term memory</strong>: agents learn from interactions and retain knowledge across runs as <code>&lt;agent&gt;.memory.md</code> alongside the agent file; a <strong>global toggle</strong> bulk-enables memory for all agents. A 9-agent <strong>SDLC starter pack</strong> and 7 preset teams land with one click. Eight collaboration protocols drive runs: <strong>native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge</strong>, <strong>plan-then-code</strong> (with your approval gate), and <strong>converge</strong> (parallel → cross-pollinate → synthesize → approve → execute). A live color-coded transcript shows pulsing status, tokens, cost, projection, and an approve-plan modal.
+                <strong>What it does:</strong> CRUD for Claude Code subagents (YAML-frontmatter <code>.md</code> under <code>~/.claude/agents/</code>). <strong>Skill-backed agents</strong>: point any agent to a <code>SKILL.md</code> instead of a freeform prompt (radio: Custom prompt vs Use skill with dropdown of all discovered skills). <strong>Per-agent long-term memory</strong>: agents learn from interactions and retain knowledge across runs as <code>&lt;agent&gt;.memory.md</code> alongside the agent file; a <strong>global toggle</strong> bulk-enables memory for all agents. A <strong>10-agent SDLC starter pack</strong> (incl. UI/UX Designer for Figma review and component layout) and 7 preset teams land with one click. Default model: <strong>(inherit caller default)</strong> so agents use whatever model your session is configured with (Opus 4.7, Sonnet 4.6, Sonnet 4.5, or Haiku 4.5). Eight collaboration protocols drive runs: <strong>native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge</strong>, <strong>plan-then-code</strong> (with your approval gate), and <strong>converge</strong> (parallel → cross-pollinate → synthesize → approve → execute). A live color-coded transcript shows pulsing status, tokens, cost, projection, and an approve-plan modal.
               </p>
               <p>
                 <strong>Why it matters:</strong> Agents that remember what you taught them last time and can use curated skill instructions are far more effective. Planning and reviewing benefit from disagreement — debates and plan-then-code flows make multiple perspectives explicit and auditable, with JSONL transcripts per run.

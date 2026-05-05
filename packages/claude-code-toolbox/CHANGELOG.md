@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.0.31
+
+- **MCP rewired to Claude Code native config.** The MCP hub, registry install, port-from-Cursor, awareness scan, and readiness check now read/write `~/.claude.json` (user scope, `mcpServers` key) and `<workspace>/.mcp.json` (project scope) instead of VS Code's `.vscode/mcp.json`. File watchers, tree view, and open commands updated. All other keys in `~/.claude.json` are preserved on write.
+- **Port Cursor + VS Code/Copilot MCP to Claude Code.** One Click Setup now merges MCP servers from **both** Cursor (`~/.cursor/mcp.json`) and VS Code/GitHub Copilot (user `mcp.json`) into Claude Code's `~/.claude.json`. Case-insensitive dedup prevents duplicate entries. New quick pick options: "Claude Code user (~/.claude.json)" and "Claude Code project (.mcp.json)" as default targets. Adds `type` field automatically.
+- **Registry install writes directly to Claude Code config.** No more `vscode:mcp/install?` URI. Scope picker (User / Project) writes the server config directly to `~/.claude.json` or `.mcp.json` with atomic writes.
+- **Memory bank init runs in-process.** No more `npx cloude-code-memory-bank` (which was never published). The init logic is called directly from the extension. Uses a Claude Code-specific template that omits Cursor's Plan/Act workflow section.
+- **UI/UX Designer agent in starter pack.** New opt-in agent that reviews Figma designs, proposes component layouts, flags accessibility concerns, and hands off to the frontend developer.
+- **Default model: inherit caller default.** New agents default to `(inherit caller default)` instead of a hard-coded model. The spawned CLI omits `--model` so it uses whatever model the calling session is configured with. Added Sonnet 4.6 to the model dropdown.
+- **Starter pack agents inherit model.** All 9+1 starter pack agents now use `(inherit caller default)` instead of pinning specific models, respecting whatever plan your account supports.
+- Release: **1.0.31** (VS Code).
+
+## 1.0.30
+
+- **Persistent run transcripts.** Every team run now writes both `transcript.jsonl` (machine-readable) and `transcript.md` (human-readable) to `.claude/runs/{runId}/`. The markdown transcript includes formatted agent conversations, tool calls, results, costs, and phase transitions.
+- **Configurable run artifacts directory.** New setting `agentTeams.runArtifactsDir` lets you choose where run artifacts are saved. Supports `${workspaceFolder}` variable. Default: `{workspace}/.claude/runs/`.
+- **Live agent chat in Output Channel.** Agent conversations now stream live to the "Agent Teams" Output Channel panel. Watch agents debate, plan, and code in real time without opening the hub dashboard.
+- Release: **1.0.30** (VS Code).
+
 ## 1.0.28
 
 - **Skill-backed agents.** Agents can now point to a **SKILL.md** instead of a freeform prompt. Radio buttons in the agent form: **Custom prompt** vs **Use skill** (searchable dropdown of all discovered skills from `~/.agents/skills/`, `~/.claude/skills/`, `~/.cursor/skills/`, and workspace equivalents). Runtime resolves skill content at spawn time with the inline prompt as fallback.

@@ -229,6 +229,27 @@
       margin: 16px 0 10px;
     }
     .section-title:first-child { margin-top: 4px; }
+    details.section-collapse {
+      margin: 0 0 4px;
+    }
+    details.section-collapse > summary {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 16px 0 10px;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    details.section-collapse > summary:first-child { margin-top: 4px; }
+    details.section-collapse > summary::-webkit-details-marker { display: none; }
+    details.section-collapse > summary::before { content: "▸"; font-size: 9px; opacity: 0.5; }
+    details.section-collapse[open] > summary::before { content: "▾"; }
     .callout {
       border-radius: var(--r-lg);
       border: 1px solid var(--border);
@@ -1059,10 +1080,10 @@
     <p class="hub-tabs-hint" id="hub-tabs-hint">Click a tab to switch sections — each has different tools.</p>
     <nav class="pages" id="pages" aria-label="Hub sections">
       <button type="button" class="page-btn active" data-page="intel" aria-label="Intelligence" title="Bridges, One Click, Thinking Machine, readiness, scans">🧠 Intelligence</button>
+      <button type="button" class="page-btn" data-page="agentteams" aria-label="Agentic Teams" title="Multi-agent planning &amp; debate: agents, teams, live transcript, debate + plan-then-code, dashboard, slash commands">🤝 Agentic Teams</button>
       <button type="button" class="page-btn" data-page="mcp" aria-label="MCP" title="Registry search and MCP servers (workspace + user)">🔌 MCP</button>
       <button type="button" class="page-btn" data-page="skills" aria-label="Skills" title="skills.sh catalog and local SKILL.md folders">📚 Skills</button>
       <button type="button" class="page-btn" data-page="workspace" aria-label="Workspace" title="Workspace checklist and all toolbox commands">📋 Workspace</button>
-      <button type="button" class="page-btn" data-page="agentteams" aria-label="Agentic Teams" title="Multi-agent planning &amp; debate: agents, teams, live transcript, debate + plan-then-code, dashboard, slash commands">🤝 Agentic Teams</button>
     </nav>
     <nav class="subpages" id="subpages" aria-label="Browse or installed">
       <button type="button" class="sub-btn active" data-sub="browse">Browse</button>
@@ -1740,6 +1761,16 @@
     if (cls) n.className = cls;
     if (text != null) n.textContent = text;
     return n;
+  }
+
+  function collapsibleSection(title, openByDefault) {
+    var det = document.createElement("details");
+    det.className = "section-collapse";
+    if (openByDefault !== false) det.open = true;
+    var sum = document.createElement("summary");
+    sum.textContent = title;
+    det.appendChild(sum);
+    return det;
   }
 
   function filterWorkspaceTools() {
@@ -2482,6 +2513,7 @@
   var AT_MODELS = [
     { id: "", label: "(inherit caller default)" },
     { id: "claude-opus-4-7", label: "Opus 4.7" },
+    { id: "claude-sonnet-4-6", label: "Sonnet 4.6" },
     { id: "claude-sonnet-4-5", label: "Sonnet 4.5" },
     { id: "claude-haiku-4-5-20251001", label: "Haiku 4.5" }
   ];
@@ -2519,6 +2551,31 @@
     summary.appendChild(atSummaryItem("CLI", st.cliOk ? "ok" : "missing"));
     summary.appendChild(atSummaryItem("~/.claude/agents", st.agentsDirExists ? "exists" : "missing"));
     root.appendChild(summary);
+
+    /* Global long-term memory toggle */
+    var agents = s.agents || [];
+    var memOnCount = agents.filter(function (a) { return !!a.longTermMemory; }).length;
+    var allMemOn = agents.length > 0 && memOnCount === agents.length;
+    var globalMemRow = el("div", "at-form-row");
+    globalMemRow.style.margin = "8px 0";
+    globalMemRow.style.alignItems = "center";
+    var globalMemLabel = document.createElement("label");
+    globalMemLabel.style.display = "inline-flex";
+    globalMemLabel.style.alignItems = "center";
+    globalMemLabel.style.gap = "6px";
+    globalMemLabel.style.cursor = "pointer";
+    globalMemLabel.style.fontSize = "11px";
+    var globalMemCb = document.createElement("input");
+    globalMemCb.type = "checkbox";
+    globalMemCb.checked = allMemOn;
+    globalMemCb.indeterminate = memOnCount > 0 && !allMemOn;
+    globalMemCb.addEventListener("change", function () {
+      vscode.postMessage({ type: "agentTeams.bulkToggleMemory", enable: globalMemCb.checked });
+    });
+    globalMemLabel.appendChild(globalMemCb);
+    globalMemLabel.appendChild(document.createTextNode("Long-term memory for all agents (" + memOnCount + "/" + agents.length + ")"));
+    globalMemRow.appendChild(globalMemLabel);
+    root.appendChild(globalMemRow);
 
     /* Agent Dashboard strip (cards for every running Claude session). */
     renderAgentDashboard(root, s);
@@ -2839,7 +2896,16 @@
     card.appendChild(top);
     var modelStr = a.model ? a.model : "inherit";
     var toolsStr = (a.tools && a.tools.length) ? a.tools.join(", ") : "(none)";
-    card.appendChild(el("div", "at-meta", "Model: " + modelStr + "  •  Tools: " + toolsStr + "  •  " + a.filePath));
+    var metaStr = "Model: " + modelStr + "  •  Tools: " + toolsStr;
+    if (a.skillPath) {
+      var skillName = a.skillPath.split("/").slice(-2, -1)[0] || "skill";
+      metaStr += "  •  Skill: " + skillName;
+    }
+    if (a.longTermMemory) {
+      metaStr += "  •  Memory: on";
+    }
+    metaStr += "  •  " + a.filePath;
+    card.appendChild(el("div", "at-meta", metaStr));
     if (a.description) {
       card.appendChild(el("div", "at-desc", a.description));
     }
@@ -2934,7 +3000,7 @@
 
   function renderAgentForm(root, s) {
     var editing = atEdit.mode === "agent-edit" ? findAgentById(s, atEdit.agentId) : null;
-    var defaultModel = (s && s.agentTeamsDefaultModel) || "claude-sonnet-4-5";
+    var defaultModel = (s && s.agentTeamsDefaultModel) || "";
     var form = el("div", "at-form");
     form.appendChild(el("h3", null, editing ? "Edit agent: " + editing.name : "New agent"));
 
@@ -3029,10 +3095,116 @@
     });
     form.appendChild(toolsWrap);
 
-    form.appendChild(el("label", null, "System prompt"));
+    // Long-term memory checkbox
+    var memWrap = el("div", "at-form-row");
+    memWrap.style.alignItems = "center";
+    var memLabel = document.createElement("label");
+    memLabel.style.display = "inline-flex";
+    memLabel.style.alignItems = "center";
+    memLabel.style.gap = "6px";
+    memLabel.style.cursor = "pointer";
+    var memCb = document.createElement("input");
+    memCb.type = "checkbox";
+    memCb.id = "agent-ltm-cb";
+    if (editing && editing.longTermMemory) memCb.checked = true;
+    memLabel.appendChild(memCb);
+    memLabel.appendChild(document.createTextNode("Enable long-term memory"));
+    memWrap.appendChild(memLabel);
+    var memNote = el("div", "at-note");
+    memNote.textContent = "Agent learns from interactions and retains knowledge for future runs. Memory file stored alongside the agent.";
+    memNote.style.fontSize = "0.85em";
+    memNote.style.opacity = "0.7";
+    memNote.style.marginLeft = "22px";
+    memWrap.appendChild(memNote);
+    form.appendChild(memWrap);
+
+    // Prompt source: radio buttons
+    form.appendChild(el("label", null, "Prompt source"));
+    var promptSourceRow = el("div", "at-form-row");
+    var radioCustom = document.createElement("input");
+    radioCustom.type = "radio";
+    radioCustom.name = "promptSource";
+    radioCustom.value = "custom";
+    radioCustom.checked = !(editing && editing.skillPath);
+    var lblCustom = document.createElement("label");
+    lblCustom.style.display = "inline-flex";
+    lblCustom.style.alignItems = "center";
+    lblCustom.style.gap = "4px";
+    lblCustom.style.cursor = "pointer";
+    lblCustom.appendChild(radioCustom);
+    lblCustom.appendChild(document.createTextNode(" Custom prompt"));
+    promptSourceRow.appendChild(lblCustom);
+
+    var radioSkill = document.createElement("input");
+    radioSkill.type = "radio";
+    radioSkill.name = "promptSource";
+    radioSkill.value = "skill";
+    radioSkill.checked = !!(editing && editing.skillPath);
+    var lblSkill = document.createElement("label");
+    lblSkill.style.display = "inline-flex";
+    lblSkill.style.alignItems = "center";
+    lblSkill.style.gap = "4px";
+    lblSkill.style.cursor = "pointer";
+    lblSkill.appendChild(radioSkill);
+    lblSkill.appendChild(document.createTextNode(" Use skill"));
+    promptSourceRow.appendChild(lblSkill);
+    form.appendChild(promptSourceRow);
+
+    // Skill dropdown (visible when "Use skill" is selected)
+    var skillWrap = el("div", "at-skill-select");
+    skillWrap.style.display = radioSkill.checked ? "block" : "none";
+    skillWrap.appendChild(el("label", null, "Skill"));
+    var skillSelect = document.createElement("select");
+    var emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.textContent = "-- select a skill --";
+    skillSelect.appendChild(emptyOpt);
+    var allSkills = (s && s.skills) || [];
+    allSkills.forEach(function (sk) {
+      if (sk.disabled) return;
+      var opt = document.createElement("option");
+      opt.value = sk.skillMdPath;
+      opt.textContent = sk.name + " (" + sk.scope + ")";
+      if (editing && editing.skillPath === sk.skillMdPath) opt.selected = true;
+      skillSelect.appendChild(opt);
+    });
+    skillWrap.appendChild(skillSelect);
+    form.appendChild(skillWrap);
+
+    // Custom prompt textarea (visible when "Custom prompt" is selected)
+    var promptWrap = el("div", "at-prompt-wrap");
+    promptWrap.style.display = radioCustom.checked ? "block" : "none";
+    promptWrap.appendChild(el("label", null, "System prompt"));
     var prompt = document.createElement("textarea");
     prompt.value = editing ? editing.systemPrompt : "You are…";
-    form.appendChild(prompt);
+    promptWrap.appendChild(prompt);
+    form.appendChild(promptWrap);
+
+    // Fallback prompt (visible when "Use skill" is selected)
+    var fallbackWrap = el("div", "at-fallback-wrap");
+    fallbackWrap.style.display = radioSkill.checked ? "block" : "none";
+    fallbackWrap.appendChild(el("label", null, "Fallback prompt (optional)"));
+    var fallbackNote = el("div", "at-note");
+    fallbackNote.textContent = "Used if the skill file is missing at runtime.";
+    fallbackNote.style.fontSize = "0.85em";
+    fallbackNote.style.opacity = "0.7";
+    fallbackNote.style.marginBottom = "6px";
+    fallbackWrap.appendChild(fallbackNote);
+    var fallback = document.createElement("textarea");
+    fallback.rows = 3;
+    fallback.value = editing ? editing.systemPrompt : "";
+    fallbackWrap.appendChild(fallback);
+    form.appendChild(fallbackWrap);
+
+    // Toggle visibility on radio change
+    function togglePromptSource() {
+      var useSkill = radioSkill.checked;
+      skillWrap.style.display = useSkill ? "block" : "none";
+      promptWrap.style.display = useSkill ? "none" : "block";
+      fallbackWrap.style.display = useSkill ? "block" : "none";
+    }
+    radioCustom.addEventListener("change", togglePromptSource);
+    radioSkill.addEventListener("change", togglePromptSource);
 
     var actions = el("div", "at-form-actions");
     var bSave = el("button", "btn primary", editing ? "Save changes" : "Create agent");
@@ -3041,6 +3213,7 @@
       toolsWrap.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
         if (cb.checked) tools.push(cb.getAttribute("data-tool"));
       });
+      var useSkill = radioSkill.checked;
       var draft = {
         name: name.value.trim(),
         description: desc.value.trim(),
@@ -3048,11 +3221,17 @@
         model: model.value,
         tools: tools,
         color: color.value.trim(),
-        systemPrompt: prompt.value,
-        scope: scope.value
+        systemPrompt: useSkill ? fallback.value : prompt.value,
+        skillPath: useSkill ? skillSelect.value : "",
+        scope: scope.value,
+        longTermMemory: memCb.checked
       };
       if (!draft.name) {
         alert("Name is required.");
+        return;
+      }
+      if (useSkill && !draft.skillPath) {
+        alert("Select a skill.");
         return;
       }
       if (editing) {

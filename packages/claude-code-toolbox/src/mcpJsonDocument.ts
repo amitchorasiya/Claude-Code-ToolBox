@@ -11,7 +11,7 @@ export async function readMcpJsonDocument(uri: vscode.Uri): Promise<McpJsonDocum
     const buf = await vscode.workspace.fs.readFile(uri);
     const raw = JSON.parse(new TextDecoder().decode(buf)) as Record<string, unknown>;
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-      return { raw: { servers: {} } };
+      return { raw: { mcpServers: {} } };
     }
     return { raw };
   } catch {
@@ -25,16 +25,16 @@ export async function readOrEmptyMcpJson(uri: vscode.Uri): Promise<McpJsonDocume
   if (doc) {
     return doc;
   }
-  return { raw: { servers: {} } };
+  return { raw: { mcpServers: {} } };
 }
 
 function ensureServersObject(raw: Record<string, unknown>): Record<string, unknown> {
-  const s = raw.servers;
+  const s = raw.mcpServers;
   if (s && typeof s === "object" && !Array.isArray(s)) {
     return s as Record<string, unknown>;
   }
   const next: Record<string, unknown> = {};
-  raw.servers = next;
+  raw.mcpServers = next;
   return next;
 }
 

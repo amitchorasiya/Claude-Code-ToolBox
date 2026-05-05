@@ -8,6 +8,7 @@ import {
 } from "./bridgeWithoutNpx";
 import type { PortCursorMcpMode } from "./portFromCursor";
 import * as mcpPaths from "../mcpPaths";
+import { portVsCodeMcpToClaudeCode } from "../claudeCodeMcp";
 import { showMcpSkillsAwareness } from "../intelligence/mcpSkillsAwarenessCommand";
 import { showIntelligenceReadiness } from "../intelligence/readinessCommand";
 import { runClaudeToolboxConfigScan } from "./claudeToolboxConfigScan";
@@ -55,7 +56,7 @@ function cfgScope(): vscode.ConfigurationTarget {
 function getPortMode(notes: string[]): PortCursorMcpMode | "skip" {
   const v = vscode.workspace
     .getConfiguration()
-    .get<string>(`${CFG}.oneClickSetup.portCursorMcp`, "user");
+    .get<string>(`${CFG}.oneClickSetup.portCursorMcp`, "claude");
   if (v === "skip" || v === "dry") {
     return v === "dry" ? "dry" : "skip";
   }
@@ -65,11 +66,11 @@ function getPortMode(notes: string[]): PortCursorMcpMode | "skip" {
     }
     return "workspace";
   }
-  if (v === "user") {
-    return "user";
+  if (v === "claude" || v === "claudeProject" || v === "user" || v === "workspace") {
+    return v as PortCursorMcpMode;
   }
-  notes.push(`[One Click] portCursorMcp "${String(v)}" is invalid; using "user" (merge-safe default).`);
-  return "user";
+  notes.push(`[One Click] portCursorMcp "${String(v)}" is invalid; using "claude" (Claude Code default).`);
+  return "claude";
 }
 
 export async function openOneClickSetupSettings(): Promise<void> {
@@ -241,9 +242,24 @@ export async function runOneClickSetup(
     }
 
     if (portMode !== "skip") {
-      const okPort = runPortCursorMcpBundledWithMode(folder, portMode, qm);
+      const okPort = await runPortCursorMcpBundledWithMode(folder, portMode, qm);
       if (!okPort) {
         notes.push("[Cursor] MCP port: bundled CLI not found under extension");
+      }
+    }
+
+    // --- VS Code / Copilot MCP → Claude Code (merge) ---
+    if (portMode === "claude" || portMode === "claudeProject") {
+      try {
+        const vsResult = await portVsCodeMcpToClaudeCode({
+          scope: portMode === "claude" ? "user" : "project",
+          workspacePath: folder.uri.fsPath,
+        });
+        if (vsResult.merged.length > 0) {
+          notes.push(`[VS Code/Copilot] MCP: merged ${vsResult.merged.length} server(s) into Claude Code config`);
+        }
+      } catch {
+        // VS Code mcp.json may not exist — that's fine
       }
     }
 
@@ -278,7 +294,7 @@ export async function runOneClickSetup(
 
     // --- Shared: memory bank (after CLAUDE.md merges from Cursor + Copilot paths) ---
     if (initMb) {
-      const okMb = runInitMemoryBankBundledWithOptions(
+      const okMb = await runInitMemoryBankBundledWithOptions(
         folder,
         {
           dryRun: initMbDry,
@@ -287,7 +303,7 @@ export async function runOneClickSetup(
         qm
       );
       if (!okMb) {
-        notes.push("Memory bank: bundled CLI not found under extension");
+        notes.push("Memory bank: init failed");
       }
     }
 

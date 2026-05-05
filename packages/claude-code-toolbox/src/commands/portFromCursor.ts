@@ -1,16 +1,38 @@
 import * as vscode from "vscode";
 import * as mcpPaths from "../mcpPaths";
 import { runNpxInTerminal } from "../terminal/runNpx";
+import { portMcpToClaudeCode } from "../claudeCodeMcp";
 
 /** Cursor MCP port targets. The CLI always merges with an existing mcp.json when present (never replaces the whole file). */
-export type PortCursorMcpMode = "dry" | "user" | "workspace";
+export type PortCursorMcpMode = "dry" | "user" | "workspace" | "claude" | "claudeProject";
 
 /** Run Cursor MCP port without quick picks (One Click Setup, scripts). */
-export function runPortCursorMcpWithMode(
+export async function runPortCursorMcpWithMode(
   folder: vscode.WorkspaceFolder,
   mode: PortCursorMcpMode,
   tag: string
-): void {
+): Promise<void> {
+  if (mode === "claude" || mode === "claudeProject") {
+    try {
+      const result = await portMcpToClaudeCode({
+        scope: mode === "claude" ? "user" : "project",
+        workspacePath: folder.uri.fsPath,
+      });
+      const msg =
+        result.merged.length > 0
+          ? `Ported ${result.merged.length} MCP server(s) to ${result.targetPath}. ${
+              result.skipped.length > 0 ? `Skipped ${result.skipped.length} existing.` : ""
+            }`
+          : `No new servers to port. ${result.skipped.length} already exist in ${result.targetPath}.`;
+      vscode.window.showInformationMessage(msg);
+    } catch (e) {
+      vscode.window.showErrorMessage(
+        `Claude Code MCP port failed: ${e instanceof Error ? e.message : String(e)}`
+      );
+    }
+    return;
+  }
+
   const cfg = vscode.workspace.getConfiguration();
   const insiders = cfg.get<boolean>("cloude-code-toolbox.useInsidersPaths") === true;
   const args: string[] = [];
@@ -40,15 +62,17 @@ export async function portCursorMcp(): Promise<void> {
 
   const mode = await vscode.window.showQuickPick(
     [
-      { label: "User mcp.json (merge with existing)", value: "user" as const },
-      { label: "Workspace .vscode/mcp.json (merge with existing)", value: "workspace" as const },
+      { label: "Claude Code ~/.claude.json (merge)", value: "claude" as const },
+      { label: "Claude Code workspace .mcp.json (merge)", value: "claudeProject" as const },
+      { label: "VS Code user mcp.json (merge)", value: "user" as const },
+      { label: "VS Code workspace .vscode/mcp.json (merge)", value: "workspace" as const },
       { label: "Dry run (print JSON only)", value: "dry" as const },
     ],
-    { title: "Port Cursor MCP → VS Code" }
+    { title: "Port Cursor MCP" }
   );
   if (!mode) {
     return;
   }
 
-  runPortCursorMcpWithMode(folder, mode.value, tag);
+  await runPortCursorMcpWithMode(folder, mode.value, tag);
 }

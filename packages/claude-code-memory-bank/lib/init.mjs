@@ -142,42 +142,47 @@ function escapeRe(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function installCursorRules({ root, bankDisplay, dryRun }) {
+function installCursorRulesInternal({ root, bankDisplay, dryRun, messages }) {
   const destDir = join(root, ".cursor", "rules");
   const srcDir = join(TEMPLATES, "cursor-rules");
 
   if (!existsSync(srcDir)) {
-    console.error(`Missing templates: ${srcDir}`);
-    process.exit(1);
+    throw new Error(`Missing templates: ${srcDir}`);
   }
 
   const available = new Set(readdirSync(srcDir));
   for (const name of CURSOR_RULE_FILES) {
     if (!available.has(name)) {
-      console.error(`Missing Cursor rule template: ${join(srcDir, name)}`);
-      process.exit(1);
+      throw new Error(`Missing Cursor rule template: ${join(srcDir, name)}`);
     }
     const src = join(srcDir, name);
     const dest = join(destDir, name);
     if (existsSync(dest)) {
-      console.log(`skip (exists): ${dest}`);
+      messages.push(`skip (exists): ${dest}`);
       continue;
     }
     let body = readFileSync(src, "utf8");
     body = body.replaceAll("{{BANK_PATH}}", bankDisplay);
     if (dryRun) {
-      console.log(`[dry-run] write ${dest}`);
+      messages.push(`[dry-run] write ${dest}`);
       continue;
     }
     mkdirSync(destDir, { recursive: true });
     safeWriteFileSync(root, dest, body, "utf8");
-    console.log(`wrote ${dest}`);
+    messages.push(`wrote ${dest}`);
   }
 }
 
-function applyClaudeMd({ root, bankDisplay, dryRun }) {
+function installCursorRules({ root, bankDisplay, dryRun }) {
+  const messages = [];
+  installCursorRulesInternal({ root, bankDisplay, dryRun, messages });
+  messages.forEach((m) => console.log(m));
+}
+
+function applyClaudeMdInternal({ root, bankDisplay, dryRun, messages, claudeCode }) {
   const claudePath = join(root, "CLAUDE.md");
-  const tplPath = join(TEMPLATES, "claude-snippet.md");
+  const tplName = claudeCode ? "claude-snippet-claude-code.md" : "claude-snippet.md";
+  const tplPath = join(TEMPLATES, tplName);
   let tpl = readFileSync(tplPath, "utf8");
   tpl = tpl.replaceAll("{{BANK_PATH}}", bankDisplay);
 
@@ -186,20 +191,112 @@ ${tpl.trim()}
 ${MARKER_END}`;
 
   if (dryRun) {
-    console.log(`[dry-run] merge block into ${claudePath}`);
-    return;
+    messages.push(`[dry-run] merge block into ${claudePath}`);
+    return false;
   }
 
   if (!existsSync(claudePath)) {
     safeWriteFileSync(root, claudePath, `${block}\n`, "utf8");
-    console.log(`wrote ${claudePath}`);
-    return;
+    messages.push(`wrote ${claudePath}`);
+    return true;
   }
 
   const existing = readFileSync(claudePath, "utf8");
   const merged = mergeClaudeMd(existing, block);
   safeWriteFileSync(root, claudePath, merged, "utf8");
-  console.log(`merged memory-bank section into ${claudePath}`);
+  messages.push(`merged memory-bank section into ${claudePath}`);
+  return true;
+}
+
+function applyClaudeMd({ root, bankDisplay, dryRun }) {
+  const messages = [];
+  applyClaudeMdInternal({ root, bankDisplay, dryRun, messages, claudeCode: false });
+  messages.forEach((m) => console.log(m));
+}
+
+/**
+ * Initialize memory bank in-process (no process.exit, collects messages).
+ * @param {object} opts
+ * @param {string} opts.cwd - Project root
+ * @param {string} [opts.bankDir="memory-bank"] - Memory bank folder relative to cwd
+ * @param {boolean} [opts.dryRun=false] - Preview only
+ * @param {boolean} [opts.claudeCode=false] - Use claude-snippet-claude-code.md template (omits Plan/Act section)
+ * @param {boolean} [opts.cursorRules=false] - Install .cursor/rules/*.mdc
+ * @returns {{ created: string[], skipped: string[], claudeMdMerged: boolean, messages: string[] }}
+ */
+export function initMemoryBank(opts = {}) {
+  const {
+    cwd = process.cwd(),
+    bankDir = "memory-bank",
+    dryRun = false,
+    claudeCode = false,
+    cursorRules = false,
+  } = opts;
+
+  const messages = [];
+  const created = [];
+  const skipped = [];
+  let claudeMdMerged = false;
+
+  const root = resolve(cwd);
+  const bankDirNorm = normalizeBankPath(bankDir);
+  assertSafeBankDirSegments(bankDirNorm);
+  const bankRoot = join(root, bankDirNorm);
+  assertPathInsideRoot(root, bankRoot);
+  const bankDisplay = bankPathForInstructions(root, bankDirNorm);
+
+  const bankFiles = [
+    "projectbrief.md",
+    "productContext.md",
+    "activeContext.md",
+    "systemPatterns.md",
+    "techContext.md",
+    "progress.md",
+  ];
+
+  for (const name of bankFiles) {
+    const dest = join(bankRoot, name);
+    const src = join(TEMPLATES, "memory-bank", name);
+    if (!existsSync(src)) {
+      throw new Error(`Missing template: ${src}`);
+    }
+    if (existsSync(dest)) {
+      messages.push(`skip (exists): ${dest}`);
+      skipped.push(dest);
+      continue;
+    }
+    let body = readFileSync(src, "utf8");
+    body = body.replaceAll("{{BANK_PATH}}", bankDisplay);
+    if (dryRun) {
+      messages.push(`[dry-run] copy template -> ${dest}`);
+      continue;
+    }
+    mkdirSync(bankRoot, { recursive: true });
+    safeWriteFileSync(root, dest, body, "utf8");
+    messages.push(`wrote ${dest}`);
+    created.push(dest);
+  }
+
+  // Apply CLAUDE.md (always enabled unless explicitly opted out in future)
+  claudeMdMerged = applyClaudeMdInternal({
+    root,
+    bankDisplay,
+    dryRun,
+    messages,
+    claudeCode,
+  });
+
+  // Install Cursor rules if requested
+  if (cursorRules) {
+    installCursorRulesInternal({
+      root,
+      bankDisplay,
+      dryRun,
+      messages,
+    });
+  }
+
+  return { created, skipped, claudeMdMerged, messages };
 }
 
 /** @param {string[]} argv - args after the script name (e.g. process.argv.slice(2)) */
@@ -225,57 +322,21 @@ export function run(argv) {
     );
   }
 
-  const root = resolve(parsed.cwd);
-  const bankDirNorm = normalizeBankPath(parsed.bankDir);
-  assertSafeBankDirSegments(bankDirNorm);
-  const bankRoot = join(root, bankDirNorm);
-  assertPathInsideRoot(root, bankRoot);
-  const bankDisplay = bankPathForInstructions(root, bankDirNorm);
-
-  const bankFiles = [
-    "projectbrief.md",
-    "productContext.md",
-    "activeContext.md",
-    "systemPatterns.md",
-    "techContext.md",
-    "progress.md",
-  ];
-
-  for (const name of bankFiles) {
-    const dest = join(bankRoot, name);
-    const src = join(TEMPLATES, "memory-bank", name);
-    if (!existsSync(src)) {
-      console.error(`Missing template: ${src}`);
-      process.exit(1);
-    }
-    if (existsSync(dest)) {
-      console.log(`skip (exists): ${dest}`);
-      continue;
-    }
-    let body = readFileSync(src, "utf8");
-    body = body.replaceAll("{{BANK_PATH}}", bankDisplay);
-    if (parsed.dryRun) {
-      console.log(`[dry-run] copy template -> ${dest}`);
-      continue;
-    }
-    mkdirSync(bankRoot, { recursive: true });
-    safeWriteFileSync(root, dest, body, "utf8");
-    console.log(`wrote ${dest}`);
-  }
-
-  if (parsed.claudeMd) {
-    applyClaudeMd({
-      root,
-      bankDisplay,
+  try {
+    const result = initMemoryBank({
+      cwd: parsed.cwd,
+      bankDir: parsed.bankDir,
       dryRun: parsed.dryRun,
+      claudeCode: false, // CLI always uses full template
+      cursorRules: parsed.cursorRules,
     });
-  }
 
-  if (parsed.cursorRules) {
-    installCursorRules({
-      root,
-      bankDisplay,
-      dryRun: parsed.dryRun,
-    });
+    // Print all messages
+    result.messages.forEach((m) => console.log(m));
+
+    process.exit(0);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
   }
 }

@@ -88,8 +88,8 @@ export function evaluateReadiness(input: ReadinessInput): ReadinessCheck[] {
     id: "mcp-json",
     ok: input.workspaceMcpJson.exists,
     message: input.workspaceMcpJson.exists
-      ? "Workspace `.vscode/mcp.json` present."
-      : "Workspace `.vscode/mcp.json` missing.",
+      ? "Workspace `.mcp.json` present (Claude Code project MCP config)."
+      : "Workspace `.mcp.json` missing — port from Cursor or add servers via the MCP tab.",
     suggestedCommand: "CloudeCodeToolBox.portCursorMcp",
   });
 
@@ -123,11 +123,11 @@ export function evaluateReadiness(input: ReadinessInput): ReadinessCheck[] {
   });
 
   checks.push({
-    id: "mcp-vs-claude-session",
+    id: "mcp-claude-user",
     ok: true,
     message:
-      "VS Code **`.vscode/mcp.json`** powers editor MCP; **Claude Code** uses **`/mcp`** in the Claude panel and may use `~/.claude/settings.json`. Configure both if you use MCP in each surface.",
-    suggestedCommand: "CloudeCodeToolBox.openClaudeUserSettingsJson",
+      "Claude Code user MCP lives in **`~/.claude.json`** (`mcpServers` key). Use the MCP hub tab or `claude mcp add` to manage servers.",
+    suggestedCommand: "CloudeCodeToolBox.openUserMcp",
   });
 
   const cr = input.cursorrules;

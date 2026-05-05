@@ -1,33 +1,58 @@
 import * as vscode from "vscode";
 import * as mcpPaths from "../mcpPaths";
-import { runNpxInTerminal } from "../terminal/runNpx";
 
-export type InitMemoryBankNpxOptions = {
+export type InitMemoryBankOptions = {
   dryRun: boolean;
-  cursorRules: boolean;
+  cursorRules?: boolean;
 };
 
-/** Init memory bank via npx without quick picks (One Click Setup). */
-export function runInitMemoryBankWithOptions(
+/**
+ * Run memory bank init in-process (no npx).
+ * For One Click Setup and manual command.
+ */
+export async function runInitMemoryBankInProcess(
   folder: vscode.WorkspaceFolder,
-  tag: string,
-  opts: InitMemoryBankNpxOptions
-): void {
-  const flags: string[] = [];
-  if (opts.dryRun) {
-    flags.push("--dry-run");
+  opts: InitMemoryBankOptions
+): Promise<void> {
+  try {
+    // Dynamic import because extension is CJS and memory-bank is ESM
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = await (Function('return import("cloude-code-memory-bank/lib/init.mjs")')() as Promise<{ initMemoryBank: (opts: { cwd: string; dryRun: boolean; claudeCode: boolean; cursorRules: boolean }) => { created: string[]; skipped: string[]; claudeMdMerged: boolean } }>);
+    const { initMemoryBank } = mod;
+
+    const result = initMemoryBank({
+      cwd: folder.uri.fsPath,
+      dryRun: opts.dryRun,
+      claudeCode: true, // This IS a Claude Code extension
+      cursorRules: opts.cursorRules ?? false,
+    });
+
+    // Show summary
+    const summary: string[] = [];
+    if (result.created.length > 0) {
+      summary.push(`Created ${result.created.length} file(s)`);
+    }
+    if (result.skipped.length > 0) {
+      summary.push(`Skipped ${result.skipped.length} existing file(s)`);
+    }
+    if (result.claudeMdMerged) {
+      summary.push("Merged memory bank section into CLAUDE.md");
+    }
+
+    if (opts.dryRun) {
+      vscode.window.showInformationMessage(
+        `[Dry run] Memory bank preview complete. ${summary.join(", ")}`
+      );
+    } else {
+      vscode.window.showInformationMessage(
+        `Memory bank initialized. ${summary.join(", ")}`
+      );
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    vscode.window.showErrorMessage(`Memory bank init failed: ${msg}`);
+    throw err;
   }
-  if (opts.cursorRules) {
-    flags.push("--cursor-rules");
-  }
-  const args = ["init", "--cwd", folder.uri.fsPath, ...flags];
-  runNpxInTerminal(
-    folder.uri.fsPath,
-    "cloude-code-memory-bank",
-    tag,
-    args,
-    "Memory bank (cloude-code-memory-bank)"
-  );
 }
 
 export async function initMemoryBank(): Promise<void> {
@@ -36,12 +61,7 @@ export async function initMemoryBank(): Promise<void> {
     vscode.window.showErrorMessage("Open a workspace folder first.");
     return;
   }
-  const cfg = vscode.workspace.getConfiguration();
-  const tag = mcpPaths.npxTag(cfg);
 
-  const flags: string[] = [];
-
-  /** Quick pick filters hide non-matching rows as the user types; keep both choices visible. */
   const dryPick = await vscode.window.showQuickPick(
     [
       {
@@ -52,7 +72,7 @@ export async function initMemoryBank(): Promise<void> {
       },
       {
         label: "Yes (dry-run only)",
-        description: "Preview in terminal; no files changed",
+        description: "Preview only; no files changed",
         alwaysShow: true,
         value: true as const,
       },
@@ -61,9 +81,6 @@ export async function initMemoryBank(): Promise<void> {
   );
   if (dryPick === undefined) {
     return;
-  }
-  if (dryPick.value) {
-    flags.push("--dry-run");
   }
 
   const cursorRulesPick = await vscode.window.showQuickPick(
@@ -76,11 +93,8 @@ export async function initMemoryBank(): Promise<void> {
   if (cursorRulesPick === undefined) {
     return;
   }
-  if (cursorRulesPick.value) {
-    flags.push("--cursor-rules");
-  }
 
-  runInitMemoryBankWithOptions(folder, tag, {
+  await runInitMemoryBankInProcess(folder, {
     dryRun: dryPick.value,
     cursorRules: cursorRulesPick.value,
   });
