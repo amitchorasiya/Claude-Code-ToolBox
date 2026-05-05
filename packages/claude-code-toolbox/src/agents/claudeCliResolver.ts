@@ -71,6 +71,15 @@ async function probeExternalWhich(cmd: string): Promise<string | undefined> {
   });
 }
 
+const COMMON_INSTALL_PATHS = isWindows()
+  ? []
+  : [
+      "/opt/homebrew/bin/claude",
+      "/usr/local/bin/claude",
+      path.join(process.env.HOME ?? "", ".local/bin/claude"),
+      path.join(process.env.HOME ?? "", ".claude/bin/claude"),
+    ];
+
 /** Resolve the `claude` binary path; returns `undefined` when not found. */
 export async function resolveClaudeBin(override?: string): Promise<string | undefined> {
   if (override && override.trim()) {
@@ -89,7 +98,15 @@ export async function resolveClaudeBin(override?: string): Promise<string | unde
     return matches[0];
   }
   const external = await probeExternalWhich("claude");
-  return external;
+  if (external) {
+    return external;
+  }
+  for (const candidate of COMMON_INSTALL_PATHS) {
+    if (await isExecutableFile(candidate)) {
+      return candidate;
+    }
+  }
+  return undefined;
 }
 
 export async function checkClaudeCli(override?: string): Promise<ClaudeCliStatus> {
