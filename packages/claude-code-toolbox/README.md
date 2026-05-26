@@ -20,7 +20,7 @@
 
 **Missing the icon?** **Command Palette** (**Ctrl+Shift+P** / **⌘⇧P**) → type **Claude Code ToolBox** → run a command, or **Developer: Reload Window**, then repeat steps 2–3.
 
-![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=1.0.33)
+![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=1.0.34)
 
 ---
 
@@ -81,37 +81,37 @@ Real VS Code UI (not mockups). **Opening the hub:** [After install](#after-insta
 
 **Agentic Teams:** orchestrated multi-agent workflows with debate, planning, and review protocols. One-click Run dispatches all agents in parallel via swarm.
 
-![Agentic Teams: teams with protocols, swarm dispatch, and one-click Run](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/10-agentic-teams.png?v=1.0.33)
+![Agentic Teams: teams with protocols, swarm dispatch, and one-click Run](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/10-agentic-teams.png?v=1.0.34)
 
 **Agents:** 10-agent SDLC starter pack with role-based specialization (Plan/Code/Review), skill-backed prompts, and per-agent long-term memory.
 
-![Agents: role-tagged, skill-backed, with long-term memory](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/11-agents.png?v=1.0.33)
+![Agents: role-tagged, skill-backed, with long-term memory](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/11-agents.png?v=1.0.34)
 
 **Agent Dashboard + Long-Term Memory:** live visibility for every Claude Code session on your machine. Token-based cost estimates, context-window fill, live tool feed, grouped by workspace. 8 agents, 7 teams, 7 commands, native Agent Teams runtime enabled.
 
-![Agent Dashboard: live session cards with cost, context, tools, and LTM toggle](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/12-ltm-agent-dashboard.png?v=1.0.33)
+![Agent Dashboard: live session cards with cost, context, tools, and LTM toggle](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/12-ltm-agent-dashboard.png?v=1.0.34)
 
 **Intelligence:** Cursor → VS Code + Claude Code bridges, context pack, readiness, MCP & Skills awareness.
 
-![Intelligence tab: Cursor to VS Code + Claude Code bridges, context packs, and readiness](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=1.0.33)
+![Intelligence tab: Cursor to VS Code + Claude Code bridges, context packs, and readiness](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=1.0.34)
 
-![Intelligence: Port Cursor MCP, rules, and memory bank to VS Code + Claude Code](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/02-intelligence-cursor-port.png?v=1.0.33)
+![Intelligence: Port Cursor MCP, rules, and memory bank to VS Code + Claude Code](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/02-intelligence-cursor-port.png?v=1.0.34)
 
 **MCP** and **Skills** tabs: installed servers, registry browse, skills.sh, local `SKILL.md` trees.
 
-![MCP: installed workspace servers](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/03-mcp-browse-workspace-servers.png?v=1.0.33)
+![MCP: installed workspace servers](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/03-mcp-browse-workspace-servers.png?v=1.0.34)
 
-![MCP: registry browse & search](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/04-mcp-registry-search.png?v=1.0.33)
+![MCP: registry browse & search](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/04-mcp-registry-search.png?v=1.0.34)
 
-![Skills: catalog (skills.sh)](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/05-skills-catalog-skills-sh.png?v=1.0.33)
+![Skills: catalog (skills.sh)](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/05-skills-catalog-skills-sh.png?v=1.0.34)
 
-![Skills: installed local skill folders](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/06-skills-installed-local.png?v=1.0.33)
+![Skills: installed local skill folders](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/06-skills-installed-local.png?v=1.0.34)
 
 **Workspace** checklist and **Intelligence** context hygiene.
 
-![Workspace kit checklist](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/07-workspace-checklist.png?v=1.0.33)
+![Workspace kit checklist](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/07-workspace-checklist.png?v=1.0.34)
 
-![Intelligence: context hygiene and quick actions](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/08-workspace-toolbox-commands.png?v=1.0.33)
+![Intelligence: context hygiene and quick actions](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/08-workspace-toolbox-commands.png?v=1.0.34)
 
 **Reference diagram:** no PNG ships in `screenshots/` for the capability map right now. Source: [`diagrams/mermaid-copilot-map.mmd`](https://github.com/amitchorasiya/Claude-Code-ToolBox/blob/main/diagrams/mermaid-copilot-map.mmd) — export to PNG and add `screenshots/mermaid-claude-map.png` if you want an embedded diagram here again.
 

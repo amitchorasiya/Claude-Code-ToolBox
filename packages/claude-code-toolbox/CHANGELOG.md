@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.34
+
+- **VSIX README fix.** VSIX now uses the proper `npm run package` staging script so the Marketplace/VSIX shows the monorepo root README (marketing-quality) instead of the developer-facing extension README with packaging notes.
+- Release: **1.0.34** (VS Code).
+
 ## 1.0.33
 
 - **Reset button (full uninstall).** The Reset button in the Agentic Teams tab now removes ALL agents, teams, and slash commands installed by the ToolBox (user + workspace scope) and disables `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in `~/.claude/settings.json`. Confirmation via native VS Code modal dialog. Cross-platform (macOS, Windows, Linux).
