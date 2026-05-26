@@ -135,6 +135,18 @@ These are **actual VS Code UI captures** from the extension—what users see on 
 
 ![Skills: installed local skill folders](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/06-skills-installed-local.png)
 
+**Agentic Teams**: orchestrated workflows with debate, planning, and review protocols. One-click Run dispatches agents in parallel.
+
+![Agentic Teams: teams with protocols, swarm dispatch, and one-click Run](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/10-agentic-teams.png)
+
+**Agents**: 10-agent SDLC starter pack with role-based specialization, skill-backed prompts, and per-agent long-term memory.
+
+![Agents: role-tagged, skill-backed, with long-term memory](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/11-agents.png)
+
+**Agent Dashboard + Long-Term Memory**: live visibility for every Claude Code session on your machine. Token-based cost estimates, context fill, tool feed, grouped by workspace. LTM enabled for all agents.
+
+![Agent Dashboard: live session cards with cost, context, tools, and LTM toggle](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/12-ltm-agent-dashboard.png)
+
 **Workspace** checklist and **Intelligence** hub (context hygiene).
 
 ![Workspace kit checklist](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/07-workspace-checklist.png)

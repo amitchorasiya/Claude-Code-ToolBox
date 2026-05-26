@@ -79,19 +79,31 @@ In this repo, the extension reference README keeps **absolute** `raw.githubuserc
 
 Real VS Code UI (not mockups). **Opening the hub:** [After install](#after-install-open-claude-code-toolbox). Captures are high-resolution where noted.
 
+**Agentic Teams:** orchestrated multi-agent workflows with debate, planning, and review protocols. One-click Run dispatches all agents in parallel via swarm.
+
+![Agentic Teams: teams with protocols, swarm dispatch, and one-click Run](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/10-agentic-teams.png?v=1.0.33)
+
+**Agents:** 10-agent SDLC starter pack with role-based specialization (Plan/Code/Review), skill-backed prompts, and per-agent long-term memory.
+
+![Agents: role-tagged, skill-backed, with long-term memory](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/11-agents.png?v=1.0.33)
+
+**Agent Dashboard + Long-Term Memory:** live visibility for every Claude Code session on your machine. Token-based cost estimates, context-window fill, live tool feed, grouped by workspace. 8 agents, 7 teams, 7 commands, native Agent Teams runtime enabled.
+
+![Agent Dashboard: live session cards with cost, context, tools, and LTM toggle](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/12-ltm-agent-dashboard.png?v=1.0.33)
+
 **Intelligence:** Cursor → VS Code + Claude Code bridges, context pack, readiness, MCP & Skills awareness.
 
-![Intelligence tab: Cursor to VS Code + Claude Code bridges, context packs, and readiness](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=1.0.11)
+![Intelligence tab: Cursor to VS Code + Claude Code bridges, context packs, and readiness](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=1.0.33)
 
-![Intelligence: Port Cursor MCP, rules, and memory bank to VS Code + Claude Code](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/02-intelligence-cursor-port.png?v=1.0.11)
+![Intelligence: Port Cursor MCP, rules, and memory bank to VS Code + Claude Code](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/02-intelligence-cursor-port.png?v=1.0.33)
 
 **MCP** and **Skills** tabs: installed servers, registry browse, skills.sh, local `SKILL.md` trees.
 
-![MCP: installed workspace servers](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/03-mcp-browse-workspace-servers.png?v=1.0.11)
+![MCP: installed workspace servers](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/03-mcp-browse-workspace-servers.png?v=1.0.33)
 
-![MCP: registry browse & search](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/04-mcp-registry-search.png?v=1.0.11)
+![MCP: registry browse & search](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/04-mcp-registry-search.png?v=1.0.33)
 
-![Skills: catalog (skills.sh)](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/05-skills-catalog-skills-sh.png?v=1.0.11)
+![Skills: catalog (skills.sh)](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/05-skills-catalog-skills-sh.png?v=1.0.33)
 
 ![Skills: installed local skill folders](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/06-skills-installed-local.png?v=1.0.11)
 
