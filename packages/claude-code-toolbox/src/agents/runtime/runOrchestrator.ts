@@ -27,6 +27,7 @@ import { makeConverge } from "./protocols/converge";
 import { makeNativeTeamBridge } from "./nativeTeamBridge";
 import { createHybridSpawner, withTeammateVisibility } from "./hybridSpawner";
 import { attachMarkdownTranscript } from "./transcriptMarkdown";
+import { captureMemorySnapshots, persistAgentMemories } from "./memoryPersistence";
 
 export type StartRunOptions = {
   team: TeamEntry;
@@ -195,7 +196,13 @@ export function startTeamRun(opts: StartRunOptions): StartRunResult {
       abort.signal.addEventListener("abort", onAbort, { once: true });
     });
 
+  const memoryAgents = opts.agents.filter((a) => a.longTermMemory && a.filePath);
+  const preRunSnapshotsPromise = memoryAgents.length > 0
+    ? captureMemorySnapshots(memoryAgents)
+    : Promise.resolve(new Map<string, string | undefined>());
+
   const finished = (async (): Promise<{ status: RunStatus; planArtifactPath?: string }> => {
+    const preRunSnapshots = await preRunSnapshotsPromise;
     let status: RunStatus = "running";
     let planArtifactPath: string | undefined;
     let runTotals = { inputTokens: 0, outputTokens: 0, costUsd: 0 };
@@ -237,6 +244,13 @@ export function startTeamRun(opts: StartRunOptions): StartRunResult {
     });
     updateRun(runId, { status });
     await bus.flush();
+    if (memoryAgents.length > 0 && status === "completed") {
+      try {
+        await persistAgentMemories(memoryAgents, jsonlPath, status, preRunSnapshots);
+      } catch {
+        /* memory persistence is best-effort — never block run completion */
+      }
+    }
     return { status, planArtifactPath };
   })();
 

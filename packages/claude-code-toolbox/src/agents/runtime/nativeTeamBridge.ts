@@ -46,13 +46,22 @@ async function buildMemoryBlock(agents: AgentEntry[]): Promise<string> {
     }
     const memory = await readMemory(agent.filePath);
     if (memory) {
-      sections.push(`### ${agent.name}\n${memory}`);
+      sections.push(`### ${agent.name} (${agent.role})\nThis agent has learned:\n${memory}`);
     }
   }
   if (!sections.length) {
     return "";
   }
-  return `\n## Agent Long-Term Memories\n\n${sections.join("\n\n")}\n`;
+  return [
+    "",
+    "## Agent Long-Term Memories (role-specific learnings)",
+    "",
+    "Each agent below has accumulated knowledge about how to do their job better.",
+    "Pass relevant memory to each agent when you spawn them — it makes them smarter.",
+    "",
+    sections.join("\n\n"),
+    "",
+  ].join("\n");
 }
 
 function buildTeamRoster(agents: AgentEntry[]): string {

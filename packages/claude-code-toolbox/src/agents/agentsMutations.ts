@@ -83,6 +83,22 @@ export function renderAgentMarkdown(draft: AgentDraft): string {
   lines.push("---");
   lines.push("");
   lines.push(draft.systemPrompt.trim());
+  if (draft.longTermMemory) {
+    const slug = sanitizeFileName(name);
+    lines.push("");
+    lines.push("## Long-term memory");
+    lines.push("");
+    lines.push(`You have a persistent memory file at \`~/.claude/agents/${slug}.memory.md\`.`);
+    lines.push("Read it at the start of your task to recall past learnings.");
+    lines.push("After completing your task, append a new entry under today's date (### YYYY-MM-DD) with:");
+    lines.push("- **What I did:** brief journal of actions");
+    lines.push("- **What worked:** successful approaches");
+    lines.push("- **What to avoid:** mistakes or rejected approaches");
+    lines.push("- **User preferences:** observed style/format preferences");
+    lines.push("- **Role insights:** what makes you better at this role");
+    lines.push("");
+    lines.push("Focus on becoming smarter at YOUR role, not storing project facts.");
+  }
   lines.push("");
   return lines.join("\n");
 }

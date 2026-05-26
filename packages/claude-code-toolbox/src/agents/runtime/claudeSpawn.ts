@@ -427,19 +427,35 @@ export async function* spawnAgentTurn(
     const existing = await readAgentMemory(memPath);
     const lines: string[] = [
       "",
-      "## Long-term memory",
-      `You have persistent memory stored at: ${memPath}`,
+      "## Long-term memory (how to be better at your role)",
+      `Your persistent memory is at: ${memPath}`,
+      "",
+      "This memory makes you smarter over time. It contains what you've learned about:",
+      "- How to do YOUR role better (what approaches work, what gets rejected)",
+      "- User preferences for YOUR type of work (code style, review depth, plan format)",
+      "- Mistakes you've made before and how to avoid them",
+      "- What the team expects from YOUR role specifically",
     ];
     if (existing) {
       lines.push("");
+      lines.push("### Your accumulated knowledge:");
       lines.push(existing);
     }
     lines.push("");
     lines.push(
-      "After completing your task, update your memory file at the path above " +
-      "with key learnings, user preferences, codebase patterns, and decisions you observed. " +
-      "Keep entries concise. Append new entries under a date heading (e.g. ### YYYY-MM-DD). " +
-      "Do not delete existing entries unless they are clearly outdated or contradicted."
+      "After completing your task, update your memory file at the path above using the Write tool. " +
+      "Append under a date heading (### YYYY-MM-DD). Include:"
+    );
+    lines.push("- **What I did:** brief journal of actions taken (files modified, commands run)");
+    lines.push("- **What worked:** approaches that succeeded or got approved");
+    lines.push("- **What to avoid:** mistakes, rejected approaches, things to do differently");
+    lines.push("- **User preferences:** style, depth, format preferences observed");
+    lines.push("- **Role insights:** what makes you better at THIS specific role");
+    lines.push("");
+    lines.push(
+      "Do NOT store project facts or code snippets — store how to do YOUR job better. " +
+      "If the system auto-persists memory for you, it will only extract from your output, " +
+      "so be explicit about learnings in your responses."
     );
     memorySection = lines.join("\n");
   }

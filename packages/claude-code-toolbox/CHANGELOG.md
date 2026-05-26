@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.35
+
+- **Automatic long-term memory persistence.** After a team run completes, the system now automatically extracts learnings from each agent's transcript and persists them to `<agent>.memory.md` — even if the agent forgot to self-write. Includes validation (skips if agent already updated its own memory), deduplication (won't repeat existing entries), and smart extraction of what worked, what didn't, user preferences, and role-specific insights.
+- **Agent journal.** Each memory entry now includes a "What I did" journal section — a chronological record of files modified, commands run, and tools used. Agents build up an activity log across runs.
+- **Memory works natively in Claude Code.** Agent `.md` files now include embedded long-term memory instructions in the system prompt body, so memory reading/writing works when Claude Code spawns agents directly (via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`) — not just through the ToolBox orchestrator runtime.
+- **Smarter memory framing.** Memory injection now tells agents to focus on role self-improvement (what makes YOU better at your job) rather than storing project facts. The team lead prompt passes each agent's accumulated memory with context about how to use it.
+- Release: **1.0.35** (VS Code).
+
 ## 1.0.34
 
 - **VSIX README fix.** VSIX now uses the proper `npm run package` staging script so the Marketplace/VSIX shows the monorepo root README (marketing-quality) instead of the developer-facing extension README with packaging notes.
