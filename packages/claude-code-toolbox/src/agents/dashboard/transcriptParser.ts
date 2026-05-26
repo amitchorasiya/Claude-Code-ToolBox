@@ -38,6 +38,24 @@ function truncate(s: string, n: number): string {
   return s.length <= n ? s : `${s.slice(0, n)}…`;
 }
 
+/**
+ * Estimate cost from token counts (Sonnet pricing as default).
+ * $3/MTok input, $15/MTok output, $0.30/MTok cache read, $3.75/MTok cache write.
+ */
+function estimateCostFromTokens(
+  input: number,
+  output: number,
+  cacheRead: number,
+  cacheCreate: number
+): number {
+  return (
+    (input * 3) / 1_000_000 +
+    (output * 15) / 1_000_000 +
+    (cacheRead * 0.3) / 1_000_000 +
+    (cacheCreate * 3.75) / 1_000_000
+  );
+}
+
 function extractToolTarget(input: unknown): string | undefined {
   const rec = asObject(input);
   if (!rec) return undefined;
@@ -161,24 +179,34 @@ export function parseTranscriptLine(raw: string, ctx: ParseContext): SessionPatc
         used: input + cacheRead + cacheCreate,
         max: 200_000,
       };
+      const totalCost = asNumber(msg.total_cost_usd);
+      if (totalCost) {
+        patch.costUsd = totalCost;
+      } else if (input + output + cacheRead + cacheCreate > 0) {
+        patch.costUsdDelta = estimateCostFromTokens(input, output, cacheRead, cacheCreate);
+      }
     }
-    const totalCost = asNumber(msg.total_cost_usd);
-    if (totalCost) patch.costUsd = totalCost;
     return patch;
   }
 
   if (type === "result") {
     const usage = asObject(msg.usage);
     if (usage) {
-      patch.tokens = {
-        input: asNumber(usage.input_tokens) ?? 0,
-        output: asNumber(usage.output_tokens) ?? 0,
-        cacheRead: asNumber(usage.cache_read_input_tokens) ?? 0,
-        cacheCreate: asNumber(usage.cache_creation_input_tokens) ?? 0,
-      };
+      const input = asNumber(usage.input_tokens) ?? 0;
+      const output = asNumber(usage.output_tokens) ?? 0;
+      const cacheRead = asNumber(usage.cache_read_input_tokens) ?? 0;
+      const cacheCreate = asNumber(usage.cache_creation_input_tokens) ?? 0;
+      patch.tokens = { input, output, cacheRead, cacheCreate };
+      const totalCost = asNumber(msg.total_cost_usd);
+      if (totalCost) {
+        patch.costUsd = totalCost;
+      } else if (input + output + cacheRead + cacheCreate > 0) {
+        patch.costUsdDelta = estimateCostFromTokens(input, output, cacheRead, cacheCreate);
+      }
+    } else {
+      const totalCost = asNumber(msg.total_cost_usd);
+      if (totalCost) patch.costUsd = totalCost;
     }
-    const totalCost = asNumber(msg.total_cost_usd);
-    if (totalCost) patch.costUsd = totalCost;
     if (subtype === "success" && !ctx.skipStatus) {
       patch.status = "done";
     } else if (subtype && subtype !== "success" && !ctx.skipStatus) {

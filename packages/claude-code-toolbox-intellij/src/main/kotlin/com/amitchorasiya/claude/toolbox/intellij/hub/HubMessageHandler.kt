@@ -212,9 +212,26 @@ object HubMessageHandler {
                 } ?: SDLC_STARTER_AGENTS.map { it.name }
                 try {
                     val (written, skipped) = installStarterAgents(scope, home, base)
-                    notify(project, "Starter pack: $written written, $skipped skipped.", NotificationType.INFORMATION)
+                    syncAgentTeamsEnvVar(true, home)
+                    notify(project, "Starter pack installed: $written agents. CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS enabled. Please quit and reopen the IDE for native Agent Teams to take effect.", NotificationType.INFORMATION)
                 } catch (e: Exception) {
                     notify(project, "Starter pack error: ${e.message}", NotificationType.WARNING)
+                }
+                HubStateService.postFullState(project, postToWebView)
+            }
+            "agentTeams.resetAll" -> {
+                val home = java.nio.file.Path.of(System.getProperty("user.home"))
+                val base = project.basePath?.let { java.nio.file.Path.of(it) }
+                try {
+                    val userResult = uninstallStarterPack("user", home, null)
+                    val wsResult = if (base != null) uninstallStarterPack("workspace", home, base) else null
+                    syncAgentTeamsEnvVar(false, home)
+                    val totalAgents = userResult.agentsRemoved + (wsResult?.agentsRemoved ?: 0)
+                    val totalTeams = userResult.teamsRemoved + (wsResult?.teamsRemoved ?: 0)
+                    val totalCmds = userResult.commandsRemoved + (wsResult?.commandsRemoved ?: 0)
+                    notify(project, "Reset complete: removed $totalAgents agent(s), $totalTeams team(s), $totalCmds command(s). CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS disabled.", NotificationType.INFORMATION)
+                } catch (e: Exception) {
+                    notify(project, "Reset failed: ${e.message}", NotificationType.WARNING)
                 }
                 HubStateService.postFullState(project, postToWebView)
             }
@@ -230,9 +247,69 @@ object HubMessageHandler {
                         tools = root.getAsJsonArray("tools")?.let { arr -> (0 until arr.size()).mapNotNull { arr[it]?.asString } } ?: emptyList(),
                         scope = root.get("scope")?.asString ?: "user",
                         homeDir = home, workspaceRoot = base,
+                        skillPath = root.get("skillPath")?.asString,
+                        longTermMemory = root.get("longTermMemory")?.asBoolean == true,
+                        systemPrompt = root.get("systemPrompt")?.asString ?: "",
                     )
                 } catch (e: Exception) {
                     notify(project, "Create agent error: ${e.message}", NotificationType.WARNING)
+                }
+                HubStateService.postFullState(project, postToWebView)
+            }
+            "agentTeams.updateAgent" -> {
+                val home = java.nio.file.Path.of(System.getProperty("user.home"))
+                val base = project.basePath?.let { java.nio.file.Path.of(it) }
+                val existingId = root.get("id")?.asString ?: ""
+                if (existingId.isNotEmpty()) {
+                    val agents = collectLocalAgents(home, base)
+                    val existing = agents.find { it.id == existingId }
+                    if (existing != null) {
+                        try {
+                            updateAgentFile(
+                                existing = existing,
+                                name = root.get("name")?.asString ?: existing.name,
+                                description = root.get("description")?.asString ?: existing.description,
+                                role = root.get("role")?.asString ?: existing.role.name.lowercase(),
+                                model = root.get("model")?.asString ?: existing.model,
+                                tools = root.getAsJsonArray("tools")?.let { arr -> (0 until arr.size()).mapNotNull { arr[it]?.asString } } ?: existing.tools,
+                                color = root.get("color")?.asString ?: existing.color,
+                                systemPrompt = root.get("systemPrompt")?.asString ?: existing.systemPrompt,
+                                skillPath = root.get("skillPath")?.asString,
+                                longTermMemory = root.get("longTermMemory")?.asBoolean == true,
+                                homeDir = home, workspaceRoot = base,
+                            )
+                        } catch (e: Exception) {
+                            notify(project, "Update agent error: ${e.message}", NotificationType.WARNING)
+                        }
+                    }
+                }
+                HubStateService.postFullState(project, postToWebView)
+            }
+            "agentTeams.bulkToggleMemory" -> {
+                val home = java.nio.file.Path.of(System.getProperty("user.home"))
+                val base = project.basePath?.let { java.nio.file.Path.of(it) }
+                val enable = root.get("enable")?.asBoolean == true
+                try {
+                    val agents = collectLocalAgents(home, base)
+                    var count = 0
+                    for (agent in agents) {
+                        if (agent.longTermMemory != enable) {
+                            updateAgentFile(
+                                existing = agent,
+                                name = agent.name, description = agent.description,
+                                role = agent.role.name.lowercase(), model = agent.model,
+                                tools = agent.tools, color = agent.color,
+                                systemPrompt = agent.systemPrompt,
+                                skillPath = agent.skillPath,
+                                longTermMemory = enable,
+                                homeDir = home, workspaceRoot = base,
+                            )
+                            count++
+                        }
+                    }
+                    notify(project, "Long-term memory ${if (enable) "enabled" else "disabled"} for $count agent(s).", NotificationType.INFORMATION)
+                } catch (e: Exception) {
+                    notify(project, "Bulk memory toggle error: ${e.message}", NotificationType.WARNING)
                 }
                 HubStateService.postFullState(project, postToWebView)
             }

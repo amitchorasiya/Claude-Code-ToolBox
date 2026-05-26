@@ -23,6 +23,7 @@ import {
   type StarterPackInstallResult,
 } from "../agents/starterPack";
 import { TOOLBOX_SETTINGS_PREFIX, safeUpdateToolboxSetting } from "../toolboxSettings";
+import { syncAgentTeamsEnvVar } from "../agents/claudeSettingsEnv";
 
 export type EnableAgentTeamsOptions = {
   scope?: "user" | "workspace";
@@ -89,6 +90,12 @@ export async function enableAgentTeams(
   }
 
   await safeUpdateToolboxSetting("agentTeams.enabled", true);
+
+  const preferNative = cfg.get<boolean>(
+    `${TOOLBOX_SETTINGS_PREFIX}.agentTeams.preferNativeTeams`,
+    true
+  );
+  await syncAgentTeamsEnvVar(preferNative);
 
   /* Always (re)write preset teams if the required agents are on disk. Safe to
    * call even when the user didn't install the starter pack — if no eligible

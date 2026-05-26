@@ -46,7 +46,7 @@ export const SDLC_COMMANDS: readonly CommandPackEntry[] = [
     requires: ["product-manager", "architect"],
     defaultSelected: true,
     body: [
-      "You have access to these custom subagents. Use the **Task** tool to dispatch work to them, one at a time, in this order:",
+      "You have access to these custom subagents. Dispatch them using the **Task** tool (native Agent Teams) if available, otherwise use the **Agent** tool with the matching `subagent_type`. Dispatch both in parallel:",
       "",
       "1. `product-manager` — restate the user's intent and extract 3-7 testable acceptance criteria.",
       "2. `architect` — design the approach, flag trade-offs, list alternatives rejected.",
@@ -68,7 +68,7 @@ export const SDLC_COMMANDS: readonly CommandPackEntry[] = [
     requires: ["product-manager", "architect", "security-reviewer"],
     defaultSelected: true,
     body: [
-      "Run a short structured debate using the **Task** tool to dispatch these subagents in order:",
+      "Run a short structured debate. Dispatch subagents using the **Task** tool (native Agent Teams) if available, otherwise use the **Agent** tool with the matching `subagent_type`. Dispatch sequentially:",
       "",
       "1. `product-manager` — frame the question. State the user's intent and why it matters.",
       "2. `architect` — argue the recommended approach and reason about scalability / maintainability.",
@@ -92,7 +92,7 @@ export const SDLC_COMMANDS: readonly CommandPackEntry[] = [
     requires: ["code-reviewer", "security-reviewer"],
     defaultSelected: true,
     body: [
-      "Run `git diff` first to capture the pending diff. Then use the **Task** tool to dispatch subagents sequentially:",
+      "Run `git diff` first to capture the pending diff. Then dispatch subagents using the **Task** tool (native Agent Teams) if available, otherwise use the **Agent** tool with the matching `subagent_type`. Dispatch sequentially:",
       "",
       "1. `code-reviewer` — review for correctness, readability, and matching existing patterns. Group findings by severity.",
       "2. `security-reviewer` — second pass for OWASP, secrets, injection, deserialization risks.",
@@ -115,7 +115,7 @@ export const SDLC_COMMANDS: readonly CommandPackEntry[] = [
     requires: ["security-reviewer"],
     defaultSelected: true,
     body: [
-      "Dispatch the `security-reviewer` subagent via the **Task** tool with the user's description below. Ask it to:",
+      "Dispatch the `security-reviewer` subagent using the **Task** tool (native Agent Teams) if available, otherwise use the **Agent** tool with `subagent_type: \"security-reviewer\"`. Pass the user's description below. Ask it to:",
       "",
       "1. Enumerate OWASP-relevant risks (authn/authz, injection, SSRF, secrets, deserialization, PII).",
       "2. Propose one concrete mitigation per risk.",
@@ -135,7 +135,7 @@ export const SDLC_COMMANDS: readonly CommandPackEntry[] = [
     requires: ["backend-dev", "frontend-dev", "qa-test-engineer", "code-reviewer"],
     defaultSelected: false,
     body: [
-      "Coordinate a refactor across surface areas using the **Task** tool to dispatch subagents in order:",
+      "Coordinate a refactor across surface areas. Dispatch subagents using the **Task** tool (native Agent Teams) if available, otherwise use the **Agent** tool with the matching `subagent_type`. Dispatch in order:",
       "",
       "1. `backend-dev` — list server-side files / types to change, propose the smallest reviewable edit sequence.",
       "2. `frontend-dev` — same, but for UI/client code.",
@@ -159,7 +159,7 @@ export const SDLC_COMMANDS: readonly CommandPackEntry[] = [
     requires: ["product-manager", "architect"],
     defaultSelected: false,
     body: [
-      "Build a spec using the **Task** tool to dispatch these subagents in order:",
+      "Build a spec by dispatching subagents using the **Task** tool (native Agent Teams) if available, otherwise use the **Agent** tool with the matching `subagent_type`. Dispatch in order:",
       "",
       "1. `product-manager` — write a concise PRD with sections: problem, users, success metrics, 3-7 acceptance criteria, out-of-scope.",
       "2. `architect` — write a *Technical addendum* below the PRD with: integration points, data model changes, failure modes, observability, alternatives considered.",

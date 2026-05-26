@@ -20,6 +20,10 @@ export type AgentRunKind =
   | "usage"
   | "message"
   | "plan_artifact"
+  | "teammate_spawned"
+  | "teammate_idle"
+  | "task_created"
+  | "task_completed"
   | "error"
   | "log"
   | "run_end";
@@ -37,7 +41,7 @@ export type RunUsage = {
 };
 
 export type AgentRunEvent =
-  | { kind: "run_start"; t: string; runId: string; teamId: string; teamName: string; protocol: string; runtime: "native" | "custom"; phase: RunPhase }
+  | { kind: "run_start"; t: string; runId: string; teamId: string; teamName: string; protocol: string; runtime: "native" | "custom" | "agent-teams"; phase: RunPhase }
   | { kind: "phase_boundary"; t: string; runId: string; from: RunPhase; to: RunPhase; needsApproval: boolean; planPath?: string }
   | { kind: "agent_start"; t: string; runId: string; agent: string; color?: string; turn: number; phase: RunPhase }
   | { kind: "agent_end"; t: string; runId: string; agent: string; turn: number; status: "ok" | "error" | "aborted"; durationMs: number }
@@ -48,6 +52,10 @@ export type AgentRunEvent =
   | { kind: "usage"; t: string; runId: string; agent: string; usage: RunUsage }
   | { kind: "message"; t: string; runId: string; from: string; to: string; text: string }
   | { kind: "plan_artifact"; t: string; runId: string; agent: string; path: string; bytes: number }
+  | { kind: "teammate_spawned"; t: string; runId: string; teammate: string; agentType?: string; status: "spawning" | "running" }
+  | { kind: "teammate_idle"; t: string; runId: string; teammate: string; result?: string }
+  | { kind: "task_created"; t: string; runId: string; taskId: string; title: string; assignee?: string }
+  | { kind: "task_completed"; t: string; runId: string; taskId: string; title: string; assignee?: string }
   | { kind: "error"; t: string; runId: string; agent?: string; message: string }
   | { kind: "log"; t: string; runId: string; level: "info" | "warn" | "error"; message: string }
   | { kind: "run_end"; t: string; runId: string; status: RunStatus; totals: RunUsage };

@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.amitchorasiya.claude"
-version = "0.6.20"
+version = "0.6.22"
 
 repositories {
     mavenCentral()

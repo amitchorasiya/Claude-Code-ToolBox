@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.33
+
+- **Reset button (full uninstall).** The Reset button in the Agentic Teams tab now removes ALL agents, teams, and slash commands installed by the ToolBox (user + workspace scope) and disables `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in `~/.claude/settings.json`. Confirmation via native VS Code modal dialog. Cross-platform (macOS, Windows, Linux).
+- **Install starter pack enables native Agent Teams.** Clicking "Install starter pack" now automatically sets `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in `~/.claude/settings.json` and sets runtime to "Agent Teams (native teammates)". Prompts the user to reload VS Code for the change to take effect.
+- **Cost estimation in Agent Dashboard.** External Claude Code sessions (started from terminal) now show estimated cost based on token counts (Sonnet pricing) instead of `$0.00`. Removed projected cost display for cleaner cards.
+- **Memory bank bundling fix.** The `cloude-code-memory-bank` package is now correctly bundled in the VSIX (tarball reference instead of symlink), fixing the "Cannot find package" error on fresh installs.
+- Release: **1.0.33** (VS Code).
+
 ## 1.0.31
 
 - **MCP rewired to Claude Code native config.** The MCP hub, registry install, port-from-Cursor, awareness scan, and readiness check now read/write `~/.claude.json` (user scope, `mcpServers` key) and `<workspace>/.mcp.json` (project scope) instead of VS Code's `.vscode/mcp.json`. File watchers, tree view, and open commands updated. All other keys in `~/.claude.json` are preserved on write.

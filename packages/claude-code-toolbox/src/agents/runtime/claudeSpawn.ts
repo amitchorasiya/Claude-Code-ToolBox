@@ -228,6 +228,30 @@ export function parseStreamJsonLine(line: string, ctx: ParseContext): AgentRunEv
     if (subtype === "init") {
       out.push({ kind: "log", t, runId: ctx.runId, level: "info", message: "claude session initialised" });
     }
+    if (subtype === "teammate_spawned") {
+      const teammate = typeof msg.teammate === "string" ? (msg.teammate as string) : "teammate";
+      const agentType = typeof msg.agent_type === "string" ? (msg.agent_type as string) : undefined;
+      out.push({ kind: "teammate_spawned", t, runId: ctx.runId, teammate, agentType, status: "running" });
+      out.push({ kind: "agent_start", t, runId: ctx.runId, agent: teammate, turn: 0, phase: ctx.phase });
+    }
+    if (subtype === "teammate_idle") {
+      const teammate = typeof msg.teammate === "string" ? (msg.teammate as string) : "teammate";
+      const result = typeof msg.result === "string" ? (msg.result as string) : undefined;
+      out.push({ kind: "teammate_idle", t, runId: ctx.runId, teammate, result });
+      out.push({ kind: "agent_end", t, runId: ctx.runId, agent: teammate, turn: 0, status: "ok", durationMs: 0 });
+    }
+    if (subtype === "task_created") {
+      const taskId = typeof msg.task_id === "string" ? (msg.task_id as string) : `task-${Date.now()}`;
+      const title = typeof msg.title === "string" ? (msg.title as string) : "Task";
+      const assignee = typeof msg.assignee === "string" ? (msg.assignee as string) : undefined;
+      out.push({ kind: "task_created", t, runId: ctx.runId, taskId, title, assignee });
+    }
+    if (subtype === "task_completed") {
+      const taskId = typeof msg.task_id === "string" ? (msg.task_id as string) : `task-${Date.now()}`;
+      const title = typeof msg.title === "string" ? (msg.title as string) : "";
+      const assignee = typeof msg.assignee === "string" ? (msg.assignee as string) : undefined;
+      out.push({ kind: "task_completed", t, runId: ctx.runId, taskId, title, assignee });
+    }
     return out;
   }
 

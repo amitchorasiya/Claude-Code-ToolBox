@@ -159,5 +159,5 @@ class ToolboxSettings(private val projectRoot: Path?) {
         save(o)
     }
 
-    fun userMcpJsonPath(): Path = McpPaths.userMcpJson(getUseInsidersPaths())
+    fun userMcpJsonPath(): Path = McpPaths.userMcpJson()
 }

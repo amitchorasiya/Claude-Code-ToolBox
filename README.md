@@ -1,6 +1,6 @@
 # Claude Code ToolBox
 
-**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.31`** · JetBrains plugin **`0.6.20`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
+**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.33`** · JetBrains plugin **`0.6.20`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 
@@ -8,6 +8,9 @@
 >
 > The **🤝 Agentic Teams** tab (now the **second tab**) makes Claude Code **think in a team**. Specialised agents **debate a design**, produce a **plan you review and approve**, then **execute** — with a live color-coded transcript, per-turn tokens + cost, and persisted `plan.md` / `decision.md` per run.
 >
+> - **One-click native Agent Teams setup** — "Install starter pack" now sets `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` automatically and prompts you to reload. Agents and teams are written to `~/.claude/agents/` and `~/.claude/teams/` where Claude Code discovers them natively.
+> - **Reset button (full uninstall)** — removes all agents, teams, and slash commands installed by the ToolBox from both user and workspace scope, and disables the env var. Clean slate in one click.
+> - **Agent Dashboard with cost estimation** — live cards for every Claude Code session on your machine. Token-based cost estimates for external sessions (no more `$0.00`).
 > - **Skill-backed agents** — point any agent to a **SKILL.md** instead of a freeform prompt. Radio choice: **Custom prompt** vs **Use skill** (dropdown of all discovered skills). Runtime resolves skill content with inline prompt as fallback.
 > - **Per-agent long-term memory** — agents learn from interactions and retain knowledge across runs. Memory stored as `<agent>.memory.md` alongside the agent file. **Global toggle** to bulk-enable/disable for all agents.
 > - **Eight collaboration protocols** — native-task, round-robin, handoff, orchestrator, parallel fan-out, **debate + judge**, **plan-then-code (with your approval gate)**, **converge (parallel → cross-pollinate → synthesize)**.
@@ -15,7 +18,6 @@
 > - **7 preset teams** — `debate-team`, `plan-team`, `review-team`, `security-team`, `sdlc-plan-then-code`, `refactor-team`, `spec-team` — installed with the starter pack, each with its own swarm `/command`.
 > - **10-agent SDLC starter pack** — product-manager, architect, security-reviewer, backend-dev, frontend-dev, qa-test-engineer, code-reviewer, devops, tech-writer, and **UI/UX designer** (reviews Figma designs, proposes layouts, flags a11y). All default to **(inherit caller default)** model.
 > - **MCP reads Claude Code native config** — hub, registry install, awareness scan, and port all read/write `~/.claude.json` and `.mcp.json` directly. One Click merges from **both** Cursor and VS Code/Copilot MCPs with case-insensitive dedup.
-> - **Agent Dashboard** (opt-in) — live cards for every Claude Code session on your machine, whether started by the Toolbox or by `claude` in a terminal.
 > - **Collapsible sections** — all major sections across all tabs collapse/expand for quick navigation.
 > - **Full IntelliJ parity** — the JetBrains plugin ships the complete Agentic Teams runtime (Kotlin port of all 8 protocols, agent/team/command CRUD, live transcript, approval gate).
 > - **Cross-platform** — macOS, Windows, Linux.

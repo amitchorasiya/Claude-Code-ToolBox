@@ -6,7 +6,7 @@ import com.intellij.openapi.ui.Messages
 import java.nio.file.Path
 
 /**
- * Merges a public registry entry into workspace `.vscode/mcp.json` (stdio / streamable remote).
+ * Merges a public registry entry into workspace `.mcp.json` (stdio / streamable remote).
  * Simplified vs VS Code: skips some edge cases; prompts for `${input:...}` placeholders when present.
  */
 object McpRegistryInstall {
@@ -135,7 +135,7 @@ object McpRegistryInstall {
         val text = serverJson.toString()
         if (!text.contains("\${input:")) return
         Messages.showWarningDialog(
-            "This server needs extra inputs (API keys, etc.). Edit `.vscode/mcp.json` after install to fill placeholders, or use VS Code for the full flow.",
+            "This server needs extra inputs (API keys, etc.). Edit `.mcp.json` after install to fill placeholders.",
             "Claude Code ToolBox",
         )
     }

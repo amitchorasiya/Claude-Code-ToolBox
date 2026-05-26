@@ -20,12 +20,17 @@ data class AgentEntry(
     val systemPrompt: String,
     val scope: String,
     val disabled: Boolean = false,
+    val skillPath: String? = null,
+    val longTermMemory: Boolean = false,
 )
 
 private val DEFAULT_COLORS = listOf(
     "#4ec9b0", "#c586c0", "#9cdcfe", "#ce9178", "#b5cea8",
     "#dcdcaa", "#569cd6", "#f48771", "#d7ba7d",
 )
+
+fun memoryPathForAgent(agentFilePath: String): String =
+    agentFilePath.replace(Regex("\\.md$", RegexOption.IGNORE_CASE), ".memory.md")
 
 fun colorForAgentName(name: String): String {
     var h = 0L
@@ -87,17 +92,20 @@ private fun readAgentFile(filePath: Path, scope: String): AgentEntry? {
     val tools = (parsed["tools"] as? List<String>) ?: emptyList()
     val declaredColor = (parsed["color"] as? String)?.trim() ?: ""
     val color = if (Regex("^#[0-9a-fA-F]{3,8}\$").matches(declaredColor)) declaredColor else colorForAgentName(name)
+    val skillPath = (parsed["skillpath"] as? String)?.takeIf { it.isNotEmpty() }
+    val longTermMemory = (parsed["longtermmemory"] as? String) == "true"
     return AgentEntry(
         id = "$scope:${filePath.toAbsolutePath().toString().lowercase()}",
         name = name, description = description, role = role, model = model, tools = tools,
         color = color, filePath = filePath.toAbsolutePath().toString(), systemPrompt = body.trim(), scope = scope,
+        skillPath = skillPath, longTermMemory = longTermMemory,
     )
 }
 
 private fun scanAgentsUnderRoot(root: Path, scope: String): List<AgentEntry> {
     val dir = root.toFile()
     if (!dir.isDirectory) return emptyList()
-    return dir.listFiles()?.filter { it.isFile && it.extension.equals("md", ignoreCase = true) }
+    return dir.listFiles()?.filter { it.isFile && it.extension.equals("md", ignoreCase = true) && !it.name.endsWith(".memory.md", ignoreCase = true) }
         ?.mapNotNull { readAgentFile(it.toPath(), scope) }
         ?.sortedBy { it.name } ?: emptyList()
 }
@@ -136,31 +144,76 @@ fun agentsToJsonArray(agents: List<AgentEntry>): JsonArray {
         o.addProperty("filePath", a.filePath)
         o.addProperty("scope", a.scope)
         o.addProperty("disabled", a.disabled)
+        if (a.skillPath != null) o.addProperty("skillPath", a.skillPath)
+        o.addProperty("longTermMemory", a.longTermMemory)
         arr.add(o)
     }
     return arr
 }
 
-fun createAgentFile(name: String, description: String, role: String, model: String, tools: List<String>, scope: String, homeDir: Path, workspaceRoot: Path?): AgentEntry {
+fun createAgentFile(
+    name: String, description: String, role: String, model: String, tools: List<String>,
+    scope: String, homeDir: Path, workspaceRoot: Path?,
+    skillPath: String? = null, longTermMemory: Boolean = false, systemPrompt: String = "",
+): AgentEntry {
     val dir = agentsDirForScope(scope, homeDir, workspaceRoot) ?: error("Open a workspace folder to save workspace-scope agents.")
     dir.toFile().mkdirs()
     val base = name.trim().lowercase().replace(Regex("[^a-z0-9._-]+"), "-").trim('-')
     if (base.isEmpty()) error("Agent name must contain letters, digits, or dashes.")
     val target = dir.resolve("$base.md")
     if (target.toFile().exists()) error("Agent \"$base.md\" already exists in $scope scope.")
+    Files.writeString(target, renderAgentMarkdown(name, description, role, model, tools, "", skillPath, longTermMemory, systemPrompt))
+    return readAgentFile(target, scope) ?: error("Agent created but not readable back: $target")
+}
+
+fun renderAgentMarkdown(
+    name: String, description: String, role: String, model: String, tools: List<String>,
+    color: String = "", skillPath: String? = null, longTermMemory: Boolean = false, systemPrompt: String = "",
+): String {
     val lines = mutableListOf("---")
     lines.add("name: $name")
     if (description.isNotBlank()) lines.add("description: $description")
     lines.add("role: $role")
     if (model.isNotBlank()) lines.add("model: $model")
     if (tools.isNotEmpty()) lines.add("tools: [${tools.joinToString(", ") { "\"$it\"" }}]")
+    if (color.isNotBlank()) lines.add("color: $color")
+    if (!skillPath.isNullOrBlank()) lines.add("skillPath: $skillPath")
+    if (longTermMemory) lines.add("longTermMemory: true")
     lines.add("---")
     lines.add("")
-    Files.writeString(target, lines.joinToString("\n"))
-    return readAgentFile(target, scope) ?: error("Agent created but not readable back: $target")
+    if (systemPrompt.isNotBlank()) {
+        lines.add(systemPrompt.trim())
+        lines.add("")
+    }
+    return lines.joinToString("\n")
+}
+
+fun updateAgentFile(
+    existing: AgentEntry, name: String, description: String, role: String, model: String,
+    tools: List<String>, color: String, systemPrompt: String, skillPath: String?,
+    longTermMemory: Boolean, homeDir: Path, workspaceRoot: Path?,
+): AgentEntry {
+    val currentBase = Path.of(existing.filePath).fileName.toString().removeSuffix(".md")
+    val newBase = name.trim().lowercase().replace(Regex("[^a-z0-9._-]+"), "-").trim('-')
+    if (newBase.isEmpty()) error("Agent name must contain letters, digits, or dashes.")
+    val dir = Path.of(existing.filePath).parent
+    val targetPath = dir.resolve("$newBase.md")
+    if (currentBase != newBase && targetPath.toFile().exists()) {
+        error("Agent \"$newBase.md\" already exists in this scope.")
+    }
+    Files.writeString(targetPath, renderAgentMarkdown(name, description, role, model, tools, color, skillPath, longTermMemory, systemPrompt))
+    if (targetPath.toAbsolutePath().toString().lowercase() != Path.of(existing.filePath).toAbsolutePath().toString().lowercase()) {
+        try { Files.deleteIfExists(Path.of(existing.filePath)) } catch (_: Exception) {}
+        val oldMemory = Path.of(memoryPathForAgent(existing.filePath))
+        val newMemory = Path.of(memoryPathForAgent(targetPath.toAbsolutePath().toString()))
+        try { if (oldMemory.toFile().exists()) Files.move(oldMemory, newMemory) } catch (_: Exception) {}
+    }
+    return readAgentFile(targetPath, existing.scope) ?: error("Agent updated but not readable back: $targetPath")
 }
 
 fun deleteAgentFile(filePath: String) {
     val f = File(filePath)
     if (f.exists()) f.delete()
+    val memFile = File(memoryPathForAgent(filePath))
+    if (memFile.exists()) memFile.delete()
 }

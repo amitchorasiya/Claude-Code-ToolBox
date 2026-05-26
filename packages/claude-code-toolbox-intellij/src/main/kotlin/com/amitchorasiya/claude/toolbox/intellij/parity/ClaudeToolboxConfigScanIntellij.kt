@@ -31,7 +31,7 @@ object ClaudeToolboxConfigScanIntellij {
         lines.add("")
         val wsMcp = McpPaths.workspaceMcpJson(root)
         scanFileSection(lines, "Workspace mcp.json", wsMcp)
-        val userMcp = McpPaths.userMcpJson(settings.getUseInsidersPaths())
+        val userMcp = McpPaths.userMcpJson()
         scanFileSection(lines, "User mcp.json", userMcp)
         val copilot = root.resolve(".github").resolve("copilot-instructions.md")
         scanFileSection(lines, "copilot-instructions.md", copilot)

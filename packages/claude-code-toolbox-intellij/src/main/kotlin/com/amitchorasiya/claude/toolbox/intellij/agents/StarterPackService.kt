@@ -3,38 +3,76 @@ package com.amitchorasiya.claude.toolbox.intellij.agents
 import java.nio.file.Files
 import java.nio.file.Path
 
-data class StarterAgent(val name: String, val description: String, val role: String, val body: String)
-
-val SDLC_STARTER_AGENTS = listOf(
-    StarterAgent("product-manager", "Clarifies user intent, shapes acceptance criteria, owns the brief.", "plan",
-        "You are a product manager. Restate the user's intent, extract 3-7 testable acceptance criteria, and flag anything ambiguous. Be concise."),
-    StarterAgent("architect", "Designs the approach, picks patterns, and gates the plan.", "plan",
-        "You are a software architect. Given the PM's criteria, propose an implementation approach. List trade-offs, rejected alternatives, and open questions. Output a numbered plan."),
-    StarterAgent("backend-dev", "Implements server-side code and APIs to match the approved plan.", "code",
-        "You are a backend developer. Implement server-side changes that match the approved plan. Write clean, testable code. Flag any deviations from the plan."),
-    StarterAgent("frontend-dev", "Implements UI and client-side logic to match the approved plan.", "code",
-        "You are a frontend developer. Implement UI and client-side changes that match the approved plan. Follow existing component patterns. Flag any deviations."),
-    StarterAgent("code-reviewer", "Reviews diffs, requests changes, approves at the end.", "review",
-        "You are a code reviewer. Review the diff for correctness, readability, and adherence to existing patterns. Group findings as blocking / high / medium / low / nit. End with APPROVE or REQUEST_CHANGES."),
-    StarterAgent("security-reviewer", "Threat-models plans and scans diffs for vulnerabilities.", "review",
-        "You are a security reviewer. Evaluate for OWASP top-10 risks, secrets exposure, auth/authz gaps, injection vectors, and data handling. Propose one concrete mitigation per finding."),
-    StarterAgent("qa-test-engineer", "Writes unit and integration tests for new features and regressions.", "code",
-        "You are a QA/test engineer. Given the plan and implementation, write or update tests that cover the happy path and key edge cases. Specify the command to run them."),
+data class StarterAgent(
+    val name: String,
+    val description: String,
+    val role: String,
+    val model: String,
+    val color: String,
+    val tools: List<String>,
+    val body: String,
+    val defaultSelected: Boolean = true,
 )
 
-fun installStarterAgents(scope: String, homeDir: Path, workspaceRoot: Path?): Pair<Int, Int> {
+val SDLC_STARTER_AGENTS = listOf(
+    StarterAgent("product-manager", "Clarifies user intent, shapes acceptance criteria, owns the brief.", "plan", "", "#f48771", listOf("Read", "Grep"),
+        "You are a senior product manager on a software team.\n\nYour job in every run:\n1. Restate the user's intent in 2-3 sentences.\n2. List 3-7 crisp acceptance criteria (each testable).\n3. Flag open questions that would change the scope.\n4. Do NOT propose implementations — that belongs to the architect.\n\nAlways finish with a bulleted `## Acceptance criteria` section."),
+    StarterAgent("architect", "Designs the approach, picks patterns, and gates the plan.", "plan", "", "#569cd6", listOf("Read", "Grep", "Glob"),
+        "You are a staff software architect.\n\nGiven the product manager's acceptance criteria plus the codebase context, you design the approach. Output a plan with:\n- the integration point(s) and why,\n- data model changes,\n- failure modes and observability,\n- alternatives considered and rejected (one line each).\n\nWhen asked to judge a plan, reply with APPROVE or REVISE plus the specific concern."),
+    StarterAgent("security-reviewer", "Threat-models plans and scans diffs for vulnerabilities.", "review", "", "#c586c0", listOf("Read", "Grep", "Bash"),
+        "You are a security engineer reviewing plans and diffs.\n\nFor plans: enumerate OWASP-relevant risks (authn/authz, injection, SSRF, secrets handling, deserialization, PII). One line per risk plus a mitigation.\n\nFor diffs: only flag issues grounded in the actual code. Group findings by severity (critical / high / medium / low). If nothing is found, say so explicitly."),
+    StarterAgent("backend-dev", "Implements server-side code and APIs to match the approved plan.", "code", "", "#4ec9b0", listOf("Read", "Edit", "Write", "Bash", "Grep", "Glob"),
+        "You are a senior backend engineer.\n\nFollow the approved plan exactly. Do not introduce scope. When an assumption is required and the plan is silent, state it at the top of your response and proceed. Prefer small, reviewable edits over rewrites."),
+    StarterAgent("frontend-dev", "Implements UI and client-side logic to match the approved plan.", "code", "", "#9cdcfe", listOf("Read", "Edit", "Write", "Bash", "Grep", "Glob"),
+        "You are a senior frontend engineer.\n\nShip small, accessible, typed components. Follow existing patterns in the codebase before inventing new ones. Keep loading and error states honest."),
+    StarterAgent("qa-test-engineer", "Writes unit and integration tests for new features and regressions.", "code", "", "#b5cea8", listOf("Read", "Edit", "Write", "Bash", "Grep"),
+        "You are a QA engineer. For each acceptance criterion from the plan, produce at least one test. Prefer integration tests over unit mocks when they catch real bugs. Include the command to run the tests in your reply."),
+    StarterAgent("code-reviewer", "Reviews diffs, requests changes, approves at the end.", "review", "", "#dcdcaa", listOf("Read", "Grep", "Bash"),
+        "You are a code reviewer. Read the diff (`git diff`), then report findings grouped by severity. Distinguish `blocking` (must fix) from `nit` (optional). End with one of APPROVE / REQUEST_CHANGES."),
+    StarterAgent("devops", "Handles CI/CD, infrastructure, and deployment configs.", "code", "", "#ce9178", listOf("Read", "Edit", "Write", "Bash", "Grep"),
+        "You are a DevOps engineer. You touch CI pipelines, Dockerfiles, IaC, and deployment manifests. Keep changes minimal and idempotent. Always preview the effect (plan/dry-run) before recommending an apply.",
+        defaultSelected = false),
+    StarterAgent("tech-writer", "Updates README, changelog, and in-repo docs for shipped changes.", "code", "", "#d7ba7d", listOf("Read", "Edit", "Write"),
+        "You are a technical writer. Given the diff and plan, update the README, changelog, and any affected doc files. Write for a developer who has never seen this PR. Keep the tone matter-of-fact and short.",
+        defaultSelected = false),
+    StarterAgent("designer", "Thinks through UI/UX, references Figma designs, and proposes component layouts.", "plan", "", "#ff79c6", listOf("Read", "Grep", "Glob"),
+        "You are a senior UI/UX designer embedded in an engineering team.\n\nYour responsibilities:\n1. Review existing Figma designs, mockups, or design tokens in the repo.\n2. Propose component hierarchy, layout, spacing, and interaction patterns.\n3. Flag accessibility concerns (contrast, focus order, ARIA, touch targets).\n4. Suggest responsive breakpoints and edge-case states (empty, loading, error, overflow).\n5. When a Figma file or design spec is referenced, describe the relevant frames and how they map to components the frontend dev should build.\n\nOutput a `## Design spec` section with component tree, key measurements, and interaction notes. Do NOT write code — hand off to the frontend developer."),
+)
+
+fun installStarterAgents(scope: String, homeDir: Path, workspaceRoot: Path?, selected: List<String>? = null): Pair<Int, Int> {
     val dir = agentsDirForScope(scope, homeDir, workspaceRoot) ?: return 0 to 0
     dir.toFile().mkdirs()
+    val selectedSet = selected?.toSet()
     var written = 0; var skipped = 0
     for (a in SDLC_STARTER_AGENTS) {
+        if (selectedSet != null && a.name !in selectedSet) continue
         val target = dir.resolve("${a.name}.md")
         if (target.toFile().exists()) { skipped++; continue }
-        val md = listOf("---", "name: ${a.name}", "description: ${a.description}", "role: ${a.role}", "---", "", a.body, "").joinToString("\n")
+        val md = buildString {
+            appendLine("---")
+            appendLine("name: ${a.name}")
+            appendLine("description: ${a.description}")
+            appendLine("role: ${a.role}")
+            appendLine("model: ${escapeYaml(a.model)}")
+            appendLine("tools: [${a.tools.joinToString(", ")}]")
+            appendLine("color: ${escapeYaml(a.color)}")
+            appendLine("---")
+            appendLine()
+            appendLine(a.body)
+        }
         Files.writeString(target, md)
         written++
     }
     return written to skipped
 }
+
+private fun escapeYaml(value: String): String {
+    if (value.isEmpty()) return "\"\""
+    if (Regex("^[A-Za-z0-9 _./,:;@#?!+-]+$").matches(value) && !value.startsWith(" ") && !value.startsWith("-")) return value
+    return "\"${value.replace("\"", "\\\"")}\""
+}
+
+fun starterPackDefaultSelection(): List<String> = SDLC_STARTER_AGENTS.filter { it.defaultSelected }.map { it.name }
 
 data class SdlcCommand(val id: String, val description: String, val argumentHint: String, val requires: List<String>, val body: String, val defaultSelected: Boolean)
 
@@ -68,3 +106,64 @@ fun installCommandsPack(selected: List<String>, scope: String, homeDir: Path, wo
 }
 
 fun commandsPackDefaultSelection(): List<String> = SDLC_COMMANDS_PACK.filter { it.defaultSelected }.map { it.id }
+
+data class UninstallResult(val agentsRemoved: Int, val teamsRemoved: Int, val commandsRemoved: Int)
+
+fun uninstallStarterPack(scope: String, homeDir: Path, workspaceRoot: Path?): UninstallResult {
+    var agentsRemoved = 0
+    var teamsRemoved = 0
+    var commandsRemoved = 0
+
+    val agentsDir = agentsDirForScope(scope, homeDir, workspaceRoot)
+    if (agentsDir != null && agentsDir.toFile().isDirectory) {
+        agentsDir.toFile().listFiles()?.filter { it.extension == "md" }?.forEach {
+            it.delete()
+            agentsRemoved++
+        }
+    }
+
+    val baseDir = if (scope == "user") homeDir else (workspaceRoot ?: homeDir)
+    val teamsDir = baseDir.resolve(".claude").resolve("teams").toFile()
+    if (teamsDir.isDirectory) {
+        teamsDir.listFiles()?.filter { it.extension == "json" }?.forEach {
+            it.delete()
+            teamsRemoved++
+        }
+    }
+
+    val commandsDir = commandsDirForScope(scope, homeDir, workspaceRoot)
+    if (commandsDir != null && commandsDir.toFile().isDirectory) {
+        commandsDir.toFile().listFiles()?.filter { it.extension == "md" && it.readText().contains("claude-code-toolbox") }?.forEach {
+            it.delete()
+            commandsRemoved++
+        }
+    }
+
+    return UninstallResult(agentsRemoved, teamsRemoved, commandsRemoved)
+}
+
+fun syncAgentTeamsEnvVar(enabled: Boolean, homeDir: Path) {
+    val settingsFile = homeDir.resolve(".claude").resolve("settings.json").toFile()
+    val settings: MutableMap<String, Any?> = if (settingsFile.exists()) {
+        try {
+            @Suppress("UNCHECKED_CAST")
+            com.google.gson.Gson().fromJson(settingsFile.readText(), Map::class.java)?.toMutableMap() as? MutableMap<String, Any?> ?: mutableMapOf()
+        } catch (_: Exception) { mutableMapOf() }
+    } else { mutableMapOf() }
+
+    @Suppress("UNCHECKED_CAST")
+    val env = (settings["env"] as? MutableMap<String, Any?>) ?: mutableMapOf()
+    if (enabled) {
+        env["CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"] = "1"
+    } else {
+        env.remove("CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS")
+    }
+    if (env.isNotEmpty()) {
+        settings["env"] = env
+    } else {
+        settings.remove("env")
+    }
+
+    settingsFile.parentFile?.mkdirs()
+    settingsFile.writeText(com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(settings) + "\n")
+}

@@ -52,8 +52,8 @@ object McpSkillsAwarenessIntellij {
     private fun awarenessPathsFrom(project: Project, payload: JsonObject): AwarenessPaths {
         val base = project.basePath ?: return AwarenessPaths("", null, null)
         val settings = ToolboxSettings(Path.of(base))
-        val userMcp = McpPaths.userMcpJson(settings.getUseInsidersPaths()).toAbsolutePath().normalize().toString()
-        val ws = Path.of(base).resolve(".vscode").resolve("mcp.json").toAbsolutePath().normalize().toString()
+        val userMcp = McpPaths.userMcpJson().toAbsolutePath().normalize().toString()
+        val ws = McpPaths.workspaceMcpJson(Path.of(base)).toAbsolutePath().normalize().toString()
         val wsName = payload.get("workspaceName")?.asString
         return AwarenessPaths(userMcp, ws, wsName)
     }

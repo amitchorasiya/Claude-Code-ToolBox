@@ -49,6 +49,7 @@ import {
   SDLC_STARTER_PACK,
   installSdlcStarterPack,
   starterPackDefaultSelection,
+  uninstallStarterPack,
   writePresetTeamsIfEligible,
   type StarterPackAgent,
 } from "../agents/starterPack";
@@ -68,12 +69,13 @@ import {
   type CommandDraft,
 } from "../agents/commandsMutations";
 import { TOOLBOX_SETTINGS_PREFIX, safeUpdateToolboxSetting } from "../toolboxSettings";
+import { syncAgentTeamsEnvVar } from "../agents/claudeSettingsEnv";
 import {
   startTeamRun,
   resolvePendingApproval,
   abortRun,
 } from "../agents/runtime/runOrchestrator";
-import { getRun, listActiveRuns } from "../agents/runtime/runRegistry";
+import { getRun, listActiveRuns, listAllRuns, pruneTerminalRuns } from "../agents/runtime/runRegistry";
 import type { AgentRunEvent, RunPhase, RunStatus } from "../agents/runtime/eventTypes";
 import type {
   DashboardController,
@@ -81,6 +83,7 @@ import type {
 } from "../agents/dashboard/dashboardController";
 import type { SessionCard } from "../agents/dashboard/sessionStore";
 import { attachRunBusToStore } from "../agents/dashboard/sessionBridge";
+import type { RunBus } from "../agents/runtime/runBus";
 
 export type { SkillEntry };
 
@@ -109,7 +112,7 @@ export type ActiveRunRow = {
   teamId: string;
   teamName: string;
   protocol: string;
-  runtime: "native" | "custom";
+  runtime: "native" | "custom" | "agent-teams";
   phase: RunPhase;
   status: RunStatus;
   startedAt: string;
@@ -165,6 +168,8 @@ export type HubPayload = {
   agentTeamsDefaultProtocol: TeamProtocol;
   /** Agent Teams — default model setting. */
   agentTeamsDefaultModel: string;
+  /** Agent Teams — prefer native Agent Teams runtime (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1). */
+  preferNativeTeams: boolean;
   /** Agent Teams — snapshot of currently running or approval-blocked runs. */
   activeRuns: ActiveRunRow[];
   /** Slash-command bridges installed on disk (both scopes). */
@@ -264,6 +269,8 @@ export async function gatherHubPayload(
   }));
   const agentTeamsEnabled =
     cfg.get<boolean>(`${TOOLBOX_SETTINGS_PREFIX}.agentTeams.enabled`, true) === true;
+  const preferNativeTeams =
+    cfg.get<boolean>(`${TOOLBOX_SETTINGS_PREFIX}.agentTeams.preferNativeTeams`, true) === true;
   const agentTeamsDefaultProtocol = (cfg.get<string>(
     `${TOOLBOX_SETTINGS_PREFIX}.agentTeams.defaultProtocol`,
     "native-task"
@@ -330,6 +337,7 @@ export async function gatherHubPayload(
     agentTeamsEnabled,
     agentTeamsDefaultProtocol,
     agentTeamsDefaultModel,
+    preferNativeTeams,
     activeRuns,
     slashCommands,
     sessionCards: controller?.store.snapshot().cards ?? [],
@@ -439,6 +447,7 @@ export function emptyHubPayload(): HubPayload {
     agentTeamsEnabled: true,
     agentTeamsDefaultProtocol: "native-task",
     agentTeamsDefaultModel: "claude-sonnet-4-5",
+    preferNativeTeams: true,
     activeRuns: [],
     slashCommands: [],
     sessionCards: [],
@@ -550,6 +559,8 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
   private _runSubscriptions = new Map<string, () => void>();
   /** Unsubscribe function for the Agent Dashboard store push channel. */
   private _dashboardSubscription?: () => void;
+  /** Output channel for streaming agent conversations to the user. */
+  private _agentOutputChannel?: vscode.OutputChannel;
 
   constructor(
     private readonly _ctx: vscode.ExtensionContext,
@@ -810,15 +821,25 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
               workspaceRoot: folder?.uri.fsPath,
               overwrite,
             });
+            await syncAgentTeamsEnvVar(true);
+            await vscode.workspace.getConfiguration().update(
+              `${TOOLBOX_SETTINGS_PREFIX}.agentTeams.preferNativeTeams`,
+              true,
+              vscode.ConfigurationTarget.Global
+            );
             const teamsBit = result.teamsWritten.length
               ? ` · ${result.teamsWritten.length} team(s)`
               : "";
             const cmdsBit = result.commandsSynced.length
               ? ` · ${result.commandsSynced.length} swarm command(s)`
               : "";
-            vscode.window.showInformationMessage(
-              `Starter pack: ${result.written.length} agents (${result.skipped.length} existed)${teamsBit}${cmdsBit} at ${result.targetDir}.`
+            const action = await vscode.window.showInformationMessage(
+              `Starter pack installed: ${result.written.length} agents${teamsBit}${cmdsBit}. CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS enabled. Please quit and reopen VS Code for native Agent Teams to take effect.`,
+              "Reload Window"
             );
+            if (action === "Reload Window") {
+              vscode.commands.executeCommand("workbench.action.reloadWindow");
+            }
           } catch (e) {
             const m = e instanceof Error ? e.message : String(e);
             vscode.window.showErrorMessage(`Starter pack install failed: ${m}`);
@@ -1214,21 +1235,32 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
               `${TOOLBOX_SETTINGS_PREFIX}.agentTeams.costCapUsd`,
               0
             );
+            const runArtifactsDir = configuration.get<string>(
+              `${TOOLBOX_SETTINGS_PREFIX}.agentTeams.runArtifactsDir`,
+              ""
+            );
+            const preferNative = configuration.get<boolean>(
+              `${TOOLBOX_SETTINGS_PREFIX}.agentTeams.preferNativeTeams`,
+              true
+            );
+            const effectiveTeam = preferNative
+              ? { ...team, runtime: "agent-teams" as const }
+              : team;
             const dashboard = this._dashboard;
             const { run, finished } = startTeamRun({
-              team,
+              team: effectiveTeam,
               agents,
               userPrompt: prompt,
               workspaceRoot: folder?.uri.fsPath,
               claudeBin: claudeBin || undefined,
               maxConcurrentAgents: maxConcurrent,
               budgetUsd: budgetUsd > 0 ? budgetUsd : undefined,
+              runArtifactsDir: runArtifactsDir || undefined,
               onStarted: (r) => {
                 if (!dashboard) return;
                 try {
-                  /* Bridge: mirror RunBus events into the dashboard store. */
                   attachRunBusToStore(r.bus, dashboard.store, {
-                    team,
+                    team: effectiveTeam,
                     cwd: folder?.uri.fsPath,
                     budgetUsd: budgetUsd > 0 ? budgetUsd : undefined,
                   });
@@ -1238,6 +1270,7 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
               },
             });
             this._subscribeRunEvents(run.runId);
+            this._streamRunToOutputChannel(run.runId, team.name, run.bus);
             finished
               .then((r) => {
                 this._view?.webview.postMessage({
@@ -1254,10 +1287,10 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
             this._view?.webview.postMessage({
               type: "agentTeams.runStarted",
               runId: run.runId,
-              teamId: team.id,
-              teamName: team.name,
-              protocol: team.protocol,
-              runtime: team.runtime,
+              teamId: effectiveTeam.id,
+              teamName: effectiveTeam.name,
+              protocol: effectiveTeam.protocol,
+              runtime: effectiveTeam.runtime,
             });
           } catch (e) {
             const m = e instanceof Error ? e.message : String(e);
@@ -1272,6 +1305,71 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
           if (r) {
             abortRun(r);
           }
+          this._postState();
+          break;
+        }
+        case "agentTeams.resetRuns": {
+          for (const r of listAllRuns()) {
+            if (r.status === "running" || r.status === "awaiting_approval") {
+              abortRun(r);
+            }
+          }
+          pruneTerminalRuns();
+          this._view?.webview.postMessage({ type: "agentTeams.runsReset" });
+          this._postState();
+          break;
+        }
+        case "agentTeams.resetAll": {
+          const confirmed = await vscode.window.showWarningMessage(
+            "This will delete all agents, teams, and slash commands set up by Claude Code ToolBox and disable CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS.",
+            { modal: true },
+            "Reset"
+          );
+          if (confirmed !== "Reset") break;
+          try {
+            const homeDir = os.homedir();
+            const folder = mcpPaths.getPrimaryWorkspaceFolder();
+            const userResult = await uninstallStarterPack({
+              scope: "user",
+              homeDir,
+            });
+            let wsResult: { agentsRemoved: number; teamsRemoved: number; commandsRemoved: number } | undefined;
+            if (folder?.uri.fsPath) {
+              wsResult = await uninstallStarterPack({
+                scope: "workspace",
+                homeDir,
+                workspaceRoot: folder.uri.fsPath,
+              });
+            }
+            await syncAgentTeamsEnvVar(false);
+            for (const r of listAllRuns()) {
+              if (r.status === "running" || r.status === "awaiting_approval") {
+                abortRun(r);
+              }
+            }
+            pruneTerminalRuns();
+            const totalAgents = userResult.agentsRemoved + (wsResult?.agentsRemoved ?? 0);
+            const totalTeams = userResult.teamsRemoved + (wsResult?.teamsRemoved ?? 0);
+            const totalCmds = userResult.commandsRemoved + (wsResult?.commandsRemoved ?? 0);
+            vscode.window.showInformationMessage(
+              `Reset complete: removed ${totalAgents} agent(s), ${totalTeams} team(s), ${totalCmds} command(s). CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS disabled.`
+            );
+          } catch (e) {
+            const m = e instanceof Error ? e.message : String(e);
+            vscode.window.showErrorMessage(`Reset failed: ${m}`);
+          }
+          this._view?.webview.postMessage({ type: "agentTeams.runsReset" });
+          this._postState();
+          break;
+        }
+        case "agentTeams.setPreferNativeTeams": {
+          const val = msg.value === true;
+          await vscode.workspace.getConfiguration().update(
+            `${TOOLBOX_SETTINGS_PREFIX}.agentTeams.preferNativeTeams`,
+            val,
+            vscode.ConfigurationTarget.Global
+          );
+          await syncAgentTeamsEnvVar(val);
           this._postState();
           break;
         }
@@ -1476,6 +1574,85 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
       }
     });
     this._runSubscriptions.set(runId, off);
+  }
+
+  private _streamRunToOutputChannel(runId: string, teamName: string, bus: RunBus): void {
+    if (!this._agentOutputChannel) {
+      this._agentOutputChannel = vscode.window.createOutputChannel("Agent Teams");
+    }
+    const ch = this._agentOutputChannel;
+    ch.show(true);
+    ch.appendLine(`\n${"=".repeat(60)}`);
+    ch.appendLine(`Team: ${teamName}  |  Run: ${runId}`);
+    ch.appendLine(`${"=".repeat(60)}\n`);
+    let deltaBuffer = "";
+    let currentAgent = "";
+    const flushDeltas = () => {
+      if (deltaBuffer.trim()) {
+        ch.appendLine(deltaBuffer.trimEnd());
+        ch.appendLine("");
+      }
+      deltaBuffer = "";
+    };
+    bus.on((ev: AgentRunEvent) => {
+      try {
+        switch (ev.kind) {
+          case "agent_start":
+            flushDeltas();
+            currentAgent = ev.agent;
+            ch.appendLine(`--- ${ev.agent} (Turn ${ev.turn}) ---\n`);
+            break;
+          case "assistant_delta":
+            deltaBuffer += ev.text;
+            break;
+          case "agent_end":
+            flushDeltas();
+            currentAgent = "";
+            ch.appendLine(`[${ev.agent} done in ${ev.durationMs}ms — ${ev.status}]\n`);
+            break;
+          case "tool_use":
+            ch.appendLine(`  > Tool: ${ev.tool}`);
+            break;
+          case "tool_result":
+            ch.appendLine(`  > ${ev.ok ? "OK" : "Error"}: ${(ev.summary ?? "").slice(0, 200)}`);
+            break;
+          case "message":
+            ch.appendLine(`${ev.from} → ${ev.to}: ${ev.text}`);
+            break;
+          case "usage":
+            ch.appendLine(`  [tokens: in ${ev.usage.inputTokens} / out ${ev.usage.outputTokens} | cost: $${(ev.usage.costUsd ?? 0).toFixed(4)}]`);
+            break;
+          case "phase_boundary":
+            ch.appendLine(`\n--- Phase: ${ev.to}${ev.needsApproval ? " (awaiting approval)" : ""} ---\n`);
+            break;
+          case "teammate_spawned":
+            ch.appendLine(`  [teammate spawned: ${ev.teammate}${ev.agentType ? ` (${ev.agentType})` : ""}]`);
+            break;
+          case "teammate_idle":
+            ch.appendLine(`  [teammate done: ${ev.teammate}]`);
+            break;
+          case "task_created":
+            ch.appendLine(`  [task created: ${ev.title}${ev.assignee ? ` → ${ev.assignee}` : ""}]`);
+            break;
+          case "task_completed":
+            ch.appendLine(`  [task completed: ${ev.title}${ev.assignee ? ` (${ev.assignee})` : ""}]`);
+            break;
+          case "error":
+            ch.appendLine(`ERROR (${ev.agent ?? "system"}): ${ev.message}`);
+            break;
+          case "run_end":
+            flushDeltas();
+            ch.appendLine(`\n${"=".repeat(60)}`);
+            ch.appendLine(`Run ${ev.status} | Cost: $${(ev.totals?.costUsd ?? 0).toFixed(4)}`);
+            ch.appendLine(`${"=".repeat(60)}\n`);
+            break;
+          default:
+            break;
+        }
+      } catch {
+        /* output channel streaming is best-effort */
+      }
+    });
   }
 
   /** Enqueue a hub payload refresh (serialized; safe to call from message handlers). */

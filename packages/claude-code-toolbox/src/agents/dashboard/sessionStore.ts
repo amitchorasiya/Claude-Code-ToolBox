@@ -60,7 +60,7 @@ export type SessionCard = {
   runId?: string;
   teamName?: string;
   protocol?: string;
-  runtime?: "native" | "custom";
+  runtime?: "native" | "custom" | "agent-teams";
   startedAt: string;
   updatedAt: string;
   endedAt?: string;
@@ -77,7 +77,11 @@ export type SessionCard = {
   dissentCount?: number;
 };
 
-export type SessionPatch = Partial<SessionCard> & { sessionId: string };
+export type SessionPatch = Partial<SessionCard> & {
+  sessionId: string;
+  /** When set, add to existing costUsd rather than replacing. */
+  costUsdDelta?: number;
+};
 
 export type HookEventPayload = {
   hook_event_name: string;
@@ -218,15 +222,19 @@ export class SessionStore {
     if (!patch.sessionId) return;
     const card = this.upsert(patch.sessionId, source);
     const t = nowIso();
+    const { costUsdDelta, ...patchRest } = patch;
     const next: SessionCard = {
       ...card,
-      ...patch,
+      ...patchRest,
       sessionId: card.sessionId,
       tokens: { ...card.tokens, ...(patch.tokens ?? {}) },
       context: { ...card.context, ...(patch.context ?? {}) },
       filesTouched: mergeFilesTouched(card.filesTouched, patch.filesTouched),
       updatedAt: t,
     };
+    if (costUsdDelta && costUsdDelta > 0) {
+      next.costUsd = (card.costUsd ?? 0) + costUsdDelta;
+    }
     if (patch.toolFeed && patch.toolFeed.length) {
       next.toolFeed = patch.toolFeed;
     }
@@ -356,7 +364,7 @@ export class SessionStore {
     this.applyPatch(patch, "external");
   }
 
-  applyRunBusPatch(event: AgentRunEvent, context: { teamId: string; teamName: string; protocol: string; runtime: "native" | "custom"; budgetUsd?: number; cwd?: string }): void {
+  applyRunBusPatch(event: AgentRunEvent, context: { teamId: string; teamName: string; protocol: string; runtime: "native" | "custom" | "agent-teams"; budgetUsd?: number; cwd?: string }): void {
     const sessionId = event.runId;
     if (!sessionId) return;
     const card = this.upsert(sessionId, "internal");

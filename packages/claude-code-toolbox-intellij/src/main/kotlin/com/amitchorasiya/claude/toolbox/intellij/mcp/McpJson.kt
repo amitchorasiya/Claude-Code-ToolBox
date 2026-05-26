@@ -52,17 +52,15 @@ object McpJson {
     fun readOrEmpty(path: Path): JsonObject {
         val doc = readDocument(path)
         if (doc != null) return doc
-        return JsonObject().apply { add("servers", JsonObject()) }
+        return JsonObject().apply { add("mcpServers", JsonObject()) }
     }
 
     fun getServersObject(raw: JsonObject): JsonObject {
-        var s = raw.get("servers")
-        if (s == null || !s.isJsonObject) {
-            val next = JsonObject()
-            raw.add("servers", next)
-            return next
-        }
-        return s.asJsonObject
+        val s = raw.get("mcpServers")
+        if (s != null && s.isJsonObject) return s.asJsonObject
+        val next = JsonObject()
+        raw.add("mcpServers", next)
+        return next
     }
 
     fun writeDocument(path: Path, raw: JsonObject) {

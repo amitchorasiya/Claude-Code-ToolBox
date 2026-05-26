@@ -2,7 +2,7 @@
   "name": "cloude-code-toolbox-vscode",
   "displayName": "Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)",
   "description": "Claude Code ToolBox: MCP hub, workspace helpers, Thinking Machine Mode (context packs & priming), readiness, and bridges from Cursor to Claude Code in VS Code. Not affiliated with Microsoft, GitHub, or Anthropic. See README disclaimer. Workflow ideas credited in NOTICE (everything-claude-code, MIT).",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "publisher": "amitchorasiya",
   "author": "amitchorasiya",
   "license": "MIT",
@@ -504,6 +504,11 @@
             "type": "string",
             "default": "",
             "markdownDescription": "Custom directory for team run artifacts (transcript, plan, decision). Leave empty for default: `{workspace}/.claude/runs/`. Supports `${workspaceFolder}` variable."
+          },
+          "cloude-code-toolbox.agentTeams.preferNativeTeams": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "When enabled, teams use Claude Code's native Agent Teams with `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (requires CLI v2.1.32+). Enables teammate spawning, shared task lists, and mailbox messaging. When disabled, falls back to single-session native mode."
           }
         }
       },
@@ -871,7 +876,7 @@
     }
   },
   "dependencies": {
-    "cloude-code-memory-bank": "file:../cloude-code-memory-bank",
+    "cloude-code-memory-bank": "file:.vsix-bridge-tgz/cloude-code-memory-bank-1.2.1.tgz",
     "cursor-mcp-vscode-port": "file:../cursor-mcp-vscode-port",
     "cursor-rules-to-claude": "file:../cursor-rules-to-claude"
   },

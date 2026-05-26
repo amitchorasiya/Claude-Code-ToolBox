@@ -33,14 +33,52 @@ fun debate(ctx: ProtocolContext): ProtocolResult {
     emitMessage(ctx.bus, "system", judge.name, "Judge phase — rendering verdict")
     turn++
     val fullTranscript = describeTranscriptForJudge(transcript)
-    val judgePrompt = "You are the judge \"${judge.name}\".\n\nDebate topic: ${ctx.userPrompt}\n\nFull transcript:\n$fullTranscript\n\nRender a verdict. Write your decision in <decision>…</decision> tags. Include strongest point from each side and a concrete next step."
+    val judgePrompt = buildString {
+        append("You are the judge \"${judge.name}\".\n\n")
+        append("Debate topic: ${ctx.userPrompt}\n\n")
+        append("Full transcript:\n$fullTranscript\n\n")
+        append("Write a DECISION between <decision>…</decision> tags. Inside the tags include ALL of:\n")
+        append("1. **Per-agent summary**: For each participant, summarize their position, strongest argument, and any concessions they made.\n")
+        append("2. **Key exchanges**: Identify the most important disagreements and how they were resolved (or not).\n")
+        append("3. **Open questions**: List any unresolved issues, risks, or areas where the team did not reach consensus.\n")
+        append("4. **Verdict**: State your final decision with clear reasoning.\n")
+        append("5. **Next steps**: List concrete, actionable next steps.")
+    }
     val judgeResult = spawnAgentTurn(judge, judgePrompt, ctx.runId, turn, "none", ctx.bus, totals, ctx.cwd, ctx.claudeBin, ctx.abortFlag)
 
-    val decisionText = extractPlan(judgeResult.text)
-    if (decisionText.isNotBlank()) {
-        writePlanArtifact(ctx.runDir, decisionText, ctx.bus, judge.name, "decision.md")
+    val m = Regex("<decision>([\\s\\S]*?)</decision>", RegexOption.IGNORE_CASE).find(judgeResult.text)
+    val verdictMd = (m?.groupValues?.get(1)?.trim() ?: judgeResult.text.trim())
+
+    val roundSize = debaters.size
+    val transcriptSections = mutableListOf<String>()
+    for (r in 0 until maxRounds) {
+        val roundEntries = transcript.drop(r * roundSize).take(roundSize)
+        if (roundEntries.isEmpty()) break
+        val lines = mutableListOf("### Round ${r + 1}")
+        for ((name, text) in roundEntries) {
+            lines.add(""); lines.add("**$name:**"); lines.add(""); lines.add(text.trim())
+        }
+        transcriptSections.add(lines.joinToString("\n"))
     }
 
+    val taskLine = ctx.userPrompt.lines().firstOrNull()?.take(200) ?: ""
+    val fullDecision = buildString {
+        append("# Debate Decision\n\n")
+        append("**Task:** $taskLine\n")
+        append("**Participants:** ${debaters.joinToString(", ") { it.name }}\n")
+        append("**Judge:** ${judge.name}\n")
+        append("**Rounds:** $maxRounds\n\n")
+        append("---\n\n")
+        append("## Debate Transcript\n\n")
+        append(transcriptSections.joinToString("\n\n"))
+        append("\n\n---\n\n")
+        append("## Judge's Verdict (${judge.name})\n\n")
+        append(verdictMd)
+        append("\n")
+    }
+
+    val decisionPath = writePlanArtifact(ctx.runDir, fullDecision, ctx.bus, judge.name, "decision.md")
+
     if (judgeResult.aborted) return ProtocolResult("aborted", totals)
-    return ProtocolResult(if (judgeResult.errored) "error" else "completed", totals)
+    return ProtocolResult(if (judgeResult.errored) "error" else "completed", totals, planArtifactPath = decisionPath)
 }

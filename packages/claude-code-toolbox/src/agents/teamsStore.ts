@@ -19,7 +19,7 @@ export type TeamProtocol =
   | "parallel-fan-out"
   | "converge";
 
-export type TeamRuntime = "native" | "custom";
+export type TeamRuntime = "native" | "custom" | "agent-teams";
 
 export type TeamEntry = {
   id: string;
@@ -123,7 +123,7 @@ async function readTeamFile(filePath: string, scope: "user" | "workspace"): Prom
   const description = typeof raw.description === "string" ? raw.description : "";
   const protocol = normalizeProtocol(raw.protocol);
   const runtime =
-    raw.runtime === "native" || raw.runtime === "custom"
+    raw.runtime === "native" || raw.runtime === "custom" || raw.runtime === "agent-teams"
       ? (raw.runtime as TeamRuntime)
       : runtimeForProtocol(protocol);
   const maxTurnsRaw = typeof raw.maxTurns === "number" ? raw.maxTurns : 20;

@@ -24,6 +24,9 @@ import { makeParallelFanout } from "./protocols/parallelFanout";
 import { debate } from "./protocols/debate";
 import { planThenCode } from "./protocols/planThenCode";
 import { makeConverge } from "./protocols/converge";
+import { makeNativeTeamBridge } from "./nativeTeamBridge";
+import { createHybridSpawner, withTeammateVisibility } from "./hybridSpawner";
+import { attachMarkdownTranscript } from "./transcriptMarkdown";
 
 export type StartRunOptions = {
   team: TeamEntry;
@@ -39,6 +42,8 @@ export type StartRunOptions = {
   onStarted?: (run: ActiveRun) => void;
   /** Soft cost budget for this run (mirrored into dashboard cards). */
   budgetUsd?: number;
+  /** Custom directory for run artifacts. Supports ${workspaceFolder} variable. */
+  runArtifactsDir?: string;
 };
 
 export type StartRunResult = {
@@ -50,7 +55,12 @@ function sanitize(s: string): string {
   return s.replace(/[^a-z0-9._-]+/gi, "-");
 }
 
+const NATIVE_BRIDGE_PROTOCOLS = new Set(["native-task", "round-robin", "handoff", "parallel-fan-out"]);
+
 function pickProtocol(team: TeamEntry, opts: { maxConcurrent: number }): Protocol {
+  if (team.runtime === "agent-teams" && NATIVE_BRIDGE_PROTOCOLS.has(team.protocol)) {
+    return makeNativeTeamBridge({ maxConcurrent: opts.maxConcurrent });
+  }
   switch (team.protocol) {
     case "native-task":
       return nativeTask;
@@ -78,14 +88,18 @@ function makeRunId(team: TeamEntry): string {
   return `${iso}-${sanitize(team.name)}`;
 }
 
-function resolveRunDir(team: TeamEntry, workspaceRoot: string | undefined, runId: string): string {
+function resolveRunDir(team: TeamEntry, workspaceRoot: string | undefined, runId: string, customDir?: string): string {
+  if (customDir?.trim()) {
+    const resolved = customDir.replace(/\$\{workspaceFolder\}/g, workspaceRoot ?? os.homedir());
+    return path.join(resolved, runId);
+  }
   const base = workspaceRoot ?? os.homedir();
   return path.join(base, ".claude", "runs", runId);
 }
 
 export function startTeamRun(opts: StartRunOptions): StartRunResult {
   const runId = makeRunId(opts.team);
-  const runDir = resolveRunDir(opts.team, opts.workspaceRoot, runId);
+  const runDir = resolveRunDir(opts.team, opts.workspaceRoot, runId, opts.runArtifactsDir);
   const jsonlPath = path.join(runDir, "transcript.jsonl");
   const bus = new RunBus(runId, jsonlPath);
   const abort = new AbortController();
@@ -124,23 +138,30 @@ export function startTeamRun(opts: StartRunOptions): StartRunResult {
       updateRun(runId, { phase: ev.to, status: ev.needsApproval ? "awaiting_approval" : "running" });
     }
   });
+  attachMarkdownTranscript(bus, runDir);
 
   const protocol = pickProtocol(opts.team, {
     maxConcurrent: opts.maxConcurrentAgents ?? 3,
   });
-  const spawnAgentTurnFn: SpawnAgentTurnFn = opts.spawnAgentTurnOverride
-    ?? (async function* (args) {
-      yield* spawnAgentTurn({
-        agent: args.agent,
-        prompt: args.prompt,
-        runId: args.runId,
-        turn: args.turn,
-        phase: args.phase,
-        cwd: args.cwd,
-        signal: args.signal,
-        claudeBin: args.claudeBin,
+  const isHybridNative = opts.team.runtime === "agent-teams" && !NATIVE_BRIDGE_PROTOCOLS.has(opts.team.protocol);
+  const baseSpawnFn: SpawnAgentTurnFn = opts.spawnAgentTurnOverride
+    ?? (isHybridNative
+      ? createHybridSpawner({ claudeBin: opts.claudeBin, enableNativeTeams: true })
+      : async function* (args) {
+        yield* spawnAgentTurn({
+          agent: args.agent,
+          prompt: args.prompt,
+          runId: args.runId,
+          turn: args.turn,
+          phase: args.phase,
+          cwd: args.cwd,
+          signal: args.signal,
+          claudeBin: args.claudeBin,
+        });
       });
-    });
+  const spawnAgentTurnFn: SpawnAgentTurnFn = isHybridNative
+    ? withTeammateVisibility(baseSpawnFn)
+    : baseSpawnFn;
   const spawnSessionFn: SpawnSessionFn = opts.spawnSessionOverride
     ?? (async function* (args) {
       yield* spawnClaudeSession({

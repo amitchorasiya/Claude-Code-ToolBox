@@ -298,6 +298,16 @@ export function getHubWebviewHtml(csp: string): string {
       filter: brightness(1.06);
       border-color: color-mix(in srgb, var(--vscode-button-background) 55%, #000000);
     }
+    .btn.danger-subtle {
+      color: var(--vscode-errorForeground, #f14c4c);
+      border-color: var(--vscode-errorForeground, #f14c4c);
+      background: transparent;
+      opacity: 0.8;
+    }
+    .btn.danger-subtle:hover {
+      opacity: 1;
+      background: color-mix(in srgb, var(--vscode-errorForeground, #f14c4c) 12%, transparent);
+    }
     .hero {
       border-radius: var(--r-lg);
       border: 1px solid var(--border);
@@ -1671,16 +1681,19 @@ export function getHubWebviewHtml(csp: string): string {
       return;
     }
     if (e.data.type === "agentTeams.runStarted") {
+      if (!isSafeKey(e.data.runId)) return;
       atRuns[e.data.runId] = atRuns[e.data.runId] || atNewRunState(e.data);
       if (page === "agentteams") render();
       return;
     }
     if (e.data.type === "agentTeams.runEvent") {
+      if (!isSafeKey(e.data.runId)) return;
       atIngestEvent(e.data.runId, e.data.event);
       if (page === "agentteams") render();
       return;
     }
     if (e.data.type === "agentTeams.phaseBoundary") {
+      if (!isSafeKey(e.data.runId)) return;
       var r = atRuns[e.data.runId];
       if (r) {
         r.awaitingApproval = true;
@@ -1690,8 +1703,14 @@ export function getHubWebviewHtml(csp: string): string {
       return;
     }
     if (e.data.type === "agentTeams.runEnded") {
+      if (!isSafeKey(e.data.runId)) return;
       var r2 = atRuns[e.data.runId];
       if (r2) { r2.status = e.data.status; r2.awaitingApproval = false; r2.ended = true; }
+      if (page === "agentteams") render();
+      return;
+    }
+    if (e.data.type === "agentTeams.runsReset") {
+      atRuns = Object.create(null);
       if (page === "agentteams") render();
       return;
     }
@@ -2156,7 +2175,8 @@ export function getHubWebviewHtml(csp: string): string {
     commandAgents: null
   };
   /** runId -> { events: [], agents: Map, totals: {inTok, outTok, usd}, status, phase, ... } */
-  var atRuns = {};
+  var atRuns = Object.create(null);
+  function isSafeKey(k) { return typeof k === "string" && k !== "__proto__" && k !== "constructor" && k !== "prototype"; }
   /** Dashboard — latest cards snapshot (array). Populated by agentDashboard.update messages. */
   var adCards = [];
   var adGeneratedAt = null;
@@ -2191,7 +2211,7 @@ export function getHubWebviewHtml(csp: string): string {
   }
 
   function atIngestEvent(runId, ev) {
-    if (!runId || !ev) return;
+    if (!runId || !ev || !isSafeKey(runId)) return;
     var r = atRuns[runId];
     if (!r) {
       r = atNewRunState({ runId: runId, teamId: "", teamName: ev.teamName || "", protocol: ev.protocol || "", runtime: ev.runtime || "native" });
@@ -2248,6 +2268,10 @@ export function getHubWebviewHtml(csp: string): string {
     if (ev.kind === "log") return ev.message;
     if (ev.kind === "agent_start") return "▶ turn " + ev.turn + " (" + ev.phase + ")";
     if (ev.kind === "agent_end") return "■ end turn " + ev.turn + " (" + ev.status + ", " + ev.durationMs + "ms)";
+    if (ev.kind === "teammate_spawned") return "🚀 teammate spawned: " + ev.teammate + (ev.agentType ? " (" + ev.agentType + ")" : "");
+    if (ev.kind === "teammate_idle") return "✓ teammate done: " + ev.teammate;
+    if (ev.kind === "task_created") return "📋 task: " + ev.title + (ev.assignee ? " → " + ev.assignee : "");
+    if (ev.kind === "task_completed") return "✅ done: " + ev.title + (ev.assignee ? " (" + ev.assignee + ")" : "");
     if (ev.kind === "run_start") return "▶ run started";
     if (ev.kind === "run_end") return "■ run " + ev.status;
     return "";
@@ -2542,6 +2566,52 @@ export function getHubWebviewHtml(csp: string): string {
     globalMemRow.appendChild(globalMemLabel);
     root.appendChild(globalMemRow);
 
+    /* Runtime mode toggle (Agent Teams vs Native) */
+    var runtimeRow = el("div", "at-form-row");
+    runtimeRow.style.margin = "8px 0";
+    runtimeRow.style.alignItems = "center";
+    runtimeRow.style.display = "flex";
+    runtimeRow.style.gap = "12px";
+    runtimeRow.style.fontSize = "11px";
+    var runtimeLabelText = document.createTextNode("Runtime: ");
+    runtimeRow.appendChild(runtimeLabelText);
+    var preferNative = s.preferNativeTeams !== false;
+    var radioAT = document.createElement("input");
+    radioAT.type = "radio";
+    radioAT.name = "at-runtime-mode";
+    radioAT.checked = preferNative;
+    radioAT.id = "rt-agent-teams";
+    var labelAT = document.createElement("label");
+    labelAT.htmlFor = "rt-agent-teams";
+    labelAT.style.cursor = "pointer";
+    labelAT.style.display = "inline-flex";
+    labelAT.style.alignItems = "center";
+    labelAT.style.gap = "4px";
+    labelAT.appendChild(radioAT);
+    labelAT.appendChild(document.createTextNode("Agent Teams (native teammates)"));
+    runtimeRow.appendChild(labelAT);
+    var radioNative = document.createElement("input");
+    radioNative.type = "radio";
+    radioNative.name = "at-runtime-mode";
+    radioNative.checked = !preferNative;
+    radioNative.id = "rt-native";
+    var labelNative = document.createElement("label");
+    labelNative.htmlFor = "rt-native";
+    labelNative.style.cursor = "pointer";
+    labelNative.style.display = "inline-flex";
+    labelNative.style.alignItems = "center";
+    labelNative.style.gap = "4px";
+    labelNative.appendChild(radioNative);
+    labelNative.appendChild(document.createTextNode("Native (single session)"));
+    runtimeRow.appendChild(labelNative);
+    radioAT.addEventListener("change", function () {
+      if (radioAT.checked) vscode.postMessage({ type: "agentTeams.setPreferNativeTeams", value: true });
+    });
+    radioNative.addEventListener("change", function () {
+      if (radioNative.checked) vscode.postMessage({ type: "agentTeams.setPreferNativeTeams", value: false });
+    });
+    root.appendChild(runtimeRow);
+
     /* Agent Dashboard strip (cards for every running Claude session). */
     renderAgentDashboard(root, s);
 
@@ -2573,9 +2643,20 @@ export function getHubWebviewHtml(csp: string): string {
     runIds.sort(function (a, b) {
       return (atRuns[b] && atRuns[b].startedAt) - (atRuns[a] && atRuns[a].startedAt);
     });
-    if (runIds.length) {
-      root.appendChild(el("div", "at-section", "Runs"));
-    }
+    var runsHeader = el("div", "at-section");
+    runsHeader.style.display = "flex";
+    runsHeader.style.alignItems = "center";
+    runsHeader.style.justifyContent = "space-between";
+    runsHeader.appendChild(document.createTextNode("Runs (" + runIds.length + ")"));
+    var resetBtn = el("button", "btn danger-subtle", "Reset");
+    resetBtn.title = "Remove all agents, teams, and commands installed by starter pack";
+    resetBtn.style.fontSize = "11px";
+    resetBtn.style.padding = "2px 8px";
+    resetBtn.addEventListener("click", function () {
+      vscode.postMessage({ type: "agentTeams.resetAll" });
+    });
+    runsHeader.appendChild(resetBtn);
+    root.appendChild(runsHeader);
     runIds.forEach(function (id) {
       renderRunPanel(root, atRuns[id]);
     });
@@ -3926,18 +4007,6 @@ export function getHubWebviewHtml(csp: string): string {
     cost.appendChild(document.createTextNode("cost "));
     cost.appendChild(el("strong", null, formatUsd(card.costUsd || 0)));
     metrics.appendChild(cost);
-    if (card.projectedCostUsd && card.projectedCostUsd > (card.costUsd || 0) * 1.02) {
-      var proj = el("span", null, "");
-      proj.appendChild(document.createTextNode("proj "));
-      proj.appendChild(el("strong", null, formatUsd(card.projectedCostUsd)));
-      metrics.appendChild(proj);
-    }
-    if (card.budgetUsd) {
-      var bud = el("span", null, "");
-      bud.appendChild(document.createTextNode("budget "));
-      bud.appendChild(el("strong", null, formatUsd(card.budgetUsd)));
-      metrics.appendChild(bud);
-    }
     c.appendChild(metrics);
 
     /* tool feed (last 3) */

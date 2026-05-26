@@ -76,10 +76,12 @@ export const debate: Protocol = async (ctx) => {
     `Full debate transcript:`,
     describeTranscriptForJudge(transcript),
     "",
-    `Write a DECISION between <decision>…</decision> tags. Inside the tags:`,
-    `- Summarize the strongest point from each side,`,
-    `- State your verdict and why,`,
-    `- List one concrete next step.`,
+    `Write a DECISION between <decision>…</decision> tags. Inside the tags include ALL of:`,
+    `1. **Per-agent summary**: For each participant, summarize their position, strongest argument, and any concessions they made.`,
+    `2. **Key exchanges**: Identify the most important disagreements and how they were resolved (or not).`,
+    `3. **Open questions**: List any unresolved issues, risks, or areas where the team did not reach consensus.`,
+    `4. **Verdict**: State your final decision with clear reasoning.`,
+    `5. **Next steps**: List concrete, actionable next steps.`,
   ].join("\n");
   const judgeRes = await runOneTurn({
     spawn: ctx.spawnAgentTurn,
@@ -98,8 +100,44 @@ export const debate: Protocol = async (ctx) => {
     return { status: "error", totals };
   }
   const m = judgeRes.text.match(/<decision>([\s\S]*?)<\/decision>/i);
-  const decisionMd = (m ? m[1].trim() : judgeRes.text.trim()) + "\n";
-  const decisionPath = await writePlanArtifact(ctx.runDir, decisionMd, ctx.bus, judge.name, "decision.md");
+  const verdictMd = m ? m[1].trim() : judgeRes.text.trim();
+
+  // Build full decision.md with transcript + verdict
+  const roundSize = participants.length;
+  const transcriptSections: string[] = [];
+  for (let r = 0; r < rounds; r++) {
+    const roundEntries = transcript.slice(r * roundSize, (r + 1) * roundSize);
+    if (!roundEntries.length) break;
+    const lines = [`### Round ${r + 1}`];
+    for (const entry of roundEntries) {
+      lines.push("", `**${entry.agent}:**`, "", entry.text.trim());
+    }
+    transcriptSections.push(lines.join("\n"));
+  }
+
+  const fullDecision = [
+    `# Debate Decision`,
+    "",
+    `**Task:** ${ctx.userPrompt.split("\n")[0].slice(0, 200)}`,
+    `**Participants:** ${participants.map((p) => p.name).join(", ")}`,
+    `**Judge:** ${judge.name}`,
+    `**Rounds:** ${rounds}`,
+    "",
+    `---`,
+    "",
+    `## Debate Transcript`,
+    "",
+    ...transcriptSections,
+    "",
+    `---`,
+    "",
+    `## Judge's Verdict (${judge.name})`,
+    "",
+    verdictMd,
+    "",
+  ].join("\n");
+
+  const decisionPath = await writePlanArtifact(ctx.runDir, fullDecision, ctx.bus, judge.name, "decision.md");
   emitMessage(ctx.bus, judge.name, "team", `Decision saved to ${decisionPath}`);
 
   /* Phase 1.6 — count dissent markers across participants' transcripts so the

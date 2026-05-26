@@ -1,6 +1,7 @@
 package com.amitchorasiya.claude.toolbox.intellij.agents.runtime
 
 import com.amitchorasiya.claude.toolbox.intellij.agents.AgentEntry
+import com.amitchorasiya.claude.toolbox.intellij.agents.memoryPathForAgent
 import com.google.gson.JsonParser
 import java.io.BufferedReader
 import java.io.File
@@ -24,13 +25,38 @@ fun resolveClaudeBin(override: String?): String? {
             if (candidate.isFile) return candidate.absolutePath
         }
     }
-    return try {
+    val external = try {
         val finder = if (isWindows) "where" else "which"
         val proc = ProcessBuilder(finder, "claude").redirectErrorStream(true).start()
         val output = proc.inputStream.bufferedReader().readLine()?.trim()
         proc.waitFor(5, TimeUnit.SECONDS)
         if (!output.isNullOrBlank() && File(output).isFile) output else null
     } catch (_: Exception) { null }
+    if (external != null) return external
+
+    val home = System.getProperty("user.home") ?: ""
+    val commonPaths = if (isWindows) {
+        val appData = System.getenv("APPDATA") ?: File(home, "AppData/Roaming").path
+        val localAppData = System.getenv("LOCALAPPDATA") ?: File(home, "AppData/Local").path
+        listOf(
+            File(appData, "Claude/claude.exe").path,
+            File(localAppData, "Programs/claude/claude.exe").path,
+            File(localAppData, "Microsoft/WinGet/Links/claude.exe").path,
+            File(home, ".claude/bin/claude.exe").path,
+            File(home, "scoop/shims/claude.exe").path,
+        )
+    } else {
+        listOf(
+            "/opt/homebrew/bin/claude",
+            "/usr/local/bin/claude",
+            File(home, ".local/bin/claude").path,
+            File(home, ".claude/bin/claude").path,
+        )
+    }
+    for (candidate in commonPaths) {
+        if (File(candidate).isFile) return candidate
+    }
+    return null
 }
 
 fun parseStreamJsonLine(line: String, runId: String, agent: String, phase: RunPhase): List<AgentRunEvent> {
@@ -113,6 +139,19 @@ fun parseStreamJsonLine(line: String, runId: String, agent: String, phase: RunPh
     return out
 }
 
+private fun readSkillContent(skillMdPath: String): String? {
+    return try {
+        val text = java.nio.file.Files.readString(java.nio.file.Path.of(skillMdPath))
+        text.replace(Regex("^---[\\s\\S]*?---\\s*"), "").trim().ifEmpty { null }
+    } catch (_: Exception) { null }
+}
+
+private fun readAgentMemory(memoryPath: String): String? {
+    return try {
+        java.nio.file.Files.readString(java.nio.file.Path.of(memoryPath)).trim().ifEmpty { null }
+    } catch (_: Exception) { null }
+}
+
 data class TurnResult(val text: String, val errored: Boolean, val aborted: Boolean)
 
 fun spawnAgentTurn(
@@ -121,8 +160,32 @@ fun spawnAgentTurn(
     abortFlag: java.util.concurrent.atomic.AtomicBoolean,
 ): TurnResult {
     val binPath = resolveClaudeBin(claudeBin) ?: throw RuntimeException("claude CLI not found on PATH.")
+
+    var resolvedPrompt = agent.systemPrompt.trim()
+    if (!agent.skillPath.isNullOrBlank()) {
+        val skillContent = readSkillContent(agent.skillPath)
+        if (skillContent != null) resolvedPrompt = skillContent
+    }
+
+    var memorySection = ""
+    if (agent.longTermMemory && agent.filePath.isNotBlank()) {
+        val memPath = memoryPathForAgent(agent.filePath)
+        val existing = readAgentMemory(memPath)
+        val memLines = mutableListOf("", "## Long-term memory", "You have persistent memory stored at: $memPath")
+        if (existing != null) { memLines.add(""); memLines.add(existing) }
+        memLines.add("")
+        memLines.add(
+            "After completing your task, update your memory file at the path above " +
+            "with key learnings, user preferences, codebase patterns, and decisions you observed. " +
+            "Keep entries concise. Append new entries under a date heading (e.g. ### YYYY-MM-DD). " +
+            "Do not delete existing entries unless they are clearly outdated or contradicted."
+        )
+        memorySection = memLines.joinToString("\n")
+    }
+
     val systemPrompt = buildString {
-        append(agent.systemPrompt.trim())
+        append(resolvedPrompt)
+        append(memorySection)
         append("\n\n## Your identity\n")
         append("You are the agent \"${agent.name}\" with role \"${agent.role.name.lowercase()}\" in a multi-agent team run.\n")
         append("Reply directly — do not delegate via the Task tool.")

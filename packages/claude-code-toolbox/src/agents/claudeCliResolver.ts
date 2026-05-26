@@ -134,3 +134,45 @@ export async function checkClaudeCli(override?: string): Promise<ClaudeCliStatus
   }
   return { ok: true, binPath };
 }
+
+const MIN_AGENT_TEAMS_VERSION = "2.1.32";
+
+function compareVersions(a: string, b: string): number {
+  const pa = a.split(".").map(Number);
+  const pb = b.split(".").map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] ?? 0;
+    const nb = pb[i] ?? 0;
+    if (na !== nb) {
+      return na - nb;
+    }
+  }
+  return 0;
+}
+
+export async function getClaudeVersion(binPath: string): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    const child = spawn(binPath, ["--version"], { shell: false, windowsHide: true, timeout: 5000 });
+    let stdout = "";
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdout += chunk.toString("utf8");
+    });
+    child.on("error", () => resolve(undefined));
+    child.on("close", () => {
+      const match = stdout.match(/(\d+\.\d+\.\d+)/);
+      resolve(match?.[1]);
+    });
+  });
+}
+
+export async function isNativeTeamsAvailable(override?: string): Promise<boolean> {
+  const binPath = await resolveClaudeBin(override);
+  if (!binPath) {
+    return false;
+  }
+  const version = await getClaudeVersion(binPath);
+  if (!version) {
+    return false;
+  }
+  return compareVersions(version, MIN_AGENT_TEAMS_VERSION) >= 0;
+}

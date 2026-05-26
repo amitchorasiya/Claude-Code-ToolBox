@@ -1710,16 +1710,19 @@
       return;
     }
     if (e.data.type === "agentTeams.runStarted") {
+      if (!isSafeKey(e.data.runId)) return;
       atRuns[e.data.runId] = atRuns[e.data.runId] || atNewRunState(e.data);
       if (page === "agentteams") render();
       return;
     }
     if (e.data.type === "agentTeams.runEvent") {
+      if (!isSafeKey(e.data.runId)) return;
       atIngestEvent(e.data.runId, e.data.event);
       if (page === "agentteams") render();
       return;
     }
     if (e.data.type === "agentTeams.phaseBoundary") {
+      if (!isSafeKey(e.data.runId)) return;
       var r = atRuns[e.data.runId];
       if (r) {
         r.awaitingApproval = true;
@@ -1729,6 +1732,7 @@
       return;
     }
     if (e.data.type === "agentTeams.runEnded") {
+      if (!isSafeKey(e.data.runId)) return;
       var r2 = atRuns[e.data.runId];
       if (r2) { r2.status = e.data.status; r2.awaitingApproval = false; r2.ended = true; }
       if (page === "agentteams") render();
@@ -2193,7 +2197,8 @@
     commandAgents: null
   };
   /** runId -> { events: [], agents: Map, totals: {inTok, outTok, usd}, status, phase, ... } */
-  var atRuns = {};
+  var atRuns = Object.create(null);
+  function isSafeKey(k) { return typeof k === "string" && k !== "__proto__" && k !== "constructor" && k !== "prototype"; }
   /** Dashboard — latest cards snapshot (array). Populated by agentDashboard.update messages. */
   var adCards = [];
   var adGeneratedAt = null;
@@ -2228,7 +2233,7 @@
   }
 
   function atIngestEvent(runId, ev) {
-    if (!runId || !ev) return;
+    if (!runId || !ev || !isSafeKey(runId)) return;
     var r = atRuns[runId];
     if (!r) {
       r = atNewRunState({ runId: runId, teamId: "", teamName: ev.teamName || "", protocol: ev.protocol || "", runtime: ev.runtime || "native" });
@@ -2630,8 +2635,19 @@
       atEdit.agentId = null;
       render();
     });
+    var resetBtn = el("button", "btn", "Reset");
+    resetBtn.title = "Remove all agents, teams, and commands installed by starter pack";
+    resetBtn.style.marginLeft = "6px";
+    resetBtn.style.fontSize = "11px";
+    resetBtn.style.color = "var(--warn, #f48771)";
+    resetBtn.addEventListener("click", function () {
+      if (confirm("This will delete all agents, teams, and slash commands set up by Claude Code ToolBox and disable CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS. Continue?")) {
+        vscode.postMessage({ type: "agentTeams.resetAll" });
+      }
+    });
     agentsRight.appendChild(bPack);
     agentsRight.appendChild(bNewA);
+    agentsRight.appendChild(resetBtn);
     agentsSection.appendChild(agentsRight);
     root.appendChild(agentsSection);
 

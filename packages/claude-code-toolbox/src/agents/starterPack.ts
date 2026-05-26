@@ -271,7 +271,7 @@ export const SDLC_STARTER_TEAMS: ReadonlyArray<{
   name: string;
   description: string;
   protocol: string;
-  runtime: "native" | "custom";
+  runtime: "native" | "custom" | "agent-teams";
   maxTurns: number;
   agents: string[];
   codePhaseAgents: string[];
@@ -367,13 +367,18 @@ export const SDLC_STARTER_TEAMS: ReadonlyArray<{
   },
 ];
 
-function buildSwarmCommandBody(teamName: string, agents: string[], protocol: string): string {
+function buildSwarmCommandBody(teamName: string, agents: string[], protocol: string, _runtime?: string): string {
+  return buildNativeTeamCommandBody(teamName, agents, protocol);
+}
+
+function buildNativeTeamCommandBody(teamName: string, agents: string[], protocol: string): string {
   const lines: string[] = [];
   lines.push(`You are the orchestrator for the **${teamName}** agent team (protocol: ${protocol}).`);
   lines.push("");
   lines.push("## Swarm dispatch");
   lines.push("");
-  lines.push("Use the **Task** tool to dispatch ALL of these agents **in parallel** (send every Task call in a single response so they run concurrently):");
+  lines.push("Dispatch ALL of these agents **in parallel** (send every call in a single response so they run concurrently).");
+  lines.push("Use the **Task** tool if available (native Agent Teams), otherwise use the **Agent** tool with the matching `subagent_type`:");
   lines.push("");
   for (const a of agents) {
     lines.push(`- \`${a}\``);
@@ -401,12 +406,13 @@ async function syncSwarmCommandForTeam(
   scope: "user" | "workspace",
   homeDir: string,
   workspaceRoot?: string,
+  runtime?: string,
 ): Promise<string | undefined> {
   try {
     const slug = teamName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const commands = await listInstalledCommands(homeDir, workspaceRoot);
     const existing = commands.find((c) => c.id === slug);
-    const body = buildSwarmCommandBody(teamName, agents, protocol);
+    const body = buildSwarmCommandBody(teamName, agents, protocol, runtime);
     const draft: CommandDraft = {
       name: slug,
       description,
@@ -484,6 +490,7 @@ export async function installSdlcStarterPack(
         opts.scope,
         opts.homeDir,
         opts.workspaceRoot,
+        preset.runtime,
       );
       if (synced) commandsSynced.push(synced);
     }
@@ -566,4 +573,77 @@ export async function writePresetTeamsIfEligible(
 /** IDs pre-checked by default in the installer UI. */
 export function starterPackDefaultSelection(): string[] {
   return SDLC_STARTER_PACK.filter((a) => a.defaultSelected).map((a) => a.id);
+}
+
+export type UninstallStarterPackOptions = {
+  scope: "user" | "workspace";
+  homeDir: string;
+  workspaceRoot?: string;
+};
+
+export type UninstallStarterPackResult = {
+  agentsRemoved: number;
+  teamsRemoved: number;
+  commandsRemoved: number;
+};
+
+/**
+ * Remove all agents, teams, and slash commands from `~/.claude/`.
+ * Deletes every `.md` in agents dir, every `.json` in teams dir,
+ * and every toolbox-owned `.md` in commands dir.
+ * Cross-platform: uses path.join for all FS operations.
+ */
+export async function uninstallStarterPack(
+  opts: UninstallStarterPackOptions
+): Promise<UninstallStarterPackResult> {
+  let agentsRemoved = 0;
+  let teamsRemoved = 0;
+  let commandsRemoved = 0;
+
+  const agentsDir = agentsDirForScope(opts.scope, opts.homeDir, opts.workspaceRoot);
+  if (agentsDir) {
+    try {
+      const entries = await fs.readdir(agentsDir);
+      for (const entry of entries) {
+        if (entry.endsWith(".md")) {
+          try {
+            await fs.unlink(path.join(agentsDir, entry));
+            agentsRemoved++;
+          } catch { /* skip */ }
+        }
+      }
+    } catch { /* dir doesn't exist */ }
+  }
+
+  const baseDir = opts.scope === "user" ? opts.homeDir : (opts.workspaceRoot ?? opts.homeDir);
+  const teamsDir = path.join(baseDir, ".claude", "teams");
+  try {
+    const entries = await fs.readdir(teamsDir);
+    for (const entry of entries) {
+      if (entry.endsWith(".json")) {
+        try {
+          await fs.unlink(path.join(teamsDir, entry));
+          teamsRemoved++;
+        } catch { /* skip */ }
+      }
+    }
+  } catch { /* dir doesn't exist */ }
+
+  const commandsDir = path.join(baseDir, ".claude", "commands");
+  try {
+    const entries = await fs.readdir(commandsDir);
+    for (const entry of entries) {
+      if (!entry.endsWith(".md")) continue;
+      const filePath = path.join(commandsDir, entry);
+      try {
+        const content = await fs.readFile(filePath, "utf8");
+        if (content.includes("claude-code-toolbox")) {
+          await fs.unlink(filePath);
+          commandsRemoved++;
+        }
+      } catch { /* skip */ }
+    }
+  } catch { /* dir doesn't exist */ }
+
+  return { agentsRemoved, teamsRemoved, commandsRemoved };
 }

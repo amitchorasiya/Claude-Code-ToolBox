@@ -65,7 +65,7 @@ object HubStateService {
         o.add("slashCommands", commandsToJsonArray(commands))
         o.addProperty("agentTeamsEnabled", true)
         o.addProperty("agentTeamsDefaultProtocol", "native-task")
-        o.addProperty("agentTeamsDefaultModel", "claude-sonnet-4-5")
+        o.addProperty("agentTeamsDefaultModel", "")
 
         val userAgentsDir = home.resolve(".claude/agents")
         val enableStatus = JsonObject()
@@ -84,10 +84,10 @@ object HubStateService {
             sp.addProperty("id", sa.name)
             sp.addProperty("title", sa.name)
             sp.addProperty("role", sa.role)
-            sp.addProperty("model", "")
-            sp.addProperty("color", colorForAgentName(sa.name))
+            sp.addProperty("model", sa.model)
+            sp.addProperty("color", sa.color)
             sp.addProperty("description", sa.description)
-            sp.addProperty("defaultSelected", true)
+            sp.addProperty("defaultSelected", sa.defaultSelected)
             sp.addProperty("installed", sa.name in installedNames)
             starterPack.add(sp)
         }

@@ -11,7 +11,7 @@ export type ActiveRun = {
   teamId: string;
   teamName: string;
   protocol: string;
-  runtime: "native" | "custom";
+  runtime: "native" | "custom" | "agent-teams";
   phase: RunPhase;
   status: RunStatus;
   startedAt: string;

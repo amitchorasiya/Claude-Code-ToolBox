@@ -30,6 +30,7 @@ Claude Code toolbox - JetBrains preview.
 
     <change-notes><![CDATA[
 <ul>
+<li>0.6.22: <b>Skill-backed agents</b>, <b>per-agent long-term memory</b>, global memory toggle, collapsible hub sections, tab reorder; <code>agentTeams.updateAgent</code> handler; agent delete cleans up <code>.memory.md</code>; hub HTML re-export from VS Code v1.0.28.</li>
 <li>0.6.11: Display name corrections — "Cloude" → "Claude" in notification group and settings; no functional change from 0.6.10.</li>
 <li>0.6.10: Point release — docs and repo README/static site highlight both the VS Code Marketplace and JetBrains plugin install; no functional change from 0.6.9.</li>
 <li>0.6.9: <b>Merge-only parity</b> — MCP port, memory bank, Cursor rules, and skills migration match VS Code merge-only behavior; One Click / hub bridge argv and settings normalization updated.</li>
