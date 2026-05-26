@@ -1,6 +1,10 @@
 # Claude Code ToolBox
 
-**VS Code extension + monorepo:** [`Claude-Code-ToolBox`](https://github.com/amitchorasiya/Claude-Code-ToolBox) on GitHub · **License:** [MIT](LICENSE) · **VS Code Marketplace id:** `amitchorasiya.claude-code-toolbox-vscode` · **Listing title:** *Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)* · **Versions:** VS Code extension **`1.0.33`** · JetBrains plugin **`0.6.20`** (plugin id `com.amitchorasiya.claude.code.toolbox`)
+**Claude Code doesn't ship with a control panel. This is it.**
+
+You're using Claude Code but you can't see what MCP servers are active, which skills are loaded, whether your teammates' config matches yours, or what your agents are doing. Setup lives in scattered dotfiles and tribal knowledge. Claude Code ToolBox gives you one visual hub to manage it all — plus multi-agent teams that debate, plan, and code together.
+
+**2,000+ installs** · VS Code extension **`1.0.34`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 

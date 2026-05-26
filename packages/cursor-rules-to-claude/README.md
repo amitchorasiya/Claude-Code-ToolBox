@@ -1,17 +1,31 @@
 # cursor-rules-to-claude
 
-Converts **Cursor** `.cursor/rules` (`*.mdc`) into:
+**Moving from Cursor to Claude Code? Bring your rules with you.**
 
-- **`CLAUDE.md`** — merged “always apply” rules at the repo root
-- **`.claude/rules/*.md`** — scoped rules (with path hints in a leading comment)
-
-Published as **`cursor-rules-to-claude`** on npm; sources live in this monorepo: [Claude-Code-ToolBox](https://github.com/amitchorasiya/Claude-Code-ToolBox) (`packages/cursor-rules-to-claude/`). **Claude Code ToolBox** ([VS Code](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [JetBrains](https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox) · [`jetbrains://…`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox)) can invoke this CLI via **`npx`** or bundled bridge paths.
-
-## Usage
+You've built up `.cursor/rules/*.mdc` files that make Cursor work the way you want. This CLI converts them into Claude Code's format so you don't lose any of that context.
 
 ```bash
-npx cursor-rules-to-claude --help
+npx cursor-rules-to-claude
 ```
+
+---
+
+## What it does
+
+- Reads `.cursor/rules/*.mdc` from your project
+- "Always apply" rules merge into `CLAUDE.md` at the repo root
+- Scoped rules become `.claude/rules/*.md` (with path hints)
+- Existing content is preserved (merge, not replace)
+
+---
+
+## Part of Claude Code ToolBox
+
+This CLI is bundled in the [VS Code extension](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) and [JetBrains plugin](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) — runs automatically during One Click Setup migration.
+
+**Monorepo:** [Claude-Code-ToolBox](https://github.com/amitchorasiya/Claude-Code-ToolBox)
+
+---
 
 ## License
 

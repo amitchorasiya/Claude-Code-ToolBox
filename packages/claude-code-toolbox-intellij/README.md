@@ -1,92 +1,87 @@
-# Claude Code ToolBox — IntelliJ / JetBrains
+# Claude Code ToolBox for JetBrains
 
-**Version:** `0.6.20` (see `version` in [`build.gradle.kts`](build.gradle.kts)).
+**The same Claude Code control panel, native in IntelliJ IDEA, PyCharm, WebStorm, and all JetBrains IDEs.**
 
-**Also use VS Code?** The primary shipping surface is the **[VS Code extension](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode)** (`amitchorasiya.claude-code-toolbox-vscode`).
+You're running Claude Code from your JetBrains terminal, but there's no UI to manage MCP servers, see skills, or coordinate multi-agent workflows. Claude Code ToolBox brings the full hub experience to JetBrains — with complete Agentic Teams parity.
 
-**Install this plugin (JetBrains):** [Search JetBrains Marketplace](https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox) · [`jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox) (opens your IDE) · or build a `.zip` from this package (below).
+**Install:** [JetBrains Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox) · or build from source below
 
-Gradle-based [IntelliJ Platform](https://plugins.jetbrains.com/docs/intellij/welcome.html) plugin. JCEF **hub** (MCP, skills, Intelligence, workspace flows) + **Agentic Teams** (all 8 collaboration protocols, agent/team/command CRUD, live transcript, approval gate) — near-full parity with **[VS Code](../claude-code-toolbox/)**; see plugin description and [ROADMAP.md](ROADMAP.md).
+**Also use VS Code?** Get the [VS Code extension](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) for the primary shipping surface.
 
-**Screenshots** (same hub UI as VS Code; captures from VS Code — see [monorepo `screenshots/`](https://github.com/amitchorasiya/Claude-Code-ToolBox/tree/main/screenshots)):
+---
+
+## What you get
+
+- **Full MCP & Skills hub** — browse, install, manage servers and skills from a JCEF webview
+- **Agentic Teams (all 8 protocols)** — debate + judge, plan-then-code with approval gate, converge, orchestrator, parallel fan-out, round-robin, handoff, native-task
+- **10-agent SDLC starter pack** — product-manager, architect, security-reviewer, backend/frontend dev, QA, code-reviewer, devops, tech-writer, UI/UX designer
+- **Live transcript** — color-coded, per-turn tokens + cost, approve/reject modal, Stop button
+- **Swarm dispatch** — every team auto-generates a `/command` that fires all agents in parallel
+- **One Click migration** — port Cursor MCP, rules, and memory bank into Claude Code config
+- **Workspace kit** — checklist for rules, `CLAUDE.md`, memory bank, `mcp.json`
+
+**What's still VS Code-only:** Agent Dashboard (hook server + transcript watcher). See [ROADMAP.md](ROADMAP.md).
+
+---
+
+## Screenshots
+
+Same hub UI renders in both VS Code and JetBrains:
 
 ![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=0.6.20)
 
 ![Intelligence tab: Cursor to VS Code + Claude Code bridges](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=0.6.20)
 
-The remaining VS Code-only feature is the **Agent Dashboard** (hook server + transcript watcher). See **[ROADMAP.md](ROADMAP.md)** for details.
+---
 
 ## Requirements
 
-- **JDK 21** (Gradle JVM; matches `jvmToolchain(21)` in `build.gradle.kts`)
-- Optional: **IntelliJ IDEA** with the Plugin DevKit for local debugging
+- **JDK 21** (matches `jvmToolchain(21)` in `build.gradle.kts`)
+- **Node.js + npm** on PATH (for bridge CLI bundling during build)
+- Optional: IntelliJ IDEA with Plugin DevKit for local debugging
 
-## Hub HTML (keep in sync with VS Code)
-
-The JCEF UI loads **`src/main/resources/hub/hub-body.html`**, generated from the same source as the VS Code webview:
-
-```bash
-cd packages/claude-code-toolbox
-npm run compile
-npm run export:hub-for-intellij
-```
-
-Run this after changing `hubWebviewDocument.ts` (or run **`npm run rebuild:extensions`** from the monorepo root, which compiles, exports the hub, then builds VSIX + plugin).
+---
 
 ## Build
-
-Requires **Node.js + npm** on `PATH` so Gradle can run `npm install --production` inside the staged **cursor-rules-to-claude** package (gray-matter dependency). Bridge CLIs are copied from sibling folders under `packages/` and packed into the plugin JAR — they are **not** fetched from the public npm registry at runtime.
 
 ```bash
 cd packages/claude-code-toolbox-intellij
 ./gradlew buildPlugin
 ```
 
-The plugin ZIP is under `build/distributions/`.
+Plugin ZIP lands in `build/distributions/`. Install via **Settings → Plugins → Install from Disk**.
 
-## Run in a sandbox IDE
+## Run in sandbox
 
 ```bash
 ./gradlew runIde
 ```
 
-Then **View → Tool Windows → Claude Code ToolBox** (or find it on the right tool window bar).
+Then **View → Tool Windows → Claude Code ToolBox**.
 
-## Agentic Teams — full Kotlin port (0.6.20)
+---
 
-The 🤝 **Agentic Teams** tab ships with full feature parity to the VS Code extension:
+## Hub HTML sync
 
-- **Agent/Team/Command CRUD** — create, edit, delete agents (`~/.claude/agents/*.md`), teams (`~/.claude/teams/*.json`), and slash commands (`~/.claude/commands/*.md`) directly from the hub.
-- **All 8 collaboration protocols** — native-task, round-robin, handoff, orchestrator, parallel-fan-out, debate + judge, plan-then-code (with approval gate), converge (parallel → cross-pollinate → synthesize).
-- **`ProcessBuilder`-based runtime** — `ClaudeSpawn` spawns `claude` CLI processes, `RunBus` streams events to the JCEF transcript, `RunRegistry` tracks active runs, `RunOrchestrator` coordinates multi-agent workflows with `CompletableFuture` and thread pools.
-- **Unified teams + slash commands** — each team card shows a `/command-name` pill; creating a team can auto-sync a matching slash command.
-- **SDLC starter pack** — 10 agents (incl. UI/UX Designer) + 6 preset commands, installable with one click. Default model: **(inherit caller default)**.
-- **Live transcript** — color-coded, per-turn tokens + cost, approve/reject plan modal, Stop button.
-- **Approval gate** — `CountDownLatch`-based blocking in the protocol thread, resolved by the UI thread via `RunOrchestrator.resolvePendingApproval()`.
+The JCEF UI loads `src/main/resources/hub/hub-body.html`, exported from the VS Code webview source:
 
-**What's still VS Code-only:**
-- Agent Dashboard (hook server + transcript watcher — loopback HTTP listener, `~/.claude/settings.json` hook registration). Scoped in [ROADMAP.md](ROADMAP.md).
+```bash
+cd packages/claude-code-toolbox
+npm run compile && npm run export:hub-for-intellij
+```
 
-## Remaining VS Code-only features
+---
 
-Agent Dashboard (hook server + transcript watcher) is the main remaining gap. Other roadmap items belong in the main repo. See the root [README.md](../../README.md).
+## Publishing to JetBrains Marketplace
 
-**CI:** [`.github/workflows/intellij-ci.yml`](../../.github/workflows/intellij-ci.yml) runs **`./gradlew buildPlugin`** on pushes that touch this package (Ubuntu, JDK 21).
+| Topic | Link |
+|-------|------|
+| First upload + signing | [Publishing a Plugin](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html) |
+| Listing best practices | [Marketplace Listing](https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html) |
+| Automated publish | `./gradlew publishPlugin` with [Personal Access Token](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html#providing-your-personal-access-token-to-gradle) |
 
-## JetBrains Marketplace and quality bar
+---
 
-**Compatibility verification (DataSpell):** If the Marketplace **Compatibility verification** table shows DataSpell with *Unable to verify: Product DS is not supported yet* (or a license note), that reflects **JetBrains Plugin Verifier / Marketplace** support for that product version—not a failure of this plugin. This repo’s Gradle config verifies the plugin against **IntelliJ IDEA** only (`pluginVerification.ides.select { IntellijIdea }`), which matches the primary target; IDEA rows should show **Compatible**. If DS verification stays unavailable, rely on IDEA results or contact JetBrains via the [Marketplace documentation](https://plugins.jetbrains.com/docs/marketplace/) / vendor portal.
+## License
 
-`plugin.xml` and Gradle follow JetBrains guidance so you can move from “install from disk” to Marketplace when ready:
-
-| Topic | Documentation |
-|--------|----------------|
-| Publishing (first upload, signing, `publishPlugin`, tokens) | [Publishing a Plugin](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html) |
-| UX (stability, performance, discoverability) | [Plugin User Experience (UX)](https://plugins.jetbrains.com/docs/intellij/plugin-user-experience.html) |
-| Listing (name, description, media, tags) | [Best practices for listing your plugin](https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html) |
-
-**Typical path to Marketplace:** verify in a clean IDE (`buildPlugin` → install ZIP from `build/distributions/`), meet [plugin signing](https://plugins.jetbrains.com/docs/intellij/plugin-signing.html) requirements for uploads, complete the **first manual upload** in the Marketplace UI, then use **`./gradlew publishPlugin`** with a [Personal Access Token](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html#providing-your-personal-access-token-to-gradle) (`intellijPlatformPublishingToken` in `gradle.properties` or env). Optional [release channels](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html#specifying-a-release-channel) (e.g. `beta`) can be used for wider testing before the default channel.
-
-## Local install (no Marketplace)
-
-**Settings → Plugins → ⚙ → Install Plugin from Disk…** and select the ZIP under `build/distributions/`.
+[MIT](../../LICENSE) — see monorepo root.

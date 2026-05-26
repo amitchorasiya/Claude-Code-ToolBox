@@ -6,10 +6,10 @@ You're running Claude Code in VS Code, but you can't see what MCP servers are ac
 
 **Claude Code ToolBox gives you:**
 
+- **Agentic Teams** — 10 specialized AI agents (architect, security, frontend, backend, QA...) that debate designs, plan implementations you approve, then execute together. One Claude session becomes a whole engineering team.
 - **A visual MCP & skills hub** — see, search, install, and manage everything from one sidebar
-- **Multi-agent teams** — 10 specialized agents that debate, plan, and code together (8 collaboration protocols)
-- **One-click migration** — bring your Cursor or Copilot setup into Claude Code automatically
-- **Live Agent Dashboard** — every running Claude Code session, with cost tracking and context visibility
+- **Live Agent Dashboard** — every running Claude Code session on your machine, with real-time cost tracking and context visibility
+- **One-click migration** — bring your Cursor or Copilot setup (MCP, rules, skills) into Claude Code automatically
 - **Workspace-aware context priming** — Claude Code finally knows what your project actually has configured
 
 **2,000+ installs** · Works on macOS, Windows, Linux · Also ships as a [JetBrains plugin](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox)
@@ -18,9 +18,11 @@ You're running Claude Code in VS Code, but you can't see what MCP servers are ac
 
 ---
 
-## Agentic Teams: Multi-Agent Planning & Debate
+## Agentic Teams: Why One Agent Isn't Enough
 
-Turn Claude Code into a team of specialists. 10 role-based agents (product-manager, architect, security-reviewer, frontend/backend dev, QA, code-reviewer, devops, tech-writer, UI/UX designer) collaborate through 8 protocols:
+A single Claude Code session does everything: plan, code, review, test. That's like one person doing every role. **Agentic Teams splits the work across specialized agents that challenge each other** — the architect plans, the security reviewer pokes holes, the QA engineer writes tests, and you approve before anyone writes code.
+
+10 role-based agents collaborate through 8 protocols:
 
 - **Debate + Judge** — agents argue both sides, a judge synthesizes
 - **Plan-then-Code** — architect plans, you approve, devs execute

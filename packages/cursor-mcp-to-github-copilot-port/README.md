@@ -1,8 +1,9 @@
-# cursor-mcp-to-github-copilot-port (legacy folder name)
+# cursor-mcp-to-github-copilot-port (legacy)
 
-The **Cursor → VS Code MCP port CLI** now ships as **`cursor-mcp-vscode-port`** in this monorepo. This directory name is **legacy**; the active package and `npx` name are under [`packages/cursor-mcp-vscode-port/`](../cursor-mcp-vscode-port/).
+**This package has been renamed.** Use [`cursor-mcp-vscode-port`](../cursor-mcp-vscode-port/) instead.
 
-- **npm:** `npx cursor-mcp-vscode-port`
-- **Monorepo:** [Claude-Code-ToolBox](https://github.com/amitchorasiya/Claude-Code-ToolBox) — **Claude Code ToolBox**: [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [JetBrains Marketplace](https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox) · [`jetbrains://…`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox) (`packages/claude-code-toolbox/`, [`packages/claude-code-toolbox-intellij/`](../claude-code-toolbox-intellij/README.md)).
+```bash
+npx cursor-mcp-vscode-port
+```
 
-If you followed an old doc that referenced `cursor-mcp-to-github-copilot-port`, use **`cursor-mcp-vscode-port`** instead.
+If you followed an older doc referencing `cursor-mcp-to-github-copilot-port`, the active package lives at `packages/cursor-mcp-vscode-port/` in the [Claude-Code-ToolBox](https://github.com/amitchorasiya/Claude-Code-ToolBox) monorepo.

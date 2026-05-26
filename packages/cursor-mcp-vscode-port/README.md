@@ -1,19 +1,32 @@
-# Cursor MCP → VS Code `mcp.json` port
+# cursor-mcp-vscode-port
 
-CLI and library that ports **Cursor** `~/.cursor/mcp.json` into **Visual Studio Code** `mcp.json` (user or workspace) so MCP servers can be reused across editors.
+**Bring your Cursor MCP servers to VS Code and Claude Code in one command.**
 
-If the destination **`mcp.json` already exists**, converted Cursor servers are **merged** into it (same server ids are overwritten with the new definition; other keys are preserved). The CLI **never** replaces the entire file in one shot.
-
-**Monorepo:** [Claude-Code-ToolBox](https://github.com/amitchorasiya/Claude-Code-ToolBox) (`packages/cursor-mcp-vscode-port/`). **Claude Code ToolBox** bundles this CLI in the [VS Code extension](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) and the [JetBrains plugin](https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox) ([`jetbrains://…`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox)).
-
-See the upstream Model Context Protocol docs for what MCP is and how servers are configured.
-
-## CLI
+You've configured MCP servers in Cursor and now you're moving to VS Code + Claude Code. Instead of manually recreating each server definition, this CLI reads `~/.cursor/mcp.json` and merges everything into your VS Code or Claude Code config.
 
 ```bash
-npx cursor-mcp-vscode-port --help
+npx cursor-mcp-vscode-port
 ```
+
+---
+
+## What it does
+
+- Reads Cursor's `~/.cursor/mcp.json` (all configured servers)
+- Converts to VS Code / Claude Code format
+- **Merges** into the destination config (existing servers preserved, duplicates overwritten)
+- Never replaces the entire target file
+
+---
+
+## Part of Claude Code ToolBox
+
+This CLI is bundled in the [VS Code extension](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) and [JetBrains plugin](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) — runs automatically during One Click Setup migration.
+
+**Monorepo:** [Claude-Code-ToolBox](https://github.com/amitchorasiya/Claude-Code-ToolBox)
+
+---
 
 ## License
 
-MIT (vendored from prior tooling; see repository NOTICE if applicable).
+MIT.
