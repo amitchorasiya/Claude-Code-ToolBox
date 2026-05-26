@@ -11,6 +11,16 @@
  * Bridge CLIs are `file:../…` symlinks during dev; `vsce` runs `npm list --production`, which
  * fails for symlinked packages’ nested deps. We temporarily repoint `package.json` to `npm pack`
  * tarballs under `.vsix-bridge-tgz/`, run `npm install`, then `vsce package`, then restore.
+ *
+ * Identity notes (formerly in extension README "Packaging note"):
+ *   Marketplace ID: amitchorasiya.claude-code-toolbox-vscode
+ *   displayName: Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)
+ *   package.json name: cloude-code-toolbox-vscode
+ *     (slug "claude-code-toolbox" is permanently reserved by Marketplace)
+ *   Monorepo: https://github.com/amitchorasiya/Claude-Code-ToolBox
+ *   Extension folder: packages/claude-code-toolbox/
+ *   JetBrains plugin: packages/claude-code-toolbox-intellij/
+ *   Avoid "package:extension-readme-only" — that skips staging and breaks images.
  */
 import { execSync } from "node:child_process";
 import fs from "node:fs";

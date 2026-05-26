@@ -1,103 +1,69 @@
-# Claude Code ToolBox (VS Code extension)
+# Claude Code ToolBox
 
-## Packaging note
+**Claude Code doesn't ship with a control panel. This is it.**
 
-`npm run package` in this folder **stages** the [monorepo root `README.md`](../../README.md) into this file for the `.vsix` / Marketplace: screenshot links become absolute **`raw.githubusercontent.com/.../main/screenshots/…`** URLs (with `?v=` cache-bust from `package.json` version), matching [Github-Copilot-ToolBox](https://github.com/amitchorasiya/Github-Copilot-ToolBox). It then **restores** this extension reference README. Avoid **`package:extension-readme-only`** for publishing—that skips the staging step and README images break.
+You're running Claude Code in VS Code, but you can't see what MCP servers are active, which skills are loaded, whether your team's config matches yours, or what your agents are actually doing. Setup is scattered across dotfiles, JSON configs, and tribal knowledge.
 
-**Identity:** **Marketplace ID** `amitchorasiya.claude-code-toolbox-vscode` · **`displayName`** **Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)** · **`package.json` name** `claude-code-toolbox-vscode` (the slug `claude-code-toolbox` stays **permanently reserved** by the Marketplace after a removed listing—pick a new name to publish again) · **Monorepo** [Claude-Code-ToolBox](https://github.com/amitchorasiya/Claude-Code-ToolBox) · this folder is `packages/claude-code-toolbox/`.
+**Claude Code ToolBox gives you:**
 
-**JetBrains:** **IntelliJ Platform** plugin (preview) — [`packages/claude-code-toolbox-intellij/`](../claude-code-toolbox-intellij/README.md) · [Marketplace search](https://plugins.jetbrains.com/search?search=Cloude+Code+ToolBox) · [`jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox`](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.cloude.code.toolbox). **VS Code:** [Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:extension/amitchorasiya.claude-code-toolbox-vscode`](vscode:extension/amitchorasiya.claude-code-toolbox-vscode).
+- **A visual MCP & skills hub** — see, search, install, and manage everything from one sidebar
+- **Multi-agent teams** — 10 specialized agents that debate, plan, and code together (8 collaboration protocols)
+- **One-click migration** — bring your Cursor or Copilot setup into Claude Code automatically
+- **Live Agent Dashboard** — every running Claude Code session, with cost tracking and context visibility
+- **Workspace-aware context priming** — Claude Code finally knows what your project actually has configured
 
----
+**2,000+ installs** · Works on macOS, Windows, Linux · Also ships as a [JetBrains plugin](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox)
 
-## After install: open Claude Code ToolBox
-
-**Not a standalone app**—only inside **Visual Studio Code**.
-
-1. Install **Claude Code ToolBox**, then **reload the window** if prompted.
-2. **Activity Bar** (icons on the **far left**) → click **Claude Code ToolBox**.
-3. **Side Bar** → **MCP & skills** to open the **hub** (tabs: **Intelligence**, **MCP**, **Skills**, **Workspace**).
-
-**Missing the icon?** **Command Palette** (**Ctrl+Shift+P** / **⌘⇧P**) → type **Claude Code ToolBox** → run a command, or **Developer: Reload Window**, then repeat steps 2–3.
-
-![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=1.0.34)
+**[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode)** · [GitHub](https://github.com/amitchorasiya/Claude-Code-ToolBox)
 
 ---
 
-## One place for Claude Code-related setup
+## Agentic Teams: Multi-Agent Planning & Debate
 
-**In plain terms:** Claude Code in VS Code only works as well as the setup around it—but that setup is usually scattered across files, machines, and habits. **Claude Code ToolBox** is **one dedicated toolbox in VS Code**: you can **see** what’s configured, **standardize** how teams adopt **Claude Code** (including migrations from **Cursor** and optional steps from **GitHub Copilot**), and **build explicit context** while each developer still **chooses** what to share.
+Turn Claude Code into a team of specialists. 10 role-based agents (product-manager, architect, security-reviewer, frontend/backend dev, QA, code-reviewer, devops, tech-writer, UI/UX designer) collaborate through 8 protocols:
 
-**One Click Setup** (hub → **Intelligence**, top card) runs your configured **migration tracks** and follow-ups using **bundled Node CLIs** (no `npx` fetch) after you confirm the risk modal. **Thinking Machine Mode** is the master switch for **session priming** (MCP & skills awareness under `.claude/` plus optional merge into **`CLAUDE.md`**, and a **context pack** for Claude Code). First enable shows **Engage**; turning the mode off clears acknowledgment so **Engage** can run again next time.
+- **Debate + Judge** — agents argue both sides, a judge synthesizes
+- **Plan-then-Code** — architect plans, you approve, devs execute
+- **Converge** — parallel thinking → cross-pollination → synthesis
+- **Swarm dispatch** — every team is a `/command` that fires all agents in parallel
 
-For a **full control-by-control** hub reference (every tab, chip, and tile), see the [monorepo README — MCP & skills hub](https://github.com/amitchorasiya/Claude-Code-ToolBox/blob/main/README.md#mcp--skills-hub-every-tab-toggle-and-button).
-
----
-
-## Table of contents
-
-- [After install: open Claude Code ToolBox](#after-install-open-claude-code-toolbox)
-- [One place for Claude Code-related setup](#one-place-for-claude-code-related-setup)
-- [Overview](#overview)
-- [Screenshots](#screenshots)
-- [Hub summary](#hub-summary)
-- [Requirements](#requirements)
-- [Features (at a glance)](#features-at-a-glance)
-- [Command palette](#command-palette)
-- [Settings](#settings)
-- [Keybinding](#keybinding)
-- [Companion npm packages](#companion-npm-packages)
-- [Develop & test](#develop--test)
-- [Troubleshooting](#troubleshooting)
-- [Publishing](#publishing)
-- [Contributing](#contributing)
-- [Disclaimer](#disclaimer)
-- [License](#license)
-
----
-
-## Overview
-
-**Claude Code ToolBox** adds:
-
-1. **MCP & skills** — Webview hub: **Intelligence** (default), **MCP**, **Skills**, **Workspace** (checklist + searchable command tiles). MCP reads/writes Claude Code's native config (`~/.claude.json` for user, `.mcp.json` for project).
-2. **Agent Teams & Dashboard** — 🤝 **Teams** tab (second tab): agent CRUD with **skill-backed agents** (point an agent to a SKILL.md instead of a freeform prompt) and **per-agent long-term memory** (agents learn from interactions and retain knowledge across runs), SDLC starter pack (10 agents incl. UI/UX Designer + 7 preset teams), 8 collaboration protocols (debate, plan-then-code with approval gate, **converge** (parallel → cross-pollinate → synthesize), orchestrator, parallel fan-out, etc.), **swarm dispatch** (every team auto-generates a `/command` that dispatches all agents in parallel via the Task tool), live color-coded transcript, opt-in **Agent Dashboard** that shows a card for every running Claude Code session, and 7 preset swarm slash commands (`/debate-team`, `/plan-team`, `/review-team`, `/security-team`, `/sdlc-plan-then-code`, `/refactor-team`, `/spec-team`). **Collapsible sections** for quick navigation. Default model: **(inherit caller default)**.
-3. **Workspace kit** — Tree checklist for rules, memory bank, **`CLAUDE.md`**, `mcp.json`, plus **One Click Setup** (top row).
-4. **Session notepad** — Optional scratch file at **`.vscode/claude-code-toolbox-notepad.md`** (open/copy from the hub tiles or Command Palette); context packs can append here.
-
-**Commands:** `CloudeCodeToolBox.*`. **Settings:** `claude-code-toolbox.*` (legacy `CloudeCodeToolBox.*` values migrate on load).
-
-> ### 🤝 Agentic Teams — skill-backed agents, long-term memory, swarm dispatch + multi-agent debate (1.0.17+; skills & memory in 1.0.28)
->
-> The **🤝 Agentic Teams** tab (now the **second tab** for faster access) turns the hub into a **multi-agent planning &amp; debate** workbench on top of Claude Code's native subagent format. Agents can be backed by **SKILL.md** files (radio: Custom prompt vs Use skill) and have **per-agent long-term memory** that persists learnings across runs. A **global memory toggle** bulk-enables memory for all agents. Specialised agents (product-manager, architect, security-reviewer, backend/frontend/qa/reviewer, **UI/UX designer**) **debate a design**, produce a **plan you approve**, then **execute** it — with a live color-coded transcript, token + cost tracking, and persisted `plan.md` / `decision.md` per run. Every team **is** a slash command — creating or editing a team auto-generates a `/command` that dispatches all agents **in parallel** via the Task tool (swarm pattern). 7 preset teams ship with the starter pack. All sections are **collapsible** for quick navigation. Default model: **(inherit caller default)** so agents use whatever model your session is configured with. Opt-in **Agent Dashboard** shows live cards for every Claude Code session. Cross-platform on macOS, Windows, and Linux. Full **IntelliJ parity** ships in the JetBrains plugin.
-
-In this repo, the extension reference README keeps **absolute** `raw.githubusercontent.com` URLs for screenshots. **`npm run package`** temporarily replaces this file with the transformed monorepo README (same raw URLs + `?v=`) for the `.vsix`, then restores this file.
-
----
-
-## Screenshots
-
-Real VS Code UI (not mockups). **Opening the hub:** [After install](#after-install-open-claude-code-toolbox). Captures are high-resolution where noted.
-
-**Agentic Teams:** orchestrated multi-agent workflows with debate, planning, and review protocols. One-click Run dispatches all agents in parallel via swarm.
+One-click setup enables `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and installs agents to `~/.claude/agents/` where Claude Code discovers them natively.
 
 ![Agentic Teams: teams with protocols, swarm dispatch, and one-click Run](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/10-agentic-teams.png?v=1.0.34)
 
-**Agents:** 10-agent SDLC starter pack with role-based specialization (Plan/Code/Review), skill-backed prompts, and per-agent long-term memory.
+---
+
+## Skill-Backed Agents with Long-Term Memory
+
+Each agent can be pointed at a **SKILL.md** instead of a freeform prompt — structured, reusable expertise. Agents also have **per-agent long-term memory**: they learn from interactions and retain knowledge across runs.
 
 ![Agents: role-tagged, skill-backed, with long-term memory](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/11-agents.png?v=1.0.34)
 
-**Agent Dashboard + Long-Term Memory:** live visibility for every Claude Code session on your machine. Token-based cost estimates, context-window fill, live tool feed, grouped by workspace. 8 agents, 7 teams, 7 commands, native Agent Teams runtime enabled.
+---
+
+## Agent Dashboard: Live Visibility
+
+Opt-in dashboard shows a card for every running Claude Code session. Token-based cost estimates, context-window fill %, live tool feed, grouped by workspace.
 
 ![Agent Dashboard: live session cards with cost, context, tools, and LTM toggle](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/12-ltm-agent-dashboard.png?v=1.0.34)
 
-**Intelligence:** Cursor → VS Code + Claude Code bridges, context pack, readiness, MCP & Skills awareness.
+---
+
+## Intelligence: Context & Migration Hub
+
+**One Click Setup** migrates your team from Cursor and/or Copilot to Claude Code automatically — ports MCP servers, syncs rules to `CLAUDE.md`, scaffolds memory bank, and migrates skills. All using bundled CLIs (no network `npx` fetch).
+
+**Thinking Machine Mode** primes Claude Code with MCP & skills awareness, context packs, and readiness checks — making "refresh what this repo knows" a single action.
 
 ![Intelligence tab: Cursor to VS Code + Claude Code bridges, context packs, and readiness](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/01-intelligence.png?v=1.0.34)
 
 ![Intelligence: Port Cursor MCP, rules, and memory bank to VS Code + Claude Code](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/02-intelligence-cursor-port.png?v=1.0.34)
 
-**MCP** and **Skills** tabs: installed servers, registry browse, skills.sh, local `SKILL.md` trees.
+---
+
+## MCP & Skills Hub
+
+Browse and manage MCP servers and skills from one place. Reads Claude Code's native config (`~/.claude.json` for user, `.mcp.json` for project). Registry browse, install, stash/hide — no more raw JSON editing.
 
 ![MCP: installed workspace servers](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/03-mcp-browse-workspace-servers.png?v=1.0.34)
 
@@ -107,29 +73,41 @@ Real VS Code UI (not mockups). **Opening the hub:** [After install](#after-insta
 
 ![Skills: installed local skill folders](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/06-skills-installed-local.png?v=1.0.34)
 
-**Workspace** checklist and **Intelligence** context hygiene.
+---
+
+## Workspace Kit
+
+A visual checklist for everything Claude Code needs: rules, memory bank, `CLAUDE.md`, `mcp.json` — see what exists and what's missing at a glance.
 
 ![Workspace kit checklist](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/07-workspace-checklist.png?v=1.0.34)
 
-![Intelligence: context hygiene and quick actions](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/08-workspace-toolbox-commands.png?v=1.0.34)
-
-**Reference diagram:** no PNG ships in `screenshots/` for the capability map right now. Source: [`diagrams/mermaid-copilot-map.mmd`](https://github.com/amitchorasiya/Claude-Code-ToolBox/blob/main/diagrams/mermaid-copilot-map.mmd) — export to PNG and add `screenshots/mermaid-claude-map.png` if you want an embedded diagram here again.
+![Workspace: toolbox commands](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/08-workspace-toolbox-commands.png?v=1.0.34)
 
 ---
 
-## Hub summary
+## Getting Started
 
-Open **MCP & skills** from the **Side Bar** after selecting **Claude Code ToolBox** in the **Activity Bar**.
+1. **Install** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode)
+2. Click **Claude Code ToolBox** in the Activity Bar (left icon column)
+3. Open **MCP & skills** from the Side Bar
 
-| Tab | Role |
-|-----|------|
-| **Intelligence** | Migration hero cards (Cursor → Claude Code; optional GitHub Copilot → Claude Code), **One Click Setup**, **Thinking Machine Mode**, context hygiene, context & readiness, **auto-scan** row (writes **`.claude/claude-code-toolbox-mcp-skills-awareness.md`**, optional MCP/skills block in **`CLAUDE.md`**). |
-| **MCP** | **Browse** registry / **Installed** workspace + user `mcp.json`. |
-| **Skills** | **Browse** skills.sh / **Installed** local skills. |
-| **Workspace** | Checklist + **All toolbox commands** tiles. |
-| **🤝 Agentic Teams** (2nd tab) | **Multi-agent planning &amp; debate.** Agent CRUD with **skill-backed agents** and **per-agent long-term memory** (global toggle available), team composition JSON, 8 protocols (incl. **debate + judge**, **plan-then-code with your approval gate**, and **converge** — parallel thinking → cross-pollination → synthesis), **swarm dispatch** (every team auto-generates a `/command` dispatching all agents in parallel), live transcript, **Agent Dashboard** opt-in card strip for every Claude Code session, and 7 preset swarm slash commands. All sections are **collapsible**. |
+![Activity Bar → Claude Code ToolBox; Side Bar → MCP & skills hub](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/00-toolbox-access.png?v=1.0.34)
 
-**Auto-scan:** When `claude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen` is on, a debounced run after folder open refreshes awareness and updates the replaceable MCP/skills section in **`CLAUDE.md`** (and saves the full report under `.claude/`).
+---
+
+## 7 Preset Swarm Commands
+
+Ship with the starter pack — each dispatches all team agents in parallel:
+
+| Command | What it does |
+|---------|-------------|
+| `/plan-team` | Architect + PM plan, you approve, devs build |
+| `/debate-team` | Agents debate approaches, judge picks the winner |
+| `/review-team` | Multi-perspective code review |
+| `/security-team` | Threat modeling + vulnerability scan |
+| `/sdlc-plan-then-code` | Full SDLC: plan → approve → implement → test → review |
+| `/refactor-team` | Parallel refactoring with cross-review |
+| `/spec-team` | Spec generation with multi-agent validation |
 
 ---
 
@@ -138,153 +116,34 @@ Open **MCP & skills** from the **Side Bar** after selecting **Claude Code ToolBo
 | Requirement | Notes |
 |-------------|--------|
 | VS Code | **1.99+** |
-| Claude Code | Install the **Claude Code** extension for flows that open or target Claude Code. |
-| Node.js | **20+** for bundled CLIs and optional `npx` bridges (`package.json` engines). |
-| Git | On `PATH` for optional Intelligence “include git” (Windows: [Git for Windows](https://git-scm.com/download/win)). |
+| Claude Code | Install the Claude Code extension |
+| Node.js | **20+** for bundled CLIs |
 
 ---
 
-## Features (at a glance)
-
-- **One hub** for MCP + skills: reads Claude Code's native **`~/.claude.json`** (user) and **`.mcp.json`** (project), registry and skills.sh browse, stash/hide semantics for servers and skills.
-- **Intelligence:** Awareness report, **context pack**, **readiness**, **Claude Code / MCP config scan**, notepad → memory-bank, bundled MCP recipes, verification checklist.
-- **Bridges:** Port Cursor MCP + VS Code/Copilot MCP into Claude Code (`~/.claude.json`) with case-insensitive dedup, init **claude-code-memory-bank**, **cursor-rules-to-claude**, migrate **`.cursor/skills`** → **`.agents/skills`**, optional **GitHub Copilot** instructions/skills → Claude-oriented files (One Click **migration tracks**).
-- **Agent Teams:** 10-agent SDLC starter pack (incl. UI/UX Designer) + 7 preset teams with swarm slash commands. 8 collaboration protocols including **debate + judge**, **plan-then-code** (with your approval gate), and **converge** (parallel → cross-pollinate → synthesize). **Skill-backed agents** (point agents to SKILL.md files), **per-agent long-term memory** (agents learn and retain across runs, global toggle to bulk-enable), default model **(inherit caller default)**, and **collapsible sections** across all tabs. All JSONL-transcripted.
-- **Agent Dashboard (opt-in):** HTTP hook listener on `127.0.0.1:3456` + `~/.claude/projects/*.jsonl` tail → live kanban cards for every Claude Code session (yours or externally started), with pulsing status, current tool, context-window fill, tokens + cost projection, safety-alert banners. Disable removes only Toolbox entries from `~/.claude/settings.json` — no telemetry.
-- **Swarm slash commands:** `/debate-team`, `/plan-team`, `/review-team`, `/security-team`, `/sdlc-plan-then-code`, `/refactor-team`, `/spec-team` — auto-created when teams are created/edited. Each dispatches all team agents in parallel via the Task tool (swarm pattern), then synthesizes. Cross-platform (Windows + macOS + Linux).
-- **Bundled CLIs** for One Click and "without npx" commands; primary hub actions avoid a network `npx` fetch when using bundled paths.
-- **Honest skills story:** Local **`SKILL.md`** trees are listed for humans and tools; Claude Code does not auto-load arbitrary folders—use instructions, attachments, or MCP as appropriate.
-
----
-
-## Command palette
-
-Commands are titled **`Claude Code ToolBox: …`**. Many Intelligence and setup actions use the **`Thinking Machine Mode —`** prefix in the palette (historical grouping)—search **`Claude Code ToolBox`** to see everything, not only Thinking Machine–specific commands.
-
-Examples:
-
-- `Claude Code ToolBox: Thinking Machine Mode — One Click Setup (configured steps)`
-- `Claude Code ToolBox: Port Cursor MCP → VS Code (bundled CLI — no npx)`
-- `Claude Code ToolBox: Sync Cursor rules → CLAUDE.md (npx)`
-- `Claude Code ToolBox: Open Claude Code`
-- `Claude Code ToolBox: Open workspace mcp.json` / `Open user mcp.json`
-
-**Agent Teams + Dashboard:**
-
-- `Claude Code ToolBox: Agent Teams — Enable (create ~/.claude/agents, verify CLI)`
-- `Claude Code ToolBox: Agent Teams — Install SDLC starter pack (9 agents)`
-- `Claude Code ToolBox: Agent Teams — Install slash commands (/plan-team, /debate-team…)`
-- `Claude Code ToolBox: Agent Teams — Uninstall Toolbox slash commands`
-- `Claude Code ToolBox: Agent Teams — List installed slash commands`
-- `Claude Code ToolBox: Agent Dashboard — Enable` / `Disable` / `Status`
-- `Claude Code ToolBox: Plan with Agent Team…` (default keybinding `cmd/ctrl+alt+p`)
-- `Claude Code ToolBox: Smart router — pick workflow for a prompt`
-
-Search **Claude Code ToolBox** under **Keyboard Shortcuts** to rebind.
-
----
-
-## Settings
+## Key Settings
 
 | Setting | Purpose |
 |---------|---------|
-| `claude-code-toolbox.npxTag` | Dist-tag or version for optional `npx` runs (default `latest`) |
-| `claude-code-toolbox.embeddedBridgeNodeExecutable` | Optional absolute path to `node` for bundled CLIs |
-| `claude-code-toolbox.useInsidersPaths` | Resolve user `mcp.json` under VS Code Insiders |
-| `claude-code-toolbox.intelligence.*` | Context pack defaults, **auto-scan MCP & Skills on workspace open**, notepad/chat follow-ups |
-| `claude-code-toolbox.oneClickSetup.*` | **Migration tracks** (`migrateFromCursor`, `migrateFromGitHubCopilot`), memory bank / rules / skills / MCP / follow-ups, optional **merge Copilot instructions** and **Copilot skills** migration |
-| `claude-code-toolbox.thinkingMachineMode.*` | Priming, awareness, context pack, **Engage** behavior |
-| `claude-code-toolbox.translateWrapMultilineInFence` | Translation helper |
-| `claude-code-toolbox.agentTeams.*` | Default model / protocol, `claudeBinOverride`, `maxConcurrentAgents`, `costCapUsd` (soft breach toast; hard breach auto-aborts internal runs) |
-| `claude-code-toolbox.agentDashboard.*` | Master opt-in (`enabled` = false by default), `hookPort` (3456), `autoPairPlanningPrompts`, `defaultPairTeamName` (`sdlc-debate`), `safetyAlerts` + `safetyPatterns` (opt-in regex guards; non-blocking), `retainDoneCardsMs` |
-
-**Open filtered settings** (exact palette titles):
-
-- **Claude Code ToolBox: Thinking Machine Mode — open related settings** → `claude-code-toolbox.intelligence`
-- **Claude Code ToolBox: Thinking Machine Mode — open Thinking Machine settings** → `claude-code-toolbox.thinkingMachineMode`
-- **Claude Code ToolBox: Thinking Machine Mode — open One Click Setup settings** → `claude-code-toolbox.oneClickSetup`
-
-Or search **`claude-code-toolbox`** in the Settings UI.
+| `claude-code-toolbox.agentTeams.*` | Model, protocol, max concurrent agents, cost cap |
+| `claude-code-toolbox.agentDashboard.*` | Enable/disable dashboard, hook port, safety alerts |
+| `claude-code-toolbox.oneClickSetup.*` | Migration tracks (Cursor, Copilot) |
+| `claude-code-toolbox.intelligence.*` | Context pack, auto-scan, notepad |
+| `claude-code-toolbox.thinkingMachineMode.*` | Priming and awareness behavior |
 
 ---
 
-## Keybinding
+## Cross-Platform
 
-- **Ctrl+Alt+K** (Windows/Linux) / **Cmd+Alt+K** (macOS) → **Open inline chat (Cursor-style)**  
-  Avoid binding over VS Code’s global **Ctrl+K** chord.
-- **Ctrl+Alt+P** (Windows/Linux) / **Cmd+Alt+P** (macOS) → **Plan with Agent Team…** — parallel to Claude Code's built-in `/plan`; captures the editor selection as context and dispatches your default plan-then-code team.
-
----
-
-## Companion npm packages
-
-Vendored beside the extension; published names:
-
-| Package | Role |
-|---------|------|
-| `cursor-mcp-vscode-port` | Cursor `mcp.json` → VS Code `mcp.json` |
-| `cloude-code-memory-bank` | Scaffold `memory-bank/` + merge into `CLAUDE.md` |
-| `cursor-rules-to-claude` | Cursor rules → `CLAUDE.md` / `.claude/rules` |
-
-Repos: [Claude-Code-ToolBox](https://github.com/amitchorasiya/Claude-Code-ToolBox).
-
----
-
-## Develop & test
-
-```bash
-cd packages/claude-code-toolbox   # from monorepo root
-npm install
-npm run compile
-npm test
-```
-
-- **CI:** `.github/workflows/extension-ci.yml` (Ubuntu, Windows, macOS). IntelliJ: `.github/workflows/intellij-ci.yml`.
-- **F5:** **Run Extension: Claude Code ToolBox** (`extensionDevelopmentPath` = this folder).
-
-**Context pack caveat:** Pasted `#file:` lines may not attach like native **Add context**; prefer explicit paths and small selections when priming Claude Code.
-
----
-
-## Troubleshooting
-
-| Issue | What to try |
-|-------|-------------|
-| MCP UI differs by VS Code version | Update VS Code; use native **MCP** commands where listed. |
-| Port / `npx` fails | Install **Node 20+**, check network; pin `claude-code-toolbox.npxTag` if needed; use **bundled CLI — no npx** commands. |
-| No skills listed | Ensure a **subfolder** under a scanned root contains **`SKILL.md`**. |
-| Claude Code “ignores” skills | Expected for arbitrary trees—use **`CLAUDE.md`**, awareness under `.claude/`, attachments, or MCP. |
-| Insiders vs stable user MCP | Toggle `claude-code-toolbox.useInsidersPaths`. |
-| Auto-scan on every open | Disable `claude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen` or uncheck the hub row. |
-
----
-
-## Publishing
-
-```bash
-npm run compile
-npm run package    # vsce → .vsix (see monorepo README for README staging)
-```
-
-[LICENSE](LICENSE) ships in the `.vsix`. Full notes: [monorepo README — Publishing](https://github.com/amitchorasiya/Claude-Code-ToolBox/blob/main/README.md#publishing-vsix--marketplace).
-
----
-
-## Contributing
-
-PRs welcome. From this package: run **`npm run compile`** and **`npm test`** before submitting. Prefer focused changes; match existing TypeScript style. See the [monorepo README — Contributing](https://github.com/amitchorasiya/Claude-Code-ToolBox/blob/main/README.md#contributing) for repo-wide expectations.
+Works on **macOS**, **Windows**, and **Linux**. Full **JetBrains parity** ships as a separate [IntelliJ plugin](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) with the complete Agentic Teams runtime.
 
 ---
 
 ## Disclaimer
 
-**Independence and trademarks.** **Claude Code ToolBox** is **independent** community tooling. It is **not** affiliated with, endorsed by, sponsored by, or maintained by Microsoft, GitHub, Cursor, OpenAI, Anthropic, or other vendors named in this README. Product names may be **trademarks** of their respective owners. For Microsoft’s VS Code branding expectations, see [Visual Studio Code brand guidelines](https://code.visualstudio.com/brand).
+**Independence and trademarks.** Claude Code ToolBox is **independent** community tooling. It is **not** affiliated with, endorsed by, or maintained by Microsoft, GitHub, Cursor, OpenAI, Anthropic, or other vendors. Product names may be trademarks of their respective owners.
 
-**MIT “AS IS”.** Licensed under the [MIT License](LICENSE).
-
-**Not professional services.** Not a security audit or legal review.
-
-**Third parties.** The extension can run **`npx`**, bundled **Node** CLIs, open registries, and edit **`mcp.json`**, **`CLAUDE.md`**, and **`.claude/`** files. Evaluate npm packages, MCP servers, and AI products before use.
+**MIT "AS IS".** Licensed under the [MIT License](LICENSE). Not professional services, security audit, or legal review.
 
 **Your responsibility.** Backups, secrets hygiene, and policy compliance are yours.
 
