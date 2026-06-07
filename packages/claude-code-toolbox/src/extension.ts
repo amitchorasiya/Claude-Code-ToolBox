@@ -95,6 +95,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     console.error("[Cloude Code ToolBox] migrateOneClickSetupToNewKeys failed", e);
   }
   void thinkingMachineModeActivationStartupCheck(context);
+  import("./intelligence/safetyGuards/safetyGuardsActivation").then(
+    (m) => void m.safetyGuardsStartupCheck(context)
+  );
   void maybeShowAutoScanDefaultMigrationToast(context);
 
   /* Agent Dashboard (Phase 1) — construct the controller but do not start it
@@ -508,6 +511,47 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   sub(
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (affectsToolboxSetting(e, "tokenOptimization.enabled")) {
+        refreshMcpHubs();
+      }
+    })
+  );
+
+  /* Safety Guards commands. */
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.safetyGuards.enable", async () => {
+    const { runSafetyGuardsEnable } = await import("./intelligence/safetyGuards/safetyGuardsCommand");
+    await runSafetyGuardsEnable();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.safetyGuards.disable", async () => {
+    const { runSafetyGuardsDisable } = await import("./intelligence/safetyGuards/safetyGuardsCommand");
+    await runSafetyGuardsDisable();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.safetyGuards.status", async () => {
+    const { runSafetyGuardsStatus } = await import("./intelligence/safetyGuards/safetyGuardsCommand");
+    await runSafetyGuardsStatus();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.safetyGuards.openSettings", async () => {
+    const { runOpenSafetyGuardsSettings } = await import("./intelligence/safetyGuards/safetyGuardsCommand");
+    await runOpenSafetyGuardsSettings();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.safetyGuards.editDestructivePatterns", async () => {
+    const { runEditDestructivePatterns } = await import("./intelligence/safetyGuards/safetyGuardsCommand");
+    await runEditDestructivePatterns();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.safetyGuards.editDomainList", async () => {
+    const { runEditDomainList } = await import("./intelligence/safetyGuards/safetyGuardsCommand");
+    await runEditDomainList();
+  }));
+
+  /* Safety Guards activation listener + config watcher. */
+  {
+    const { registerSafetyGuardsActivation } = await import("./intelligence/safetyGuards/safetyGuardsActivation");
+    sub(registerSafetyGuardsActivation(context));
+  }
+
+  /* Watch for safetyGuards.enabled changes to refresh hub. */
+  sub(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (affectsToolboxSetting(e, "safetyGuards.enabled")) {
         refreshMcpHubs();
       }
     })

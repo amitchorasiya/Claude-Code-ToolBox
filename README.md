@@ -4,11 +4,15 @@
 
 You're using Claude Code but you can't see what MCP servers are active, which skills are loaded, whether your teammates' config matches yours, or what your agents are doing. Setup lives in scattered dotfiles and tribal knowledge. Claude Code ToolBox gives you one visual hub to manage it all — plus multi-agent teams that debate, plan, and code together.
 
-**2,000+ installs** · VS Code extension **`1.0.36`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
+**2,000+ installs** · VS Code extension **`1.0.37`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 
-> ### New: Token Optimization — reduce token usage 30-60%
+> ### New: Safety Guards — block destructive commands + domain whitelisting
+>
+> **Safety Guards** installs Claude Code hooks that **block** (or warn on) destructive shell commands (`rm -rf`, `git push --force`, `git reset --hard`, `DROP TABLE`, `curl | sh`, and 30+ more patterns) and **enforce domain whitelisting** for all web requests (prevents data exfiltration to unknown domains). Pre-configured defaults ship out of the box, but you can fully customize: add/remove destructive patterns, switch between block/warn mode, add your internal domains to the allowlist, or flip to blocklist mode. Installed automatically by One Click Setup. Toggle on/off in the hub.
+
+> ### Token Optimization — reduce token usage 30-60%
 >
 > The **Intelligence** tab now includes **Token Optimization** — a single toggle that activates six coordinated techniques to slash Claude Code token costs: **project dependency map** (structural awareness without trial-and-error reads), **verbosity control** (4 levels merged into CLAUDE.md), **read deduplication** (session-aware mtime+size tracking), **.claudeignore** (gitignore-style skip patterns), **CLI output compression** (command-specific filters for git, npm, test runners), and **context budget watchdog** (tiered alerts at 70/85/95%). All hooks are advisory-only (never block), secure by default (restrictive file permissions, path traversal protection, ReDoS guards), and cleanly reversible via Disable.
 >

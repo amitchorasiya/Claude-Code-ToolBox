@@ -10,6 +10,7 @@ You're running Claude Code in VS Code, but you can't see what MCP servers are ac
 - **A visual MCP & skills hub** — see, search, install, and manage everything from one sidebar
 - **Live Agent Dashboard** — every running Claude Code session on your machine, with real-time cost tracking and context visibility
 - **One-click migration** — bring your Cursor or Copilot setup (MCP, rules, skills) into Claude Code automatically
+- **Safety Guards** — block destructive commands (rm -rf, git push --force, DROP TABLE) and enforce domain whitelisting for web requests. Configurable patterns, allow-overrides, block/warn modes
 - **Token Optimization** — reduce token usage 30-60% with project maps, read deduplication, output compression, .claudeignore, verbosity control, and context budget alerts
 - **Workspace-aware context priming** — Claude Code finally knows what your project actually has configured
 
@@ -49,6 +50,45 @@ Each agent can be pointed at a **SKILL.md** instead of a freeform prompt — str
 Opt-in dashboard shows a card for every running Claude Code session. Token-based cost estimates, context-window fill %, live tool feed, grouped by workspace.
 
 ![Agent Dashboard: live session cards with cost, context, tools, and LTM toggle](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/12-ltm-agent-dashboard.png?v=1.0.34)
+
+---
+
+## Safety Guards: Block Destructive Commands + Domain Whitelisting
+
+Claude Code runs arbitrary shell commands and fetches URLs. **Safety Guards** installs Claude Code hooks that prevent catastrophic mistakes and data exfiltration:
+
+| Guard | What it protects against |
+|-------|------------------------|
+| **Destructive Command Block** | `rm -rf`, `git push --force`, `git reset --hard`, `git branch -D`, `DROP TABLE`, `curl \| sh`, `chmod 777`, and 30+ more patterns |
+| **Domain Whitelisting** | Only allows web requests to known-good domains (GitHub, npm, docs sites, etc.) — blocks exfiltration to pastebins, file-sharing, or unknown hosts |
+
+### Modes
+
+- **Block** (default) — hook exits code 2, Claude cannot proceed with the destructive command
+- **Warn** — hook emits stderr warning but allows execution (for teams who want visibility without hard stops)
+- **Allowlist** (domains, default) — only listed domains pass; everything else is blocked
+- **Blocklist** (domains) — all domains allowed except explicitly blocked ones
+
+### Customization
+
+- **Allow overrides** — permit specific patterns despite the blocklist (e.g., `rm -rf node_modules` if your workflow needs it)
+- **Add your internal domains** — `*.internal.company.com` in the allowlist
+- **Edit directly** — use the command palette or hub quick-actions to view/edit patterns and domains
+
+### One Click Setup Integration
+
+Safety Guards is **enabled by default** when you run One Click Setup. No extra steps needed.
+
+### Commands
+
+| Command | What it does |
+|---------|-------------|
+| `Safety Guards — Enable` | Installs hooks to `~/.claude/settings.json` |
+| `Safety Guards — Disable` | Removes hooks and scripts |
+| `Safety Guards — Status` | Shows active patterns, modes, and hook state |
+| `Safety Guards — Edit destructive patterns` | View and customize blocked patterns |
+| `Safety Guards — Edit domain list` | View and customize allowed/blocked domains |
+| `Safety Guards — Open settings` | Jump to the VS Code settings section |
 
 ---
 

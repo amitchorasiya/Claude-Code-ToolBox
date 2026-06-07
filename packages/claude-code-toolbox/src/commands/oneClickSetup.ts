@@ -318,6 +318,16 @@ export async function runOneClickSetup(
       });
     }
 
+    // --- Safety Guards: enable by default during One Click Setup ---
+    {
+      const sgEnabled = ws.get<boolean>(`${CFG}.safetyGuards.enabled`, false);
+      if (!sgEnabled) {
+        await ws.update(`${CFG}.safetyGuards.enabled`, true, scope);
+        const { runSafetyGuardsEnable } = await import("../intelligence/safetyGuards/safetyGuardsCommand");
+        await runSafetyGuardsEnable();
+      }
+    }
+
     if (runReadiness) {
       await showIntelligenceReadiness();
     }

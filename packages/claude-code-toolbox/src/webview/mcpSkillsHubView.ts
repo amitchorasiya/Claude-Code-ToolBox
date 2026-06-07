@@ -146,6 +146,8 @@ export type HubPayload = {
   kit: KitSnapshotRow[];
   /** Mirrors `cloude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen`. */
   autoScanMcpSkillsOnWorkspaceOpen: boolean;
+  /** Mirrors `cloude-code-toolbox.safetyGuards.enabled`. */
+  safetyGuardsEnabled: boolean;
   /** Mirrors `cloude-code-toolbox.tokenOptimization.enabled`. */
   tokenOptimizationEnabled: boolean;
   /** Mirrors `cloude-code-toolbox.thinkingMachineMode.enabled`. */
@@ -296,6 +298,8 @@ export async function gatherHubPayload(
 
   const autoScanMcpSkillsOnWorkspaceOpen =
     cfg.get<boolean>("cloude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen") === true;
+  const safetyGuardsEnabled =
+    cfg.get<boolean>("cloude-code-toolbox.safetyGuards.enabled") === true;
   const tokenOptimizationEnabled =
     cfg.get<boolean>("cloude-code-toolbox.tokenOptimization.enabled") === true;
   const thinkingMachineModeEnabled =
@@ -331,6 +335,7 @@ export async function gatherHubPayload(
     skills,
     kit,
     autoScanMcpSkillsOnWorkspaceOpen,
+    safetyGuardsEnabled,
     tokenOptimizationEnabled,
     thinkingMachineModeEnabled,
     hygiene,
@@ -423,6 +428,7 @@ export function emptyHubPayload(): HubPayload {
     skills: [],
     kit: [],
     autoScanMcpSkillsOnWorkspaceOpen: false,
+    safetyGuardsEnabled: false,
     tokenOptimizationEnabled: false,
     thinkingMachineModeEnabled: false,
     hygiene: {
@@ -708,6 +714,16 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
           const hasWs = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
           await vscode.workspace.getConfiguration().update(
             "cloude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen",
+            msg.value === true,
+            hasWs ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.Global
+          );
+          this._postState();
+          break;
+        }
+        case "setSafetyGuardsEnabled": {
+          const hasWs = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
+          await vscode.workspace.getConfiguration().update(
+            "cloude-code-toolbox.safetyGuards.enabled",
             msg.value === true,
             hasWs ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.Global
           );

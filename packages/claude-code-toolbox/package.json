@@ -2,7 +2,7 @@
   "name": "cloude-code-toolbox-vscode",
   "displayName": "Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)",
   "description": "Claude Code ToolBox: MCP hub, workspace helpers, Thinking Machine Mode (context packs & priming), readiness, and bridges from Cursor to Claude Code in VS Code. Not affiliated with Microsoft, GitHub, or Anthropic. See README disclaimer. Workflow ideas credited in NOTICE (everything-claude-code, MIT).",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "publisher": "amitchorasiya",
   "author": "amitchorasiya",
   "license": "MIT",
@@ -452,6 +452,99 @@
             "type": "boolean",
             "default": true,
             "description": "Merge verbosity/optimization instructions block into CLAUDE.md on activation."
+          }
+        }
+      },
+      {
+        "title": "Safety Guards",
+        "order": 165,
+        "properties": {
+          "cloude-code-toolbox.safetyGuards.enabled": {
+            "type": "boolean",
+            "default": false,
+            "title": "Safety Guards",
+            "description": "Master switch for Safety Guards. When enabled, installs hooks to block/warn on destructive commands and enforce domain whitelisting."
+          },
+          "cloude-code-toolbox.safetyGuards.destructiveCommands.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable the destructive command guard (rm -rf, git push --force, DROP TABLE, etc.)."
+          },
+          "cloude-code-toolbox.safetyGuards.destructiveCommands.mode": {
+            "type": "string",
+            "enum": ["block", "warn"],
+            "default": "block",
+            "enumDescriptions": [
+              "Block the command (exit code 2 — Claude cannot proceed).",
+              "Warn via stderr but allow the command to run."
+            ],
+            "description": "Whether to block destructive commands or only warn."
+          },
+          "cloude-code-toolbox.safetyGuards.destructiveCommands.patterns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [
+              "rm -rf", "rm -fr", "rm -r /", "rmdir /s", "del /f /s /q",
+              "git push --force", "git push -f", "git reset --hard",
+              "git branch -D", "git branch -d -f",
+              "git checkout -- .", "git checkout .", "git restore .",
+              "git clean -f", "git clean -fd", "git clean -fdx",
+              "DROP TABLE", "DROP DATABASE", "DROP SCHEMA",
+              "TRUNCATE TABLE", "TRUNCATE", "DELETE FROM",
+              "curl|sh", "curl|bash", "wget|sh", "wget|bash",
+              "chmod 777", "chmod -R 777", "mkfs", "dd if=",
+              "> /dev/sda", ":(){ :|:& };:", "kill -9 1",
+              "killall", "pkill -9", "npm publish", "npx rimraf /"
+            ],
+            "description": "Patterns that trigger the destructive command guard. Case-insensitive substring match. Use pipe (|) for piped-command detection."
+          },
+          "cloude-code-toolbox.safetyGuards.destructiveCommands.allowOverrides": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [],
+            "description": "Patterns that bypass the destructive command guard. If a command matches both a blocked pattern AND an override, the override wins. E.g. 'rm -rf node_modules' to allow cleaning node_modules."
+          },
+          "cloude-code-toolbox.safetyGuards.domainWhitelist.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable domain whitelisting for web requests (WebFetch, WebSearch)."
+          },
+          "cloude-code-toolbox.safetyGuards.domainWhitelist.mode": {
+            "type": "string",
+            "enum": ["allowlist", "blocklist"],
+            "default": "allowlist",
+            "enumDescriptions": [
+              "Only listed domains are allowed — everything else is blocked.",
+              "All domains are allowed except those explicitly blocked."
+            ],
+            "description": "Whether to operate as an allowlist (strict) or blocklist (permissive)."
+          },
+          "cloude-code-toolbox.safetyGuards.domainWhitelist.domains": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [
+              "github.com", "*.github.com", "raw.githubusercontent.com", "api.github.com",
+              "stackoverflow.com", "*.stackoverflow.com",
+              "npmjs.com", "*.npmjs.com", "registry.npmjs.org",
+              "pypi.org", "*.pypi.org",
+              "developer.mozilla.org", "*.readthedocs.io",
+              "docs.rs", "pkg.go.dev", "crates.io", "rubygems.org",
+              "maven.org", "*.maven.org",
+              "docs.python.org", "nodejs.org",
+              "typescriptlang.org", "*.typescriptlang.org",
+              "react.dev", "vuejs.org", "angular.io", "nextjs.org",
+              "vercel.com", "*.cloudflare.com",
+              "wikipedia.org", "*.wikipedia.org", "arxiv.org",
+              "*.google.com", "*.microsoft.com", "learn.microsoft.com",
+              "*.amazonaws.com", "docs.aws.amazon.com"
+            ],
+            "description": "Allowed domains (allowlist mode). Use *.domain.com for wildcard subdomains. Add your internal domains here."
+          },
+          "cloude-code-toolbox.safetyGuards.domainWhitelist.blockedDomains": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": ["pastebin.com", "*.paste.ee", "hastebin.com", "transfer.sh", "file.io"],
+            "description": "Blocked domains (blocklist mode). These are denied even if other domains are allowed."
           }
         }
       },
@@ -977,6 +1070,30 @@
       {
         "command": "CloudeCodeToolBox.tokenOptimization.openSettings",
         "title": "Claude Code ToolBox: Token Optimization — Open settings"
+      },
+      {
+        "command": "CloudeCodeToolBox.safetyGuards.enable",
+        "title": "Claude Code ToolBox: Safety Guards — Enable"
+      },
+      {
+        "command": "CloudeCodeToolBox.safetyGuards.disable",
+        "title": "Claude Code ToolBox: Safety Guards — Disable"
+      },
+      {
+        "command": "CloudeCodeToolBox.safetyGuards.status",
+        "title": "Claude Code ToolBox: Safety Guards — Status"
+      },
+      {
+        "command": "CloudeCodeToolBox.safetyGuards.openSettings",
+        "title": "Claude Code ToolBox: Safety Guards — Open settings"
+      },
+      {
+        "command": "CloudeCodeToolBox.safetyGuards.editDestructivePatterns",
+        "title": "Claude Code ToolBox: Safety Guards — Edit destructive patterns"
+      },
+      {
+        "command": "CloudeCodeToolBox.safetyGuards.editDomainList",
+        "title": "Claude Code ToolBox: Safety Guards — Edit domain list"
       }
     ],
     "menus": {

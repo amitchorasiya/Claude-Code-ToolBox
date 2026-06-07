@@ -1094,6 +1094,20 @@ export function getHubWebviewHtml(csp: string): string {
         </div>
         <button type="button" class="btn icon-gear ocs-gear" id="one-click-setup-settings" title="One Click Setup defaults" aria-label="One Click Setup settings">⚙</button>
       </div>
+      <div class="thinking-machine-row" aria-label="Safety Guards">
+        <div class="tmm-glyph" title="Safety Guards" aria-hidden="true">
+          <span class="tmm-glyph-main">🛡️</span>
+          <span class="tmm-glyph-bolt">🚫</span>
+        </div>
+        <label class="tmm-label" for="safety-guards-cb">
+          <input type="checkbox" id="safety-guards-cb" class="tmm-cb" />
+          <span class="tmm-body">
+            <span class="tmm-title-pill">Safety Guards</span>
+            <span class="tmm-desc">Block destructive commands (<code>rm -rf</code>, <code>git push --force</code>, <code>DROP TABLE</code>) and enforce domain whitelisting for web requests. Configurable patterns + overrides. Installed via One Click Setup.</span>
+          </span>
+        </label>
+        <button type="button" class="btn icon-gear tmm-gear" id="safety-guards-settings" title="Safety Guards settings" aria-label="Safety Guards settings">⚙</button>
+      </div>
       <div class="thinking-machine-row" aria-label="Token Optimization">
         <div class="tmm-glyph" title="Token Optimization" aria-hidden="true">
           <span class="tmm-glyph-main">💎</span>
@@ -1178,6 +1192,9 @@ export function getHubWebviewHtml(csp: string): string {
         { ic: "\\uD83D\\uDCCA", t: "Analyze CLAUDE.md tokens", d: "Section breakdown, duplication detection, compression tips", c: "CloudeCodeToolBox.tokenOptimization.analyzeClaudeMd" },
         { ic: "\\uD83D\\uDEAB", t: "Create .claudeignore", d: "Block lockfiles, node_modules, build output from reads", c: "CloudeCodeToolBox.tokenOptimization.createClaudeIgnore" },
         { ic: "\\u2139\\uFE0F", t: "Token Optimization status", d: "Current hooks, project map freshness, settings summary", c: "CloudeCodeToolBox.tokenOptimization.status" },
+        { ic: "\\uD83D\\uDEE1", t: "Safety Guards status", d: "Destructive command guard + domain whitelist status", c: "CloudeCodeToolBox.safetyGuards.status" },
+        { ic: "\\uD83D\\uDEAB", t: "Edit destructive patterns", d: "Customize blocked shell command patterns", c: "CloudeCodeToolBox.safetyGuards.editDestructivePatterns" },
+        { ic: "\\uD83C\\uDF10", t: "Edit domain list", d: "Customize allowed/blocked domains for web requests", c: "CloudeCodeToolBox.safetyGuards.editDomainList" },
         { ic: "\\uD83D\\uDD27", t: "Open Claude Code user settings (JSON)", d: "~/.claude/settings.json for MCP, etc.", c: "CloudeCodeToolBox.openClaudeUserSettingsJson" },
         { ic: "\\uD83D\\uDD0D", t: "Scan MCP & Skills awareness", d: "Save to .claude + update CLAUDE.md (optional open from toast)", c: "CloudeCodeToolBox.showMcpSkillsAwareness" },
         { ic: "\\uD83D\\uDD0D", t: "Claude Code / MCP config scan", d: "Heuristic scan → Output (mcp.json, CLAUDE.md)", c: "CloudeCodeToolBox.claudeToolboxConfigScan" },
@@ -1284,6 +1301,12 @@ export function getHubWebviewHtml(csp: string): string {
     var cb = $("#intel-auto-scan-cb");
     if (!cb || !state) return;
     cb.checked = state.autoScanMcpSkillsOnWorkspaceOpen === true;
+  }
+
+  function syncSafetyGuardsCheckbox() {
+    var sgCb = $("#safety-guards-cb");
+    if (!sgCb || !state) return;
+    sgCb.checked = state.safetyGuardsEnabled === true;
   }
 
   function syncTokenOptimizationCheckbox() {
@@ -1638,6 +1661,18 @@ export function getHubWebviewHtml(csp: string): string {
     if (ocr) {
       ocr.addEventListener("click", function () {
         vscode.postMessage({ type: "runCommand", command: "CloudeCodeToolBox.runOneClickSetup" });
+      });
+    }
+    var sgCb = $("#safety-guards-cb");
+    if (sgCb) {
+      sgCb.addEventListener("change", function () {
+        vscode.postMessage({ type: "setSafetyGuardsEnabled", value: sgCb.checked });
+      });
+    }
+    var sgSettings = $("#safety-guards-settings");
+    if (sgSettings) {
+      sgSettings.addEventListener("click", function () {
+        vscode.postMessage({ type: "runCommand", command: "CloudeCodeToolBox.safetyGuards.openSettings" });
       });
     }
     var toCb = $("#token-optimization-cb");
@@ -4155,6 +4190,7 @@ export function getHubWebviewHtml(csp: string): string {
       return;
     }
     syncIntelAutoScanCheckbox();
+    syncSafetyGuardsCheckbox();
     syncTokenOptimizationCheckbox();
     syncThinkingMachineModeCheckbox();
     syncHubHostCopy();
