@@ -25,7 +25,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&family=Press+Start+2P&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/site.css?v=35" />
+    <link rel="stylesheet" href="css/site.css?v=37" />
   </head>
   <body>
     <header class="site-header">
@@ -144,6 +144,10 @@
               <p>Context packs and readiness flows with explicit choices so teams agree on what Claude Code is allowed to see.</p>
             </article>
             <article class="pillar">
+              <h3>Safety Guards — block destructive commands + domain whitelisting</h3>
+              <p><strong>Destructive Command Guard</strong> blocks <code>rm -rf</code>, <code>git push --force</code>, <code>git reset --hard</code>, <code>DROP TABLE</code>, <code>curl | sh</code>, and 30+ patterns before they execute. <strong>Domain Whitelisting</strong> enforces an allowlist for all web requests — prevents data exfiltration to unknown hosts. Configurable patterns, overrides, block/warn modes. Installed by default via One Click Setup.</p>
+            </article>
+            <article class="pillar">
               <h3>Agentic Teams — skills, memory, swarm dispatch + multi-agent debate</h3>
               <p>10-agent SDLC starter pack (incl. <strong>UI/UX Designer</strong>) that <strong>debate a design</strong> and produce a <strong>plan you approve</strong> before code runs. <strong>One-click install</strong> enables <code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS</code> and writes agents/teams to <code>~/.claude/</code> for native discovery. <strong>Reset button</strong> removes everything in one click. <strong>Agent Dashboard</strong> shows live cost estimates for all sessions. <strong>Skill-backed agents</strong> point to SKILL.md instead of freeform prompts. <strong>Per-agent long-term memory</strong> lets agents learn and retain knowledge across runs. Eight collaboration protocols, <strong>swarm dispatch</strong>, 7 preset teams. Full parity on <strong>VS Code</strong>, <strong>IntelliJ</strong>, <strong>macOS</strong>, <strong>Windows</strong>, and <strong>Linux</strong>.</p>
             </article>
@@ -231,6 +235,32 @@
               </p>
             </article>
           </div>
+        </div>
+      </section>
+
+      <section class="modes" aria-labelledby="safety-heading">
+        <div class="wrap">
+          <h2 id="safety-heading">Safety Guards — protect against destructive commands &amp; data exfiltration</h2>
+          <p>
+            Claude Code runs arbitrary shell commands and fetches URLs. <strong>Safety Guards</strong> installs lightweight Python hooks into <code>~/.claude/settings.json</code> that intercept dangerous operations <em>before</em> they execute.
+          </p>
+          <div class="mode-grid">
+            <article class="mode-card">
+              <h3>Destructive Command Guard</h3>
+              <p>
+                <strong>What it blocks:</strong> <code>rm -rf</code>, <code>git push --force</code>, <code>git reset --hard</code>, <code>git branch -D</code>, <code>git clean -fdx</code>, <code>DROP TABLE</code>, <code>TRUNCATE</code>, <code>curl | sh</code>, <code>chmod 777</code>, <code>dd if=</code>, <code>npm publish</code>, and 30+ more patterns. <strong>Mode:</strong> Block (exit 2, prevents execution) or Warn (stderr only). <strong>Allow overrides:</strong> permit specific patterns when needed (e.g., <code>rm -rf node_modules</code>). All configurable in VS Code settings.
+              </p>
+            </article>
+            <article class="mode-card">
+              <h3>Domain Whitelisting</h3>
+              <p>
+                <strong>What it does:</strong> Enforces an allowlist (or blocklist) for all web requests. Default allowlist includes GitHub, npm, PyPI, MDN, Stack Overflow, Read the Docs, and 30+ trusted documentation sites. Unknown domains are blocked (exit 2). Prevents prompt-injection-driven exfiltration to pastebins, file-sharing sites, or attacker-controlled hosts. Add your internal domains with wildcard support (<code>*.internal.company.com</code>).
+              </p>
+            </article>
+          </div>
+          <p>
+            <strong>One Click Setup integration:</strong> Safety Guards is enabled by default when you run One Click Setup. Toggle on/off in the hub. Fully reversible via Disable.
+          </p>
         </div>
       </section>
 

@@ -17,10 +17,11 @@ You're running Claude Code from your JetBrains terminal, but there's no UI to ma
 - **10-agent SDLC starter pack** — product-manager, architect, security-reviewer, backend/frontend dev, QA, code-reviewer, devops, tech-writer, UI/UX designer
 - **Live transcript** — color-coded, per-turn tokens + cost, approve/reject modal, Stop button
 - **Swarm dispatch** — every team auto-generates a `/command` that fires all agents in parallel
+- **Safety Guards** — block destructive commands (`rm -rf`, `git push --force`, `DROP TABLE`) and enforce domain whitelisting for web requests
 - **One Click migration** — port Cursor MCP, rules, and memory bank into Claude Code config
 - **Workspace kit** — checklist for rules, `CLAUDE.md`, memory bank, `mcp.json`
 
-**What's still VS Code-only:** Agent Dashboard (hook server + transcript watcher). See [ROADMAP.md](ROADMAP.md).
+**What's still VS Code-only:** Agent Dashboard (hook server + transcript watcher), Token Optimization project-map generation. See [ROADMAP.md](ROADMAP.md).
 
 ---
 
