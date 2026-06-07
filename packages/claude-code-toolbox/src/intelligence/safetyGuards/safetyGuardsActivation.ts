@@ -1,5 +1,5 @@
 /**
- * Config change listener + confirmation modal for Safety Guards.
+ * Config change listener + confirmation modal for AntiVibe Safety Guards.
  */
 import * as vscode from "vscode";
 import { TOOLBOX_SETTINGS_PREFIX } from "../../toolboxSettings";
@@ -23,14 +23,15 @@ export function registerSafetyGuardsActivation(
     }
     if (context.globalState.get(GLOBAL_ACK) !== true) {
       const choice = await vscode.window.showInformationMessage(
-        "Safety Guards — activate?",
+        "AntiVibe Safety Guards — activate?",
         {
           modal: true,
           detail:
             "This will install Claude Code hooks that:\n\n" +
             "• Block or warn on destructive commands (rm -rf, git push --force, DROP TABLE, etc.)\n" +
-            "• Enforce domain whitelisting for web requests (blocks exfiltration to unknown domains)\n\n" +
-            "Default patterns are pre-configured. You can customize patterns and domains in Settings.\n" +
+            "• Enforce domain whitelisting for web requests (blocks exfiltration to unknown domains)\n" +
+            "• Block installation of known-compromised packages (supply chain protection)\n\n" +
+            "Default patterns are pre-configured. You can customize patterns, domains, and blocked packages in Settings.\n" +
             "Disable anytime to remove all hooks.",
         },
         "Activate"
@@ -71,16 +72,17 @@ export async function safetyGuardsStartupCheck(
     return;
   }
   if (context.globalState.get(GLOBAL_ACK) === true) {
+    await runSafetyGuardsEnable();
     return;
   }
   const choice = await vscode.window.showInformationMessage(
-    "Safety Guards — activate?",
+    "AntiVibe Safety Guards — activate?",
     {
       modal: true,
       detail:
-        "Safety Guards is enabled but not yet activated.\n\n" +
-        "This will install hooks to block destructive commands and enforce " +
-        "domain whitelisting for web requests.\n\n" +
+        "AntiVibe Safety Guards is enabled but not yet activated.\n\n" +
+        "This will install hooks to block destructive commands, enforce " +
+        "domain whitelisting, and prevent supply chain attacks.\n\n" +
         "Disable anytime to remove all hooks.",
     },
     "Activate"

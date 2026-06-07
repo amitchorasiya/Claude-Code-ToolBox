@@ -1,0 +1,41 @@
+repos:
+  # Secret detection — catches API keys, tokens, passwords before they're committed
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package-lock.json|yarn.lock|pnpm-lock.yaml
+
+  # Security-focused linting with Semgrep
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.56.0
+    hooks:
+      - id: semgrep
+        args: ['--config', 'p/security-audit', '--config', 'p/secrets', '--error']
+
+  # Prevent large files (often contain embedded secrets)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: detect-private-key
+      - id: check-merge-conflict
+
+  # Check for hardcoded credentials patterns
+  - repo: https://github.com/zricethezav/gitleaks
+    rev: v8.18.1
+    hooks:
+      - id: gitleaks
+
+  # AntiVibe local security scanner (secrets, SQLi, XSS, dependency audit)
+  - repo: local
+    hooks:
+      - id: antivibe-pre-commit-scan
+        name: AntiVibe Security Scan
+        entry: bin/pre-commit-scan.sh
+        language: script
+        pass_filenames: false
+        always_run: true
+        stages: [commit]

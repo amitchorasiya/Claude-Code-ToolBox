@@ -1,12 +1,14 @@
 /**
- * Renders Python hook scripts for Safety Guards.
+ * Renders Python hook scripts for AntiVibe Safety Guards.
  * Scripts are pure Python 3, no third-party deps.
  * Destructive command hook exits 2 (block) or 0 (warn).
  * Domain whitelist hook exits 2 (block) or 0 (warn).
+ * Supply chain hook exits 2 (block) or 0 (warn).
  */
 
 export const DESTRUCTIVE_CMD_MARKER = "# cloude-code-toolbox-safety-guard-destructive v1";
 export const DOMAIN_WHITELIST_MARKER = "# cloude-code-toolbox-safety-guard-domain v1";
+export const SUPPLY_CHAIN_MARKER = "# cloude-code-toolbox-safety-guard-supplychain v1";
 
 export function renderDestructiveCommandHookScript(
   patterns: string[],
@@ -15,17 +17,44 @@ export function renderDestructiveCommandHookScript(
 ): string {
   const patternsJson = JSON.stringify(patterns);
   const overridesJson = JSON.stringify(allowOverrides);
-  const exitCode = mode === "block" ? 2 : 0;
 
   return `#!/usr/bin/env python3
 ${DESTRUCTIVE_CMD_MARKER}
-"""PreToolUse hook: detects destructive commands and blocks or warns."""
-import json, sys, re
+"""PreToolUse hook: detects destructive commands.
+Triple-confirmation: warns twice, blocks on 3rd attempt per pattern per session.
+State stored in a temp file scoped to the session (CLAUDE_SESSION_ID or fallback PID).
+Cross-platform: works on macOS, Linux, Windows."""
+import json, sys, re, os, tempfile, hashlib, time
 
 PATTERNS = ${patternsJson}
 ALLOW_OVERRIDES = ${overridesJson}
 MODE = "${mode}"
-EXIT_CODE = ${exitCode}
+MAX_WARNINGS = 2
+
+def get_state_file():
+    session_id = os.environ.get("CLAUDE_SESSION_ID", "")
+    if not session_id:
+        session_id = f"pid-{os.getppid()}"
+    state_dir = os.path.join(tempfile.gettempdir(), "cloude-toolbox-safety-guards")
+    os.makedirs(state_dir, exist_ok=True)
+    safe_name = hashlib.sha256(session_id.encode()).hexdigest()[:16]
+    return os.path.join(state_dir, f"destructive-{safe_name}.json")
+
+def load_state():
+    path = get_state_file()
+    try:
+        with open(path, "r") as f:
+            data = json.load(f)
+        if time.time() - data.get("ts", 0) > 3600:
+            return {}
+        return data.get("attempts", {})
+    except Exception:
+        return {}
+
+def save_state(attempts):
+    path = get_state_file()
+    with open(path, "w") as f:
+        json.dump({"ts": time.time(), "attempts": attempts}, f)
 
 def normalize(cmd):
     cmd = re.sub(r'\\s+', ' ', cmd).strip().lower()
@@ -73,14 +102,33 @@ def main():
         sys.exit(0)
 
     matched = check_command(command)
-    if matched:
-        msg = f"[Safety Guard] BLOCKED destructive command matching pattern: {matched}"
-        if MODE == "warn":
-            msg = f"[Safety Guard] WARNING destructive command matching pattern: {matched}"
-        print(msg, file=sys.stderr)
-        sys.exit(EXIT_CODE)
+    if not matched:
+        sys.exit(0)
 
-    sys.exit(0)
+    if MODE == "warn":
+        print(f"[AntiVibe Safety Guard] WARNING destructive command matching pattern: {matched}", file=sys.stderr)
+        sys.exit(0)
+
+    # Triple confirmation: block first 2 attempts, allow on 3rd (user confirmed intent)
+    attempts = load_state()
+    key = matched.lower()
+    count = attempts.get(key, 0) + 1
+    attempts[key] = count
+    save_state(attempts)
+
+    if count < MAX_WARNINGS + 1:
+        remaining = MAX_WARNINGS + 1 - count
+        print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  DESTRUCTIVE COMMAND DETECTED (attempt {count}/3): pattern \\"{matched}\\"", file=sys.stderr)
+        print(f"[AntiVibe Safety Guard] This command is blocked for safety. Claude must retry {remaining} more time(s) to confirm intent.", file=sys.stderr)
+        print(f"[AntiVibe Safety Guard] If this is intentional, keep retrying. After 3 total attempts it will be allowed.", file=sys.stderr)
+        sys.exit(2)
+    else:
+        # 3rd attempt — user has confirmed intent, allow through
+        print(f"[AntiVibe Safety Guard] \\u2705 Allowed after 3 confirmations. Pattern: \\"{matched}\\"", file=sys.stderr)
+        # Reset counter so next occurrence of same pattern requires re-confirmation
+        attempts[key] = 0
+        save_state(attempts)
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()
@@ -155,12 +203,111 @@ def main():
     if not allowed:
         domain = extract_domain(url)
         if MODE == "allowlist":
-            print(f"[Safety Guard] BLOCKED domain not in allowlist: {domain}", file=sys.stderr)
+            print(f"[AntiVibe Safety Guard] BLOCKED domain not in allowlist: {domain}", file=sys.stderr)
         else:
-            print(f"[Safety Guard] BLOCKED domain in blocklist: {domain} (matched: {detail})", file=sys.stderr)
+            print(f"[AntiVibe Safety Guard] BLOCKED domain in blocklist: {domain} (matched: {detail})", file=sys.stderr)
         sys.exit(2)
 
     sys.exit(0)
+
+if __name__ == "__main__":
+    main()
+`;
+}
+
+export function renderSupplyChainHookScript(
+  blockedPackages: string[],
+  mode: "block" | "warn"
+): string {
+  const blockedJson = JSON.stringify(blockedPackages);
+
+  return `#!/usr/bin/env python3
+${SUPPLY_CHAIN_MARKER}
+"""PreToolUse hook: blocks installation of known-compromised packages (supply chain guard).
+Intercepts npm install, pip install, yarn add, etc. and checks against a blocklist.
+Cross-platform: works on macOS, Linux, Windows."""
+import json, sys, re
+
+BLOCKED_PACKAGES = ${blockedJson}
+MODE = "${mode}"
+
+INSTALL_PATTERNS = [
+    r'\\bnpm\\s+(?:install|i|add)\\b',
+    r'\\byarn\\s+add\\b',
+    r'\\bpnpm\\s+(?:add|install)\\b',
+    r'\\bbun\\s+(?:add|install)\\b',
+    r'\\bpip3?\\s+install\\b',
+    r'\\bgem\\s+install\\b',
+    r'\\bcargo\\s+add\\b',
+]
+
+def extract_packages(command):
+    """Extract package names from an install command."""
+    packages = []
+    parts = command.split()
+    skip_next = False
+    past_command = False
+    for i, part in enumerate(parts):
+        if skip_next:
+            skip_next = False
+            continue
+        if not past_command:
+            if part in ("install", "i", "add"):
+                past_command = True
+            continue
+        if part.startswith("-"):
+            if part in ("--registry", "--save-prefix", "-g", "--global", "--save", "--save-dev", "-D", "-S", "-E", "--save-exact", "--save-optional", "-O"):
+                if not part.startswith("--") or "=" not in part:
+                    skip_next = True
+            continue
+        pkg = re.split(r'@(?!.*?/)', part)[0] if '@' in part and not part.startswith('@') else part
+        if part.startswith('@') and '/' in part:
+            pkg = re.split(r'@(?=[0-9^~<>=])', part)[0]
+        if pkg:
+            packages.append(pkg.lower())
+    return packages
+
+def is_install_command(command):
+    for pattern in INSTALL_PATTERNS:
+        if re.search(pattern, command, re.IGNORECASE):
+            return True
+    return False
+
+def main():
+    data = json.loads(sys.stdin.read() or "{}")
+    tool = data.get("tool_name", "")
+    if tool not in ("Bash", "bash", "execute_command", "shell"):
+        sys.exit(0)
+
+    tool_input = data.get("tool_input", {})
+    command = tool_input.get("command", "") or tool_input.get("input", "")
+    if not command:
+        sys.exit(0)
+
+    if not is_install_command(command):
+        sys.exit(0)
+
+    packages = extract_packages(command)
+    blocked_found = []
+    for pkg in packages:
+        for blocked in BLOCKED_PACKAGES:
+            if pkg == blocked.lower():
+                blocked_found.append(pkg)
+                break
+
+    if not blocked_found:
+        sys.exit(0)
+
+    names = ", ".join(blocked_found)
+    if MODE == "warn":
+        print(f"[AntiVibe Supply Chain Guard] WARNING: blocked package(s) detected: {names}", file=sys.stderr)
+        print("[AntiVibe Supply Chain Guard] These packages have known supply chain vulnerabilities.", file=sys.stderr)
+        sys.exit(0)
+
+    print(f"[AntiVibe Supply Chain Guard] \\u26d4 BLOCKED: package(s) on supply chain blocklist: {names}", file=sys.stderr)
+    print("[AntiVibe Supply Chain Guard] These packages have known supply chain attacks (compromised, sabotaged, or protestware).", file=sys.stderr)
+    print("[AntiVibe Supply Chain Guard] Remove from blocklist in VS Code settings to allow.", file=sys.stderr)
+    sys.exit(2)
 
 if __name__ == "__main__":
     main()

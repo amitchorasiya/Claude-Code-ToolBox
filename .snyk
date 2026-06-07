@@ -1,0 +1,11 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+ignore:
+  javascript/HttpToHttps:
+    - "packages/claude-code-toolbox/src/agents/dashboard/hookServer.ts":
+        reason: "Loopback-only IPC server bound exclusively to 127.0.0.1; never exposed to network"
+        expires: 2027-06-07T00:00:00.000Z
+  javascript/ClearTextProtocol:
+    - "packages/claude-code-toolbox/src/agents/dashboard/hookServer.ts":
+        reason: "Loopback-only IPC server bound exclusively to 127.0.0.1; never exposed to network"
+        expires: 2027-06-07T00:00:00.000Z

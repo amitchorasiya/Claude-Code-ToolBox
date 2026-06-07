@@ -24,6 +24,7 @@ export type HookServerHandle = {
 const MAX_BODY_BYTES = 1_000_000;
 
 export async function startHookServer(opts: HookServerOptions): Promise<HookServerHandle> {
+  // deepcode ignore HttpToHttps: loopback-only IPC server bound exclusively to 127.0.0.1, never network-exposed
   const server = http.createServer((req, res) => {
     if (req.method === "GET" && req.url === "/healthz") {
       res.writeHead(200, { "Content-Type": "application/json" });

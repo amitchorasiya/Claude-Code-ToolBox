@@ -10,7 +10,7 @@ You're running Claude Code in VS Code, but you can't see what MCP servers are ac
 - **A visual MCP & skills hub** — see, search, install, and manage everything from one sidebar
 - **Live Agent Dashboard** — every running Claude Code session on your machine, with real-time cost tracking and context visibility
 - **One-click migration** — bring your Cursor or Copilot setup (MCP, rules, skills) into Claude Code automatically
-- **Safety Guards** — block destructive commands (rm -rf, git push --force, DROP TABLE) and enforce domain whitelisting for web requests. Configurable patterns, allow-overrides, block/warn modes
+- **AntiVibe Safety Guards** — block destructive commands (rm -rf, git push --force, DROP TABLE), enforce domain whitelisting for web requests, and prevent supply chain attacks (blocks known-compromised packages like event-stream, node-ipc, colors). Configurable patterns, allow-overrides, block/warn modes
 - **Token Optimization** — reduce token usage 30-60% with project maps, read deduplication, output compression, .claudeignore, verbosity control, and context budget alerts
 - **Workspace-aware context priming** — Claude Code finally knows what your project actually has configured
 
@@ -53,18 +53,19 @@ Opt-in dashboard shows a card for every running Claude Code session. Token-based
 
 ---
 
-## Safety Guards: Block Destructive Commands + Domain Whitelisting
+## AntiVibe Safety Guards: Block Destructive Commands + Domain Whitelisting + Supply Chain Protection
 
-Claude Code runs arbitrary shell commands and fetches URLs. **Safety Guards** installs Claude Code hooks that prevent catastrophic mistakes and data exfiltration:
+Claude Code runs arbitrary shell commands, fetches URLs, and installs packages. **AntiVibe Safety Guards** installs Claude Code hooks that prevent catastrophic mistakes, data exfiltration, and supply chain attacks:
 
 | Guard | What it protects against |
 |-------|------------------------|
 | **Destructive Command Block** | `rm -rf`, `git push --force`, `git reset --hard`, `git branch -D`, `DROP TABLE`, `curl \| sh`, `chmod 777`, and 30+ more patterns |
 | **Domain Whitelisting** | Only allows web requests to known-good domains (GitHub, npm, docs sites, etc.) — blocks exfiltration to pastebins, file-sharing, or unknown hosts |
+| **Supply Chain Guard** | Blocks installation of known-compromised packages (`event-stream`, `node-ipc`, `colors`, `faker`, `ua-parser-js`, `peacenotwar`, `es5-ext`) — prevents npm/pip/yarn/pnpm/gem/cargo supply chain attacks |
 
 ### Modes
 
-- **Block** (default) — hook exits code 2, Claude cannot proceed with the destructive command
+- **Block** (default) — hook exits code 2, Claude cannot proceed with the destructive command or package install
 - **Warn** — hook emits stderr warning but allows execution (for teams who want visibility without hard stops)
 - **Allowlist** (domains, default) — only listed domains pass; everything else is blocked
 - **Blocklist** (domains) — all domains allowed except explicitly blocked ones
@@ -73,22 +74,23 @@ Claude Code runs arbitrary shell commands and fetches URLs. **Safety Guards** in
 
 - **Allow overrides** — permit specific patterns despite the blocklist (e.g., `rm -rf node_modules` if your workflow needs it)
 - **Add your internal domains** — `*.internal.company.com` in the allowlist
+- **Edit blocked packages** — add or remove packages from the supply chain blocklist in Settings
 - **Edit directly** — use the command palette or hub quick-actions to view/edit patterns and domains
 
 ### One Click Setup Integration
 
-Safety Guards is **enabled by default** when you run One Click Setup. No extra steps needed.
+AntiVibe Safety Guards **and** Token Optimization are both **enabled by default** when you run One Click Setup. After setup completes, you'll be prompted to restart VS Code — **restart is required** for hooks to take effect.
 
 ### Commands
 
 | Command | What it does |
 |---------|-------------|
-| `Safety Guards — Enable` | Installs hooks to `~/.claude/settings.json` |
-| `Safety Guards — Disable` | Removes hooks and scripts |
-| `Safety Guards — Status` | Shows active patterns, modes, and hook state |
-| `Safety Guards — Edit destructive patterns` | View and customize blocked patterns |
-| `Safety Guards — Edit domain list` | View and customize allowed/blocked domains |
-| `Safety Guards — Open settings` | Jump to the VS Code settings section |
+| `AntiVibe Safety Guards — Enable` | Installs hooks to `~/.claude/settings.json` |
+| `AntiVibe Safety Guards — Disable` | Removes hooks and scripts |
+| `AntiVibe Safety Guards — Status` | Shows active patterns, modes, and hook state |
+| `AntiVibe Safety Guards — Edit destructive patterns` | View and customize blocked patterns |
+| `AntiVibe Safety Guards — Edit domain list` | View and customize allowed/blocked domains |
+| `AntiVibe Safety Guards — Open settings` | Jump to the VS Code settings section |
 
 ---
 
@@ -105,7 +107,7 @@ Claude Code sessions burn tokens on redundant file reads, verbose output, and bl
 | **Output compression** | Hook compresses verbose CLI output (git, npm, test runners) — deduplicates repeated lines, extracts summaries, caps at configurable max lines |
 | **Context budget watchdog** | Tiered alerts (70%, 85%, 95%) when context window fills up — with actionable prompts to run `/compact` |
 
-**One click to enable.** Disable reverses everything cleanly — removes hooks, CLAUDE.md block, and settings.
+**One click to enable.** After toggling on, restart VS Code for hooks to activate. Disable reverses everything cleanly — removes hooks, CLAUDE.md block, and settings.
 
 ### How it works
 

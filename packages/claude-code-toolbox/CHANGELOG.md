@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.39
+
+- **Rename: AntiVibe Safety Guards.** Safety Guards is now branded as **AntiVibe Safety Guards** across all command palette entries, notifications, modals, and hook script banners. Internal setting keys unchanged (no breaking change).
+- **Supply Chain Guard (new protocol).** Third AntiVibe Safety Guard that intercepts `npm install`, `pip install`, `yarn add`, `pnpm add`, `gem install`, `cargo add`, and `bun add` commands — blocks packages on a curated supply-chain-attack blocklist. Default blocked: `event-stream`, `ua-parser-js`, `colors`, `faker`, `node-ipc`, `peacenotwar`, `es5-ext`. Block or Warn mode, fully customizable via settings.
+- **AntiVibe Rails integration.** Project now includes AntiVibe Rails (from `antivibe-rails-starter`): pre-commit security scanning, package validation, CI/CD workflow, domain whitelisting config, and reference security patterns under `docs/patterns/`.
+- Release: **1.0.39** (VS Code).
+
+## 1.0.38
+
+- **Fix: checkboxes persist after restart.** Safety Guards and Token Optimization checkboxes now correctly remember their enabled state across VS Code restarts (previously the activation acknowledgment was lost, causing a re-prompt on startup that could revert the setting).
+- **One Click Setup enables Token Optimization.** One Click Setup now auto-enables both Safety Guards AND Token Optimization (previously only Safety Guards).
+- **Restart notification.** After enabling Safety Guards, Token Optimization, or completing One Click Setup, the extension now shows a clear "Restart VS Code" prompt explaining that hooks require a restart to take effect.
+- **Hooks re-installed on startup.** When the activation acknowledgment is already set, hooks are now silently re-installed on startup to ensure they survive across VS Code updates.
+- Release: **1.0.38** (VS Code).
+
 ## 1.0.37
 
 - **Safety Guards protocol.** New `Safety Guards` toggle in the hub installs Claude Code hooks that block destructive commands (`rm -rf`, `git push --force`, `git reset --hard`, `git branch -D`, `DROP TABLE`, `curl | sh`, `chmod 777`, and 30+ more) and enforce domain whitelisting for all web requests. Two modes: Block (prevents execution) or Warn (stderr only). Configurable patterns, allow-overrides, and domain lists. Enabled by default via One Click Setup.

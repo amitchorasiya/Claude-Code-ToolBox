@@ -1,0 +1,89 @@
+# AntiVibe Security Configuration
+# ================================
+# This file controls domain whitelisting, package validation policy,
+# and pre-commit security scan settings.
+#
+# Customize this for your project. The setup script will never overwrite
+# an existing config — your changes are safe.
+
+version: "1.1"
+
+# ──────────────────────────────────────────────────────────────────────
+# Domain Whitelisting
+# ──────────────────────────────────────────────────────────────────────
+# AI agents should ONLY suggest API integrations with whitelisted domains.
+# If a domain is not listed here, the AI should ask before recommending it.
+
+allowed_domains:
+  # Package registries — where dependencies come from
+  registries:
+    - registry.npmjs.org
+    - pypi.org
+    - rubygems.org
+    - crates.io
+
+  # APIs — external services your app is allowed to call
+  apis:
+    - api.stripe.com
+    - api.github.com
+    - api.openai.com
+
+  # CDNs — asset delivery networks
+  cdn:
+    - cdn.jsdelivr.net
+    - unpkg.com
+    - cdnjs.cloudflare.com
+
+# Domains explicitly blocked — never suggest or connect to these
+blocked_domains:
+  - "*.ru"
+  - "*.cn"
+  - pastebin.com
+
+# ──────────────────────────────────────────────────────────────────────
+# Package Validation Policy
+# ──────────────────────────────────────────────────────────────────────
+# Controls what packages are allowed to be installed.
+# Used by bin/validate-package.sh and AI tool guardrails.
+
+packages:
+  # Minimum weekly downloads required (filters out abandoned/typosquat packages)
+  min_weekly_downloads: 1000
+
+  # Maximum days since last publish (rejects unmaintained packages)
+  max_age_days_since_publish: 365
+
+  # Require the maintainer to be a known/verified account
+  require_known_maintainer: true
+
+  # Packages that must NEVER be installed (known supply chain attacks)
+  blocked_packages:
+    - event-stream       # known supply chain attack
+    - ua-parser-js       # compromised version history
+    - colors             # intentional sabotage by maintainer
+    - faker              # intentional sabotage by maintainer
+    - node-ipc           # protestware / malicious payload
+    - peacenotwar        # protestware
+    - es5-ext            # protestware payload injected
+
+  # Automatically run audit after every package install
+  auto_audit: true
+
+# ──────────────────────────────────────────────────────────────────────
+# Pre-Commit Security Scan Policy
+# ──────────────────────────────────────────────────────────────────────
+# Controls the behavior of bin/pre-commit-scan.sh
+
+pre_commit:
+  # Block commits if vulnerabilities are found at or above threshold
+  block_on_vulnerabilities: true
+
+  # Severity threshold: low | medium | high | critical
+  # "high" means HIGH and CRITICAL findings block the commit
+  severity_threshold: "high"
+
+  # Tools to use for scanning (in order of preference)
+  scan_tools:
+    - semgrep
+    - gitleaks
+    - detect-secrets

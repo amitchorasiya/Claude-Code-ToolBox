@@ -5,6 +5,7 @@
 
 export type DestructiveCommandMode = "block" | "warn";
 export type DomainWhitelistMode = "allowlist" | "blocklist";
+export type SupplyChainMode = "block" | "warn";
 
 export interface SafetyGuardsConfig {
   enabled: boolean;
@@ -19,6 +20,11 @@ export interface SafetyGuardsConfig {
     mode: DomainWhitelistMode;
     domains: string[];
     blockedDomains: string[];
+  };
+  supplyChain: {
+    enabled: boolean;
+    mode: SupplyChainMode;
+    blockedPackages: string[];
   };
 }
 
@@ -108,4 +114,29 @@ export const DEFAULT_BLOCKED_DOMAINS: string[] = [
   "hastebin.com",
   "transfer.sh",
   "file.io",
+];
+
+export const DEFAULT_BLOCKED_PACKAGES: string[] = [
+  "event-stream",
+  "ua-parser-js",
+  "colors",
+  "faker",
+  "node-ipc",
+  "peacenotwar",
+  "es5-ext",
+];
+
+export const DEFAULT_INSTALL_COMMANDS: string[] = [
+  "npm install",
+  "npm i ",
+  "npm add",
+  "yarn add",
+  "pnpm add",
+  "pnpm install",
+  "pip install",
+  "pip3 install",
+  "gem install",
+  "cargo add",
+  "bun add",
+  "bun install",
 ];

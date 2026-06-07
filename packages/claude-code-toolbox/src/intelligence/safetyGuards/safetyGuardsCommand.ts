@@ -1,20 +1,24 @@
 /**
- * VSCode commands for Safety Guards feature.
+ * VSCode commands for AntiVibe Safety Guards feature.
  */
 import * as vscode from "vscode";
 import { TOOLBOX_SETTINGS_PREFIX } from "../../toolboxSettings";
 import {
   type DestructiveCommandMode,
   type DomainWhitelistMode,
+  type SupplyChainMode,
   DEFAULT_DESTRUCTIVE_PATTERNS,
   DEFAULT_ALLOWED_DOMAINS,
   DEFAULT_BLOCKED_DOMAINS,
+  DEFAULT_BLOCKED_PACKAGES,
 } from "./safetyGuardsCore";
 import {
   renderDestructiveCommandHookScript,
   renderDomainWhitelistHookScript,
+  renderSupplyChainHookScript,
   DESTRUCTIVE_CMD_MARKER,
   DOMAIN_WHITELIST_MARKER,
+  SUPPLY_CHAIN_MARKER,
 } from "./hookScripts";
 import * as path from "node:path";
 import * as fs from "node:fs";
@@ -31,6 +35,9 @@ function getConfig() {
     domainMode: cfg.get<DomainWhitelistMode>(`${TOOLBOX_SETTINGS_PREFIX}.safetyGuards.domainWhitelist.mode`, "allowlist"),
     domainAllowed: cfg.get<string[]>(`${TOOLBOX_SETTINGS_PREFIX}.safetyGuards.domainWhitelist.domains`, DEFAULT_ALLOWED_DOMAINS),
     domainBlocked: cfg.get<string[]>(`${TOOLBOX_SETTINGS_PREFIX}.safetyGuards.domainWhitelist.blockedDomains`, DEFAULT_BLOCKED_DOMAINS),
+    supplyChainEnabled: cfg.get<boolean>(`${TOOLBOX_SETTINGS_PREFIX}.safetyGuards.supplyChain.enabled`, true),
+    supplyChainMode: cfg.get<SupplyChainMode>(`${TOOLBOX_SETTINGS_PREFIX}.safetyGuards.supplyChain.mode`, "block"),
+    supplyChainBlockedPackages: cfg.get<string[]>(`${TOOLBOX_SETTINGS_PREFIX}.safetyGuards.supplyChain.blockedPackages`, DEFAULT_BLOCKED_PACKAGES),
   };
 }
 
@@ -38,19 +45,19 @@ export async function runSafetyGuardsEnable(): Promise<void> {
   const config = getConfig();
   await installHooks(config);
   void vscode.window.showInformationMessage(
-    `Safety Guards activated — destructive commands: ${config.destructiveMode}, domain: ${config.domainMode} mode.`
+    `AntiVibe Safety Guards activated — destructive: ${config.destructiveMode}, domain: ${config.domainMode}, supply chain: ${config.supplyChainMode}.`
   );
 }
 
 export async function runSafetyGuardsDisable(): Promise<void> {
   await uninstallHooks();
-  void vscode.window.showInformationMessage("Safety Guards disabled. Hooks removed.");
+  void vscode.window.showInformationMessage("AntiVibe Safety Guards disabled. Hooks removed.");
 }
 
 export async function runSafetyGuardsStatus(): Promise<void> {
   const config = getConfig();
   const lines: string[] = [];
-  lines.push("# Safety Guards Status");
+  lines.push("# AntiVibe Safety Guards Status");
   lines.push("");
   lines.push(`- **Enabled:** ${config.enabled ? "Yes" : "No"}`);
   lines.push("");
@@ -68,6 +75,11 @@ export async function runSafetyGuardsStatus(): Promise<void> {
   } else {
     lines.push(`- **Blocked domains:** ${config.domainBlocked.length}`);
   }
+  lines.push("");
+  lines.push("## Supply Chain Guard");
+  lines.push(`- **Active:** ${config.supplyChainEnabled ? "Yes" : "No"}`);
+  lines.push(`- **Mode:** ${config.supplyChainMode}`);
+  lines.push(`- **Blocked packages:** ${config.supplyChainBlockedPackages.length}`);
   lines.push("");
 
   const hooksInstalled = checkHooksInstalled();
@@ -171,6 +183,38 @@ async function installHooks(config: ReturnType<typeof getConfig>): Promise<void>
     addHookEntry(hooks, "PreToolUse", `python3 "${scriptPath}"`, "safety-guard-domain");
   }
 
+  if (config.supplyChainEnabled) {
+    const scriptPath = path.join(claudeDir, "safety-guard-supplychain.py");
+    const script = renderSupplyChainHookScript(
+      config.supplyChainBlockedPackages,
+      config.supplyChainMode
+    );
+    fs.writeFileSync(scriptPath, script, { mode: 0o755 });
+    addHookEntry(hooks, "PreToolUse", `python3 "${scriptPath}"`, "safety-guard-supplychain");
+  }
+
+  // Write safety guards metadata into settings.json for visibility
+  settings.safetyGuards = {
+    managedBy: "Claude Code ToolBox (AntiVibe)",
+    destructiveCommands: {
+      enabled: config.destructiveEnabled,
+      mode: config.destructiveMode,
+      tripleConfirmation: config.destructiveMode === "block",
+      patternsCount: config.destructivePatterns.length,
+    },
+    domainWhitelist: {
+      enabled: config.domainEnabled,
+      mode: config.domainMode,
+      allowedDomains: config.domainMode === "allowlist" ? config.domainAllowed : undefined,
+      blockedDomains: config.domainMode === "blocklist" ? config.domainBlocked : undefined,
+    },
+    supplyChain: {
+      enabled: config.supplyChainEnabled,
+      mode: config.supplyChainMode,
+      blockedPackagesCount: config.supplyChainBlockedPackages.length,
+    },
+  };
+
   const tmpPath = `${settingsPath}.tmp`;
   fs.writeFileSync(tmpPath, JSON.stringify(settings, null, 2), { mode: 0o600 });
   fs.renameSync(tmpPath, settingsPath);
@@ -203,7 +247,7 @@ async function uninstallHooks(): Promise<void> {
   const claudeDir = path.join(homeDir, ".claude");
   const settingsPath = path.join(claudeDir, "settings.json");
 
-  const scriptFiles = ["safety-guard-destructive.py", "safety-guard-domain.py"];
+  const scriptFiles = ["safety-guard-destructive.py", "safety-guard-domain.py", "safety-guard-supplychain.py"];
   for (const f of scriptFiles) {
     const p = path.join(claudeDir, f);
     try { fs.unlinkSync(p); } catch { /* ok */ }
@@ -215,6 +259,8 @@ async function uninstallHooks(): Promise<void> {
   try {
     settings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
   } catch { return; }
+
+  delete settings.safetyGuards;
 
   const hooks = settings.hooks as Record<string, unknown[]> | undefined;
   if (!hooks) return;

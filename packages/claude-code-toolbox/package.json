@@ -2,7 +2,7 @@
   "name": "cloude-code-toolbox-vscode",
   "displayName": "Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)",
   "description": "Claude Code ToolBox: MCP hub, workspace helpers, Thinking Machine Mode (context packs & priming), readiness, and bridges from Cursor to Claude Code in VS Code. Not affiliated with Microsoft, GitHub, or Anthropic. See README disclaimer. Workflow ideas credited in NOTICE (everything-claude-code, MIT).",
-  "version": "1.0.37",
+  "version": "1.0.39",
   "publisher": "amitchorasiya",
   "author": "amitchorasiya",
   "license": "MIT",
@@ -456,24 +456,27 @@
         }
       },
       {
-        "title": "Safety Guards",
+        "title": "AntiVibe Safety Guards",
         "order": 165,
         "properties": {
           "cloude-code-toolbox.safetyGuards.enabled": {
             "type": "boolean",
             "default": false,
-            "title": "Safety Guards",
-            "description": "Master switch for Safety Guards. When enabled, installs hooks to block/warn on destructive commands and enforce domain whitelisting."
+            "scope": "resource",
+            "title": "AntiVibe Safety Guards",
+            "description": "Master switch for AntiVibe Safety Guards. When enabled, installs hooks to block/warn on destructive commands, enforce domain whitelisting, and prevent supply chain attacks."
           },
           "cloude-code-toolbox.safetyGuards.destructiveCommands.enabled": {
             "type": "boolean",
             "default": true,
+            "scope": "resource",
             "description": "Enable the destructive command guard (rm -rf, git push --force, DROP TABLE, etc.)."
           },
           "cloude-code-toolbox.safetyGuards.destructiveCommands.mode": {
             "type": "string",
             "enum": ["block", "warn"],
             "default": "block",
+            "scope": "resource",
             "enumDescriptions": [
               "Block the command (exit code 2 — Claude cannot proceed).",
               "Warn via stderr but allow the command to run."
@@ -483,6 +486,7 @@
           "cloude-code-toolbox.safetyGuards.destructiveCommands.patterns": {
             "type": "array",
             "items": { "type": "string" },
+            "scope": "resource",
             "default": [
               "rm -rf", "rm -fr", "rm -r /", "rmdir /s", "del /f /s /q",
               "git push --force", "git push -f", "git reset --hard",
@@ -502,17 +506,20 @@
             "type": "array",
             "items": { "type": "string" },
             "default": [],
+            "scope": "resource",
             "description": "Patterns that bypass the destructive command guard. If a command matches both a blocked pattern AND an override, the override wins. E.g. 'rm -rf node_modules' to allow cleaning node_modules."
           },
           "cloude-code-toolbox.safetyGuards.domainWhitelist.enabled": {
             "type": "boolean",
             "default": true,
+            "scope": "resource",
             "description": "Enable domain whitelisting for web requests (WebFetch, WebSearch)."
           },
           "cloude-code-toolbox.safetyGuards.domainWhitelist.mode": {
             "type": "string",
             "enum": ["allowlist", "blocklist"],
             "default": "allowlist",
+            "scope": "resource",
             "enumDescriptions": [
               "Only listed domains are allowed — everything else is blocked.",
               "All domains are allowed except those explicitly blocked."
@@ -522,6 +529,7 @@
           "cloude-code-toolbox.safetyGuards.domainWhitelist.domains": {
             "type": "array",
             "items": { "type": "string" },
+            "scope": "resource",
             "default": [
               "github.com", "*.github.com", "raw.githubusercontent.com", "api.github.com",
               "stackoverflow.com", "*.stackoverflow.com",
@@ -544,7 +552,32 @@
             "type": "array",
             "items": { "type": "string" },
             "default": ["pastebin.com", "*.paste.ee", "hastebin.com", "transfer.sh", "file.io"],
+            "scope": "resource",
             "description": "Blocked domains (blocklist mode). These are denied even if other domains are allowed."
+          },
+          "cloude-code-toolbox.safetyGuards.supplyChain.enabled": {
+            "type": "boolean",
+            "default": true,
+            "scope": "resource",
+            "description": "Enable the supply chain guard. Blocks installation of known-compromised packages (event-stream, node-ipc, etc.)."
+          },
+          "cloude-code-toolbox.safetyGuards.supplyChain.mode": {
+            "type": "string",
+            "enum": ["block", "warn"],
+            "default": "block",
+            "scope": "resource",
+            "enumDescriptions": [
+              "Block the install command (exit code 2 — Claude cannot proceed).",
+              "Warn via stderr but allow the install to run."
+            ],
+            "description": "Whether to block compromised package installs or only warn."
+          },
+          "cloude-code-toolbox.safetyGuards.supplyChain.blockedPackages": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": ["event-stream", "ua-parser-js", "colors", "faker", "node-ipc", "peacenotwar", "es5-ext"],
+            "scope": "resource",
+            "description": "Packages that must NEVER be installed. Known supply chain attacks, sabotaged packages, and protestware."
           }
         }
       },
@@ -1073,27 +1106,27 @@
       },
       {
         "command": "CloudeCodeToolBox.safetyGuards.enable",
-        "title": "Claude Code ToolBox: Safety Guards — Enable"
+        "title": "Claude Code ToolBox: AntiVibe Safety Guards — Enable"
       },
       {
         "command": "CloudeCodeToolBox.safetyGuards.disable",
-        "title": "Claude Code ToolBox: Safety Guards — Disable"
+        "title": "Claude Code ToolBox: AntiVibe Safety Guards — Disable"
       },
       {
         "command": "CloudeCodeToolBox.safetyGuards.status",
-        "title": "Claude Code ToolBox: Safety Guards — Status"
+        "title": "Claude Code ToolBox: AntiVibe Safety Guards — Status"
       },
       {
         "command": "CloudeCodeToolBox.safetyGuards.openSettings",
-        "title": "Claude Code ToolBox: Safety Guards — Open settings"
+        "title": "Claude Code ToolBox: AntiVibe Safety Guards — Open settings"
       },
       {
         "command": "CloudeCodeToolBox.safetyGuards.editDestructivePatterns",
-        "title": "Claude Code ToolBox: Safety Guards — Edit destructive patterns"
+        "title": "Claude Code ToolBox: AntiVibe Safety Guards — Edit destructive patterns"
       },
       {
         "command": "CloudeCodeToolBox.safetyGuards.editDomainList",
-        "title": "Claude Code ToolBox: Safety Guards — Edit domain list"
+        "title": "Claude Code ToolBox: AntiVibe Safety Guards — Edit domain list"
       }
     ],
     "menus": {

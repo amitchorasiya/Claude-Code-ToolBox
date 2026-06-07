@@ -25,7 +25,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&family=Press+Start+2P&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/site.css?v=37" />
+    <link rel="stylesheet" href="css/site.css?v=39" />
   </head>
   <body>
     <header class="site-header">
@@ -144,8 +144,8 @@
               <p>Context packs and readiness flows with explicit choices so teams agree on what Claude Code is allowed to see.</p>
             </article>
             <article class="pillar">
-              <h3>Safety Guards — block destructive commands + domain whitelisting</h3>
-              <p><strong>Destructive Command Guard</strong> blocks <code>rm -rf</code>, <code>git push --force</code>, <code>git reset --hard</code>, <code>DROP TABLE</code>, <code>curl | sh</code>, and 30+ patterns before they execute. <strong>Domain Whitelisting</strong> enforces an allowlist for all web requests — prevents data exfiltration to unknown hosts. Configurable patterns, overrides, block/warn modes. Installed by default via One Click Setup.</p>
+              <h3>AntiVibe Safety Guards — destructive commands + domains + supply chain</h3>
+              <p><strong>Destructive Command Guard</strong> blocks <code>rm -rf</code>, <code>git push --force</code>, <code>git reset --hard</code>, <code>DROP TABLE</code>, <code>curl | sh</code>, and 30+ patterns before they execute. <strong>Domain Whitelisting</strong> enforces an allowlist for all web requests — prevents data exfiltration to unknown hosts. <strong>Supply Chain Guard</strong> blocks installation of known-compromised packages (<code>event-stream</code>, <code>node-ipc</code>, <code>colors</code>, <code>faker</code>, and more). Configurable patterns, overrides, block/warn modes. Installed by default via One Click Setup.</p>
             </article>
             <article class="pillar">
               <h3>Agentic Teams — skills, memory, swarm dispatch + multi-agent debate</h3>
@@ -173,6 +173,9 @@
               <p>
                 <strong>Why it matters:</strong> Onboarding and “make this repo Claude-ready” shouldn’t depend on who remembers which README or which CLI flag. One Click encodes your
                 team’s playbook once, then anyone can execute the same steps and review the same terminals and files.
+              </p>
+              <p>
+                <strong>Note:</strong> After One Click Setup completes, you’ll be prompted to <strong>restart VS Code</strong>. Hooks (Safety Guards, Token Optimization) require a restart to take effect.
               </p>
             </article>
             <article class="mode-card">
@@ -240,9 +243,9 @@
 
       <section class="modes" aria-labelledby="safety-heading">
         <div class="wrap">
-          <h2 id="safety-heading">Safety Guards — protect against destructive commands &amp; data exfiltration</h2>
+          <h2 id="safety-heading">AntiVibe Safety Guards — protect against destructive commands, data exfiltration &amp; supply chain attacks</h2>
           <p>
-            Claude Code runs arbitrary shell commands and fetches URLs. <strong>Safety Guards</strong> installs lightweight Python hooks into <code>~/.claude/settings.json</code> that intercept dangerous operations <em>before</em> they execute.
+            Claude Code runs arbitrary shell commands, fetches URLs, and installs packages. <strong>AntiVibe Safety Guards</strong> installs lightweight Python hooks into <code>~/.claude/settings.json</code> that intercept dangerous operations <em>before</em> they execute.
           </p>
           <div class="mode-grid">
             <article class="mode-card">
@@ -257,9 +260,15 @@
                 <strong>What it does:</strong> Enforces an allowlist (or blocklist) for all web requests. Default allowlist includes GitHub, npm, PyPI, MDN, Stack Overflow, Read the Docs, and 30+ trusted documentation sites. Unknown domains are blocked (exit 2). Prevents prompt-injection-driven exfiltration to pastebins, file-sharing sites, or attacker-controlled hosts. Add your internal domains with wildcard support (<code>*.internal.company.com</code>).
               </p>
             </article>
+            <article class="mode-card">
+              <h3>Supply Chain Guard</h3>
+              <p>
+                <strong>What it blocks:</strong> Installation of known-compromised packages: <code>event-stream</code>, <code>ua-parser-js</code>, <code>colors</code>, <code>faker</code>, <code>node-ipc</code>, <code>peacenotwar</code>, <code>es5-ext</code>. Intercepts <code>npm install</code>, <code>pip install</code>, <code>yarn add</code>, <code>pnpm add</code>, <code>gem install</code>, <code>cargo add</code>, and <code>bun add</code>. <strong>Mode:</strong> Block (exit 2, prevents install) or Warn (stderr only). Customize the blocklist in VS Code settings.
+              </p>
+            </article>
           </div>
           <p>
-            <strong>One Click Setup integration:</strong> Safety Guards is enabled by default when you run One Click Setup. Toggle on/off in the hub. Fully reversible via Disable.
+            <strong>One Click Setup integration:</strong> AntiVibe Safety Guards and Token Optimization are both enabled by default when you run One Click Setup. Toggle on/off in the hub. Restart VS Code after enabling for hooks to activate. Fully reversible via Disable.
           </p>
         </div>
       </section>

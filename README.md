@@ -4,13 +4,13 @@
 
 You're using Claude Code but you can't see what MCP servers are active, which skills are loaded, whether your teammates' config matches yours, or what your agents are doing. Setup lives in scattered dotfiles and tribal knowledge. Claude Code ToolBox gives you one visual hub to manage it all — plus multi-agent teams that debate, plan, and code together.
 
-**2,000+ installs** · VS Code extension **`1.0.37`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
+**2,000+ installs** · VS Code extension **`1.0.39`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 
-> ### New: Safety Guards — block destructive commands + domain whitelisting
+> ### New: AntiVibe Safety Guards — destructive commands + domain whitelisting + supply chain protection
 >
-> **Safety Guards** installs Claude Code hooks that **block** (or warn on) destructive shell commands (`rm -rf`, `git push --force`, `git reset --hard`, `DROP TABLE`, `curl | sh`, and 30+ more patterns) and **enforce domain whitelisting** for all web requests (prevents data exfiltration to unknown domains). Pre-configured defaults ship out of the box, but you can fully customize: add/remove destructive patterns, switch between block/warn mode, add your internal domains to the allowlist, or flip to blocklist mode. Installed automatically by One Click Setup. Toggle on/off in the hub.
+> **AntiVibe Safety Guards** installs Claude Code hooks that **block** (or warn on) destructive shell commands (`rm -rf`, `git push --force`, `git reset --hard`, `DROP TABLE`, `curl | sh`, and 30+ more patterns), **enforce domain whitelisting** for all web requests (prevents data exfiltration to unknown domains), and **block installation of known-compromised packages** (`event-stream`, `node-ipc`, `colors`, `faker`, `ua-parser-js`, `peacenotwar`, `es5-ext`). Pre-configured defaults ship out of the box, but you can fully customize: add/remove destructive patterns, switch between block/warn mode, add your internal domains to the allowlist, edit the supply chain blocklist, or flip to blocklist mode. Installed automatically by One Click Setup. Toggle on/off in the hub.
 
 > ### Token Optimization — reduce token usage 30-60%
 >
@@ -79,9 +79,11 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 
 ### One Click Setup
 
-**What it does:** After you accept the responsibility warning, it runs the automated sequence you configured under **Settings → Claude Code ToolBox → One Click Setup** (migration tracks: **Cursor → Claude Code** and optional **GitHub Copilot → Claude Code**, each toggled separately). That usually includes **porting Cursor MCP** into VS Code `mcp.json`, **Claude-oriented memory bank** init, **Cursor rules → `CLAUDE.md`**, optional merge of **`.github/copilot-instructions.md`** into **`CLAUDE.md`**, optional **Copilot skills → `.agents`**, optional **`.cursorrules`** merge, **skills** `.cursor` → `.agents` migration, **MCP & Skills awareness** (under **`.claude/`**) with optional block in **`CLAUDE.md`**, **readiness** summary, **Claude Code / MCP config scan**, optional **Claude Code** settings check, and optional **auto-scan** enablement. Bridge steps run via **bundled `node …/cli.mjs`** inside the extension (no `npx` network fetch for that path).
+**What it does:** After you accept the responsibility warning, it runs the automated sequence you configured under **Settings → Claude Code ToolBox → One Click Setup** (migration tracks: **Cursor → Claude Code** and optional **GitHub Copilot → Claude Code**, each toggled separately). That usually includes **porting Cursor MCP** into VS Code `mcp.json`, **Claude-oriented memory bank** init, **Cursor rules → `CLAUDE.md`**, optional merge of **`.github/copilot-instructions.md`** into **`CLAUDE.md`**, optional **Copilot skills → `.agents`**, optional **`.cursorrules`** merge, **skills** `.cursor` → `.agents` migration, **MCP & Skills awareness** (under **`.claude/`**) with optional block in **`CLAUDE.md`**, **readiness** summary, **Claude Code / MCP config scan**, optional **Claude Code** settings check, optional **auto-scan** enablement, and auto-enables both **Safety Guards** and **Token Optimization**. Bridge steps run via **bundled `node …/cli.mjs`** inside the extension (no `npx` network fetch for that path).
 
 **Why it matters:** “Make this repo Claude-ready” shouldn’t depend on who read which doc. One Click encodes your team’s playbook once; anyone can run the same steps and review the same terminals and file changes.
+
+**Important:** After One Click Setup completes, you will be prompted to **restart VS Code**. Hooks (Safety Guards, Token Optimization) require a restart to take effect.
 
 ### Thinking Machine Mode
 
@@ -113,6 +115,8 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 **Security hardening:** All temp files use restrictive permissions (0o700 directories, 0o600 files). Session IDs are regex-sanitized against path traversal. Pattern lengths are bounded to prevent ReDoS. Numeric config values are clamped before interpolation into hook scripts. Settings.json writes use atomic rename with restrictive modes.
 
 **14 granular settings** under `claude-code-toolbox.tokenOptimization.*` — enable/disable each technique independently.
+
+**Note:** After enabling Token Optimization (or Safety Guards), restart VS Code for hooks to take effect. The extension will prompt you automatically.
 
 ---
 

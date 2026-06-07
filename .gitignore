@@ -11,3 +11,13 @@ blog/
 .vscode/
 diagrams/
 CLAUDE.md
+
+# AntiVibe — local AI tool configs (never push)
+.cursor/
+.agents/
+.vscode/settings.json
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
