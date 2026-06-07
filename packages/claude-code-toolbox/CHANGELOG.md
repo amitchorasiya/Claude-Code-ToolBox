@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.37
+
+- **Safety Guards protocol.** New `Safety Guards` toggle in the hub installs Claude Code hooks that block destructive commands (`rm -rf`, `git push --force`, `git reset --hard`, `git branch -D`, `DROP TABLE`, `curl | sh`, `chmod 777`, and 30+ more) and enforce domain whitelisting for all web requests. Two modes: Block (prevents execution) or Warn (stderr only). Configurable patterns, allow-overrides, and domain lists. Enabled by default via One Click Setup.
+- **Domain whitelisting.** Allowlist mode permits only known-good domains (GitHub, npm, PyPI, docs sites) for web requests. Blocklist mode blocks only specified exfiltration targets. Add internal domains with wildcard support (`*.internal.company.com`).
+- **Hub integration.** Safety Guards card with toggle checkbox, gear icon for settings, and quick-action links for editing patterns and domain lists.
+- Release: **1.0.37** (VS Code).
+
+## 1.0.36
+
+- **Token Optimization protocol.** Single toggle activates six coordinated token-reduction techniques: project dependency map, verbosity control (4 levels), read deduplication, .claudeignore, CLI output compression, and context budget watchdog. Includes CLAUDE.md Analyzer.
+- Release: **1.0.36** (VS Code).
+
 ## 1.0.35
 
 - **Automatic long-term memory persistence.** After a team run completes, the system now automatically extracts learnings from each agent's transcript and persists them to `<agent>.memory.md` — even if the agent forgot to self-write. Includes validation (skips if agent already updated its own memory), deduplication (won't repeat existing entries), and smart extraction of what worked, what didn't, user preferences, and role-specific insights.
