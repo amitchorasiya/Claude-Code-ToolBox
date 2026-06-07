@@ -4,11 +4,17 @@
 
 You're using Claude Code but you can't see what MCP servers are active, which skills are loaded, whether your teammates' config matches yours, or what your agents are doing. Setup lives in scattered dotfiles and tribal knowledge. Claude Code ToolBox gives you one visual hub to manage it all — plus multi-agent teams that debate, plan, and code together.
 
-**2,000+ installs** · VS Code extension **`1.0.34`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
+**2,000+ installs** · VS Code extension **`1.0.36`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 
-> ### 🤝 New: Agentic Teams — skill-backed agents, long-term memory, swarm dispatch + multi-agent debate
+> ### New: Token Optimization — reduce token usage 30-60%
+>
+> The **Intelligence** tab now includes **Token Optimization** — a single toggle that activates six coordinated techniques to slash Claude Code token costs: **project dependency map** (structural awareness without trial-and-error reads), **verbosity control** (4 levels merged into CLAUDE.md), **read deduplication** (session-aware mtime+size tracking), **.claudeignore** (gitignore-style skip patterns), **CLI output compression** (command-specific filters for git, npm, test runners), and **context budget watchdog** (tiered alerts at 70/85/95%). All hooks are advisory-only (never block), secure by default (restrictive file permissions, path traversal protection, ReDoS guards), and cleanly reversible via Disable.
+>
+> Includes a **CLAUDE.md Analyzer** that detects oversized sections, duplicate content, and estimates per-section token cost with actionable recommendations.
+
+> ### 🤝 Agentic Teams — skill-backed agents, long-term memory, swarm dispatch + multi-agent debate
 >
 > The **🤝 Agentic Teams** tab (now the **second tab**) makes Claude Code **think in a team**. Specialised agents **debate a design**, produce a **plan you review and approve**, then **execute** — with a live color-coded transcript, per-turn tokens + cost, and persisted `plan.md` / `decision.md` per run.
 >
@@ -79,6 +85,31 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 
 **Why it matters:** Claude Code is only as good as the **context you give it**. Thinking Machine Mode makes “refresh what this repo knows about MCP, skills, and workspace shape” a **deliberate, repeatable** action instead of an ad-hoc copy-paste.
 
+### Token Optimization
+
+**What it does:** A single toggle (Intelligence tab, right below One Click Setup) that activates six techniques to reduce Claude Code token usage by 30-60%:
+
+1. **Project dependency map** — Scans workspace files, parses imports/exports (TypeScript, JavaScript, Python, Go), builds a directed dependency graph, and outputs `.claude/project-map.md` (~1000 tokens). Claude uses this to navigate directly to the right file instead of reading randomly.
+
+2. **Verbosity control** — Four levels (`normal`, `concise`, `minimal`, `json-only`) merged as instructions into CLAUDE.md via idempotent HTML comment markers. Default `concise` mode: 1-3 sentences, no meta-commentary, diff-style code changes only.
+
+3. **Read deduplication** — Python PreToolUse hook tracks file reads per session in a temp cache. Warns when re-reading unchanged files within a configurable time window (default 5 min). Uses mtime+size for change detection.
+
+4. **.claudeignore** — Gitignore-style pattern file (20+ default patterns) advising Claude to skip irrelevant files: `node_modules`, lock files, build output, minified assets, coverage, VCS internals. Hook warns but never blocks.
+
+5. **CLI output compression** — Python PostToolUse hook compresses verbose output. Command-specific filters for `git status/diff/log`, `npm/yarn/pnpm`, `jest/vitest/pytest`. Generic deduplication: repeated lines collapsed to `{line} (x{count})`. Configurable max lines (default 50).
+
+6. **Context budget watchdog** — Subscribes to session context data, fires tiered alerts at configurable thresholds (default 70%, 85%, 95%) with actionable prompts (run `/compact`, start new session).
+
+**Supplementary tools:**
+- **CLAUDE.md Analyzer** — Parses CLAUDE.md into sections, estimates tokens per section, detects oversized (>500 tokens) and duplicate (>80% Jaccard overlap) sections, outputs recommendations.
+- **Create .claudeignore** — Generates a starter file with sensible defaults.
+- **Status command** — Shows current configuration, hook installation state, project map freshness.
+
+**Security hardening:** All temp files use restrictive permissions (0o700 directories, 0o600 files). Session IDs are regex-sanitized against path traversal. Pattern lengths are bounded to prevent ReDoS. Numeric config values are clamped before interpolation into hook scripts. Settings.json writes use atomic rename with restrictive modes.
+
+**14 granular settings** under `claude-code-toolbox.tokenOptimization.*` — enable/disable each technique independently.
+
 ---
 
 ## Table of contents
@@ -87,6 +118,7 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 - [After install: open Claude Code ToolBox (VS Code)](#after-install-open-claude-code-toolbox-vs-code)
 - [One place for Claude Code-related setup](#one-place-for-claude-code-related-setup)
 - [One Click Setup and Thinking Machine Mode](#one-click-setup-and-thinking-machine-mode)
+- [Token Optimization](#token-optimization)
 - [What’s in this repo](#whats-in-this-repo)
 - [See the real UI (screenshots)](#see-the-real-ui-screenshots)
 - [MCP & skills hub: every tab, toggle, and button](#mcp--skills-hub-every-tab-toggle-and-button)
@@ -519,6 +551,7 @@ The **`LICENSE`** file in `packages/claude-code-toolbox/` is included in the VSI
 Notable settings (see [extension README](packages/claude-code-toolbox/README.md#settings) for a concise table):
 
 - `claude-code-toolbox.npxTag`, **`embeddedBridgeNodeExecutable`**, `useInsidersPaths`
+- `claude-code-toolbox.tokenOptimization.*` (**Token Optimization** — verbosity level, project map config, read deduplication window, output compression max lines, .claudeignore, context budget thresholds, CLAUDE.md merge toggle)
 - `claude-code-toolbox.intelligence.*` (context pack defaults, **auto-scan MCP & Skills on workspace open**, session notepad / open Claude Code after pack, etc.)
 - `claude-code-toolbox.oneClickSetup.*` (**One Click Setup** — includes **Migration tracks** `migrateFromCursor` / `migrateFromGitHubCopilot`, plus Memory Bank, Rules, Skills, MCP, Follow-ups, and optional Copilot instruction/skills merge settings)
 - `claude-code-toolbox.thinkingMachineMode.*` (**Engage** dialog, priming, awareness, context pack when the mode is on)

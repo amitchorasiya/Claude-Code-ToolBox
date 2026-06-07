@@ -10,6 +10,7 @@ You're running Claude Code in VS Code, but you can't see what MCP servers are ac
 - **A visual MCP & skills hub** — see, search, install, and manage everything from one sidebar
 - **Live Agent Dashboard** — every running Claude Code session on your machine, with real-time cost tracking and context visibility
 - **One-click migration** — bring your Cursor or Copilot setup (MCP, rules, skills) into Claude Code automatically
+- **Token Optimization** — reduce token usage 30-60% with project maps, read deduplication, output compression, .claudeignore, verbosity control, and context budget alerts
 - **Workspace-aware context priming** — Claude Code finally knows what your project actually has configured
 
 **2,000+ installs** · Works on macOS, Windows, Linux · Also ships as a [JetBrains plugin](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox)
@@ -48,6 +49,45 @@ Each agent can be pointed at a **SKILL.md** instead of a freeform prompt — str
 Opt-in dashboard shows a card for every running Claude Code session. Token-based cost estimates, context-window fill %, live tool feed, grouped by workspace.
 
 ![Agent Dashboard: live session cards with cost, context, tools, and LTM toggle](https://raw.githubusercontent.com/amitchorasiya/Claude-Code-ToolBox/main/screenshots/12-ltm-agent-dashboard.png?v=1.0.34)
+
+---
+
+## Token Optimization: Cut Token Usage 30-60%
+
+Claude Code sessions burn tokens on redundant file reads, verbose output, and blind navigation. **Token Optimization** is a single toggle in the Intelligence tab that activates six coordinated cost-reduction techniques:
+
+| Technique | How it saves tokens |
+|-----------|-------------------|
+| **Project dependency map** | Scans your workspace, parses imports/exports, and generates `.claude/project-map.md` — a structural graph so Claude navigates without trial-and-error reads |
+| **Verbosity control** | Merges concise-mode instructions into `CLAUDE.md` — 4 levels from `normal` to `json-only` |
+| **Read deduplication** | Hook tracks file reads per session; warns when re-reading unchanged files within a configurable window (default 5 min) |
+| **.claudeignore** | Gitignore-style patterns that advise Claude to skip irrelevant files (node_modules, lock files, build output, minified bundles) |
+| **Output compression** | Hook compresses verbose CLI output (git, npm, test runners) — deduplicates repeated lines, extracts summaries, caps at configurable max lines |
+| **Context budget watchdog** | Tiered alerts (70%, 85%, 95%) when context window fills up — with actionable prompts to run `/compact` |
+
+**One click to enable.** Disable reverses everything cleanly — removes hooks, CLAUDE.md block, and settings.
+
+### How it works
+
+- **CLAUDE.md merge block** — idempotent HTML comment markers inject concise-mode instructions; no manual editing needed
+- **Python hooks** — lightweight PreToolUse and PostToolUse hooks in `~/.claude/settings.json` that never block Claude (advisory only, always exit 0)
+- **CLAUDE.md Analyzer** — detects oversized sections, duplicate content, and estimates per-section token cost with actionable recommendations
+- **Secure by default** — temp files use restricted permissions (0o700/0o600), session IDs are sanitized against path traversal, pattern lengths are bounded to prevent ReDoS
+
+### Settings
+
+14 granular settings under `claude-code-toolbox.tokenOptimization.*` — enable/disable each technique independently, configure thresholds, file extensions for the project map, compression limits, and more.
+
+### Commands
+
+| Command | What it does |
+|---------|-------------|
+| `Token Optimization — Enable` | Activates everything: merges CLAUDE.md block, generates project map, installs hooks |
+| `Token Optimization — Disable` | Cleanly removes all hooks, CLAUDE.md block, and artifacts |
+| `Token Optimization — Generate project map` | Re-scans workspace and writes `.claude/project-map.md` |
+| `Token Optimization — Analyze CLAUDE.md` | Opens a token analysis report with per-section breakdown and recommendations |
+| `Token Optimization — Create .claudeignore` | Generates a `.claudeignore` with sensible defaults |
+| `Token Optimization — Status` | Shows current configuration and hook installation state |
 
 ---
 
@@ -129,6 +169,7 @@ Ship with the starter pack — each dispatches all team agents in parallel:
 |---------|---------|
 | `claude-code-toolbox.agentTeams.*` | Model, protocol, max concurrent agents, cost cap |
 | `claude-code-toolbox.agentDashboard.*` | Enable/disable dashboard, hook port, safety alerts |
+| `claude-code-toolbox.tokenOptimization.*` | Verbosity level, project map, read dedup, output compression, .claudeignore, context budget |
 | `claude-code-toolbox.oneClickSetup.*` | Migration tracks (Cursor, Copilot) |
 | `claude-code-toolbox.intelligence.*` | Context pack, auto-scan, notepad |
 | `claude-code-toolbox.thinkingMachineMode.*` | Priming and awareness behavior |

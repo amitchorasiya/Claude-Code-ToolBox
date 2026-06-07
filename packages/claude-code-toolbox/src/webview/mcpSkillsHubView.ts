@@ -146,6 +146,8 @@ export type HubPayload = {
   kit: KitSnapshotRow[];
   /** Mirrors `cloude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen`. */
   autoScanMcpSkillsOnWorkspaceOpen: boolean;
+  /** Mirrors `cloude-code-toolbox.tokenOptimization.enabled`. */
+  tokenOptimizationEnabled: boolean;
   /** Mirrors `cloude-code-toolbox.thinkingMachineMode.enabled`. */
   thinkingMachineModeEnabled: boolean;
   /** File/config snapshot for the Thinking Machine hub (not token usage). */
@@ -294,6 +296,8 @@ export async function gatherHubPayload(
 
   const autoScanMcpSkillsOnWorkspaceOpen =
     cfg.get<boolean>("cloude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen") === true;
+  const tokenOptimizationEnabled =
+    cfg.get<boolean>("cloude-code-toolbox.tokenOptimization.enabled") === true;
   const thinkingMachineModeEnabled =
     cfg.get<boolean>("cloude-code-toolbox.thinkingMachineMode.enabled") === true;
 
@@ -327,6 +331,7 @@ export async function gatherHubPayload(
     skills,
     kit,
     autoScanMcpSkillsOnWorkspaceOpen,
+    tokenOptimizationEnabled,
     thinkingMachineModeEnabled,
     hygiene,
     hubHost: "vscode",
@@ -418,6 +423,7 @@ export function emptyHubPayload(): HubPayload {
     skills: [],
     kit: [],
     autoScanMcpSkillsOnWorkspaceOpen: false,
+    tokenOptimizationEnabled: false,
     thinkingMachineModeEnabled: false,
     hygiene: {
       workspaceMcpServerCount: 0,
@@ -702,6 +708,16 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
           const hasWs = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
           await vscode.workspace.getConfiguration().update(
             "cloude-code-toolbox.intelligence.autoScanMcpSkillsOnWorkspaceOpen",
+            msg.value === true,
+            hasWs ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.Global
+          );
+          this._postState();
+          break;
+        }
+        case "setTokenOptimizationEnabled": {
+          const hasWs = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
+          await vscode.workspace.getConfiguration().update(
+            "cloude-code-toolbox.tokenOptimization.enabled",
             msg.value === true,
             hasWs ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.Global
           );

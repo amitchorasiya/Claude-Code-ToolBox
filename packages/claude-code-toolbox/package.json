@@ -2,7 +2,7 @@
   "name": "cloude-code-toolbox-vscode",
   "displayName": "Claude Code ToolBox (MCP, Skills, Cursor/Copilot → Claude)",
   "description": "Claude Code ToolBox: MCP hub, workspace helpers, Thinking Machine Mode (context packs & priming), readiness, and bridges from Cursor to Claude Code in VS Code. Not affiliated with Microsoft, GitHub, or Anthropic. See README disclaimer. Workflow ideas credited in NOTICE (everything-claude-code, MIT).",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "publisher": "amitchorasiya",
   "author": "amitchorasiya",
   "license": "MIT",
@@ -361,6 +361,97 @@
             "type": "boolean",
             "default": true,
             "description": "Thinking Machine priming only: open Claude Code after copying the pack (when useSeparateContextPackDefaults is on)."
+          }
+        }
+      },
+      {
+        "title": "Token Optimization",
+        "order": 160,
+        "properties": {
+          "cloude-code-toolbox.tokenOptimization.enabled": {
+            "type": "boolean",
+            "default": false,
+            "title": "Token Optimization",
+            "description": "Master switch for Token Optimization. When enabled, merges concise-mode instructions into CLAUDE.md, generates a project map, and installs hooks for read deduplication and output compression."
+          },
+          "cloude-code-toolbox.tokenOptimization.verbosityLevel": {
+            "type": "string",
+            "enum": ["normal", "concise", "minimal", "json-only"],
+            "default": "concise",
+            "enumDescriptions": [
+              "No output restrictions.",
+              "1-3 sentences, no meta-commentary, no echoing (default).",
+              "Bullets only, maximum brevity, diff-style code changes.",
+              "JSON-only responses, zero English prose."
+            ],
+            "description": "Controls how terse Claude's responses should be when Token Optimization is active."
+          },
+          "cloude-code-toolbox.tokenOptimization.projectMap.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Generate .claude/project-map.md (dependency graph) on activation and workspace open."
+          },
+          "cloude-code-toolbox.tokenOptimization.projectMap.maxFiles": {
+            "type": "number",
+            "default": 5000,
+            "minimum": 100,
+            "maximum": 50000,
+            "description": "Maximum files to include in the project map scan."
+          },
+          "cloude-code-toolbox.tokenOptimization.projectMap.extensions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs", ".java", ".cs"],
+            "description": "File extensions to include in the project map."
+          },
+          "cloude-code-toolbox.tokenOptimization.readDeduplication.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Install PreToolUse hook that warns on redundant file re-reads within a session."
+          },
+          "cloude-code-toolbox.tokenOptimization.readDeduplication.windowMs": {
+            "type": "number",
+            "default": 300000,
+            "minimum": 30000,
+            "description": "Time window (ms) within which a re-read of an unchanged file is considered redundant."
+          },
+          "cloude-code-toolbox.tokenOptimization.outputCompression.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Install PostToolUse hook that compresses verbose CLI output (git, npm, test runners)."
+          },
+          "cloude-code-toolbox.tokenOptimization.outputCompression.maxLines": {
+            "type": "number",
+            "default": 50,
+            "minimum": 10,
+            "maximum": 500,
+            "description": "Maximum lines of CLI output before compression kicks in."
+          },
+          "cloude-code-toolbox.tokenOptimization.claudeIgnore.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Respect .claudeignore file — warns (never blocks) Claude when reading lockfiles, build output, node_modules, etc."
+          },
+          "cloude-code-toolbox.tokenOptimization.contextBudget.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show tiered alerts when context window fill exceeds thresholds."
+          },
+          "cloude-code-toolbox.tokenOptimization.contextBudget.thresholds": {
+            "type": "array",
+            "items": { "type": "number" },
+            "default": [70, 85, 95],
+            "description": "Context fill percentages (0-100) that trigger alerts."
+          },
+          "cloude-code-toolbox.tokenOptimization.claudeMdAnalyzer.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable the CLAUDE.md token usage analyzer command."
+          },
+          "cloude-code-toolbox.tokenOptimization.mergeInstructionsIntoClaudeMd": {
+            "type": "boolean",
+            "default": true,
+            "description": "Merge verbosity/optimization instructions block into CLAUDE.md on activation."
           }
         }
       },
@@ -858,6 +949,34 @@
       {
         "command": "CloudeCodeToolBox.smartRouter",
         "title": "Claude Code ToolBox: Smart router — pick workflow for a prompt"
+      },
+      {
+        "command": "CloudeCodeToolBox.tokenOptimization.enable",
+        "title": "Claude Code ToolBox: Token Optimization — Enable"
+      },
+      {
+        "command": "CloudeCodeToolBox.tokenOptimization.disable",
+        "title": "Claude Code ToolBox: Token Optimization — Disable"
+      },
+      {
+        "command": "CloudeCodeToolBox.tokenOptimization.generateProjectMap",
+        "title": "Claude Code ToolBox: Token Optimization — Generate project map"
+      },
+      {
+        "command": "CloudeCodeToolBox.tokenOptimization.analyzeClaudeMd",
+        "title": "Claude Code ToolBox: Token Optimization — Analyze CLAUDE.md"
+      },
+      {
+        "command": "CloudeCodeToolBox.tokenOptimization.createClaudeIgnore",
+        "title": "Claude Code ToolBox: Token Optimization — Create .claudeignore"
+      },
+      {
+        "command": "CloudeCodeToolBox.tokenOptimization.status",
+        "title": "Claude Code ToolBox: Token Optimization — Status"
+      },
+      {
+        "command": "CloudeCodeToolBox.tokenOptimization.openSettings",
+        "title": "Claude Code ToolBox: Token Optimization — Open settings"
       }
     ],
     "menus": {

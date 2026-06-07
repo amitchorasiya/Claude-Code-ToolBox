@@ -1094,6 +1094,20 @@ export function getHubWebviewHtml(csp: string): string {
         </div>
         <button type="button" class="btn icon-gear ocs-gear" id="one-click-setup-settings" title="One Click Setup defaults" aria-label="One Click Setup settings">⚙</button>
       </div>
+      <div class="thinking-machine-row" aria-label="Token Optimization">
+        <div class="tmm-glyph" title="Token Optimization" aria-hidden="true">
+          <span class="tmm-glyph-main">💎</span>
+          <span class="tmm-glyph-bolt">📉</span>
+        </div>
+        <label class="tmm-label" for="token-optimization-cb">
+          <input type="checkbox" id="token-optimization-cb" class="tmm-cb" />
+          <span class="tmm-body">
+            <span class="tmm-title-pill">Token Optimization</span>
+            <span class="tmm-desc">Reduce token usage 30-60%: project dependency map, read deduplication, CLI output compression, <code>.claudeignore</code>, verbosity control. Hooks installed to <code>~/.claude/settings.json</code> (reversible via Disable).</span>
+          </span>
+        </label>
+        <button type="button" class="btn icon-gear tmm-gear" id="token-opt-settings" title="Token Optimization settings" aria-label="Token Optimization settings">⚙</button>
+      </div>
       <div class="thinking-machine-row" aria-label="Thinking Machine Mode">
         <div class="tmm-glyph" title="Thinking Machine Mode" aria-hidden="true">
           <span class="tmm-glyph-main">🧠</span>
@@ -1160,6 +1174,10 @@ export function getHubWebviewHtml(csp: string): string {
         { ic: "\\uD83D\\uDCDC", t: "Merge Copilot instructions → CLAUDE.md", d: ".github/copilot-instructions.md (replaceable block)", c: "CloudeCodeToolBox.mergeCopilotInstructionsIntoClaudeMd" },
         { ic: "\\uD83D\\uDCE5", t: "Migrate Copilot/GitHub skills → .agents", d: ".github/skills and ~/.copilot/skills", c: "CloudeCodeToolBox.migrateCopilotSkillsToAgents" },
         { ic: "\\uD83D\\uDCC2", t: "Reveal Copilot skill folders", d: "No npx — create/reveal paths", c: "CloudeCodeToolBox.revealCopilotSkillFoldersWithoutNpx" },
+        { ic: "\\uD83D\\uDCA0", t: "Generate project map", d: "Scan workspace → .claude/project-map.md (dependency graph)", c: "CloudeCodeToolBox.tokenOptimization.generateProjectMap" },
+        { ic: "\\uD83D\\uDCCA", t: "Analyze CLAUDE.md tokens", d: "Section breakdown, duplication detection, compression tips", c: "CloudeCodeToolBox.tokenOptimization.analyzeClaudeMd" },
+        { ic: "\\uD83D\\uDEAB", t: "Create .claudeignore", d: "Block lockfiles, node_modules, build output from reads", c: "CloudeCodeToolBox.tokenOptimization.createClaudeIgnore" },
+        { ic: "\\u2139\\uFE0F", t: "Token Optimization status", d: "Current hooks, project map freshness, settings summary", c: "CloudeCodeToolBox.tokenOptimization.status" },
         { ic: "\\uD83D\\uDD27", t: "Open Claude Code user settings (JSON)", d: "~/.claude/settings.json for MCP, etc.", c: "CloudeCodeToolBox.openClaudeUserSettingsJson" },
         { ic: "\\uD83D\\uDD0D", t: "Scan MCP & Skills awareness", d: "Save to .claude + update CLAUDE.md (optional open from toast)", c: "CloudeCodeToolBox.showMcpSkillsAwareness" },
         { ic: "\\uD83D\\uDD0D", t: "Claude Code / MCP config scan", d: "Heuristic scan → Output (mcp.json, CLAUDE.md)", c: "CloudeCodeToolBox.claudeToolboxConfigScan" },
@@ -1266,6 +1284,12 @@ export function getHubWebviewHtml(csp: string): string {
     var cb = $("#intel-auto-scan-cb");
     if (!cb || !state) return;
     cb.checked = state.autoScanMcpSkillsOnWorkspaceOpen === true;
+  }
+
+  function syncTokenOptimizationCheckbox() {
+    var toCb = $("#token-optimization-cb");
+    if (!toCb || !state) return;
+    toCb.checked = state.tokenOptimizationEnabled === true;
   }
 
   function syncThinkingMachineModeCheckbox() {
@@ -1614,6 +1638,18 @@ export function getHubWebviewHtml(csp: string): string {
     if (ocr) {
       ocr.addEventListener("click", function () {
         vscode.postMessage({ type: "runCommand", command: "CloudeCodeToolBox.runOneClickSetup" });
+      });
+    }
+    var toCb = $("#token-optimization-cb");
+    if (toCb) {
+      toCb.addEventListener("change", function () {
+        vscode.postMessage({ type: "setTokenOptimizationEnabled", value: toCb.checked });
+      });
+    }
+    var toSettings = $("#token-opt-settings");
+    if (toSettings) {
+      toSettings.addEventListener("click", function () {
+        vscode.postMessage({ type: "runCommand", command: "CloudeCodeToolBox.tokenOptimization.openSettings" });
       });
     }
     var tm = $("#thinking-machine-mode-cb");
@@ -4119,6 +4155,7 @@ export function getHubWebviewHtml(csp: string): string {
       return;
     }
     syncIntelAutoScanCheckbox();
+    syncTokenOptimizationCheckbox();
     syncThinkingMachineModeCheckbox();
     syncHubHostCopy();
 

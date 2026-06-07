@@ -468,6 +468,51 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     refreshMcpHubs();
   });
 
+  /* Token Optimization commands. */
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.tokenOptimization.enable", async () => {
+    const { runTokenOptimizationEnable } = await import("./intelligence/tokenOptimization/tokenOptimizationCommand");
+    await runTokenOptimizationEnable();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.tokenOptimization.disable", async () => {
+    const { runTokenOptimizationDisable } = await import("./intelligence/tokenOptimization/tokenOptimizationCommand");
+    await runTokenOptimizationDisable();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.tokenOptimization.generateProjectMap", async () => {
+    const { runGenerateProjectMap } = await import("./intelligence/tokenOptimization/tokenOptimizationCommand");
+    await runGenerateProjectMap();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.tokenOptimization.analyzeClaudeMd", async () => {
+    const { runAnalyzeClaudeMd } = await import("./intelligence/tokenOptimization/tokenOptimizationCommand");
+    await runAnalyzeClaudeMd();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.tokenOptimization.createClaudeIgnore", async () => {
+    const { runCreateClaudeIgnore } = await import("./intelligence/tokenOptimization/tokenOptimizationCommand");
+    await runCreateClaudeIgnore();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.tokenOptimization.status", async () => {
+    const { runTokenOptimizationStatus } = await import("./intelligence/tokenOptimization/tokenOptimizationCommand");
+    await runTokenOptimizationStatus();
+  }));
+  sub(vscode.commands.registerCommand("CloudeCodeToolBox.tokenOptimization.openSettings", async () => {
+    const { runOpenTokenOptSettings } = await import("./intelligence/tokenOptimization/tokenOptimizationCommand");
+    await runOpenTokenOptSettings();
+  }));
+
+  /* Token Optimization activation listener + config watcher. */
+  {
+    const { registerTokenOptimizationActivation } = await import("./intelligence/tokenOptimization/tokenOptimizationActivation");
+    sub(registerTokenOptimizationActivation(context));
+  }
+
+  /* Also watch for tokenOptimization.enabled changes to refresh hub. */
+  sub(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (affectsToolboxSetting(e, "tokenOptimization.enabled")) {
+        refreshMcpHubs();
+      }
+    })
+  );
+
   /* Agent Teams commands. */
   sub(
     vscode.commands.registerCommand("CloudeCodeToolBox.agentTeams.enable", async () => {
