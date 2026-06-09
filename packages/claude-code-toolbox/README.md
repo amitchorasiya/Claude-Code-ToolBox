@@ -63,11 +63,23 @@ Claude Code runs arbitrary shell commands, fetches URLs, and installs packages. 
 | **Domain Whitelisting** | Only allows web requests to known-good domains (GitHub, npm, docs sites, etc.) — blocks exfiltration to pastebins, file-sharing, or unknown hosts |
 | **Supply Chain Guard** | Blocks installation of known-compromised packages (`event-stream`, `node-ipc`, `colors`, `faker`, `ua-parser-js`, `peacenotwar`, `es5-ext`) — prevents npm/pip/yarn/pnpm/gem/cargo supply chain attacks |
 
+### Triple-Confirmation Flow (Block mode)
+
+All three guards use a **triple-confirmation** pattern in block mode:
+
+| Attempt | What happens |
+|---------|-------------|
+| **1st** | Blocked — Claude receives a warning about the dangerous operation |
+| **2nd** | Blocked — hook instructs Claude to **ask the user** for permission |
+| **3rd** | Allowed — only proceeds because the user explicitly confirmed |
+
+The counter resets after each allow cycle (next occurrence requires fresh confirmation). State is session-scoped and expires after 1 hour.
+
 ### Modes
 
-- **Block** (default) — hook exits code 2, Claude cannot proceed with the destructive command or package install
+- **Block** (default) — triple-confirmation as above; Claude must ask you before proceeding
 - **Warn** — hook emits stderr warning but allows execution (for teams who want visibility without hard stops)
-- **Allowlist** (domains, default) — only listed domains pass; everything else is blocked
+- **Allowlist** (domains, default) — only listed domains pass; everything else triggers triple-confirmation
 - **Blocklist** (domains) — all domains allowed except explicitly blocked ones
 
 ### Customization

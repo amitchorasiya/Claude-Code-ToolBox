@@ -116,16 +116,16 @@ def main():
     attempts[key] = count
     save_state(attempts)
 
-    if count < MAX_WARNINGS + 1:
-        remaining = MAX_WARNINGS + 1 - count
-        print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  DESTRUCTIVE COMMAND DETECTED (attempt {count}/3): pattern \\"{matched}\\"", file=sys.stderr)
-        print(f"[AntiVibe Safety Guard] This command is blocked for safety. Claude must retry {remaining} more time(s) to confirm intent.", file=sys.stderr)
-        print(f"[AntiVibe Safety Guard] If this is intentional, keep retrying. After 3 total attempts it will be allowed.", file=sys.stderr)
+    if count == 1:
+        print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  DESTRUCTIVE COMMAND BLOCKED (attempt 1/3): pattern \\"{matched}\\"", file=sys.stderr)
+        print(f"[AntiVibe Safety Guard] This command matches a dangerous pattern and has been blocked.", file=sys.stderr)
+        sys.exit(2)
+    elif count == 2:
+        print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  BLOCKED again (attempt 2/3): pattern \\"{matched}\\"", file=sys.stderr)
+        print(f"[AntiVibe Safety Guard] ASK THE USER: \\"Do you want to run this command? It matches destructive pattern '{matched}'.\\". If they confirm, retry once more.", file=sys.stderr)
         sys.exit(2)
     else:
-        # 3rd attempt — user has confirmed intent, allow through
-        print(f"[AntiVibe Safety Guard] \\u2705 Allowed after 3 confirmations. Pattern: \\"{matched}\\"", file=sys.stderr)
-        # Reset counter so next occurrence of same pattern requires re-confirmation
+        print(f"[AntiVibe Safety Guard] \\u2705 User confirmed. Allowing destructive command. Pattern: \\"{matched}\\"", file=sys.stderr)
         attempts[key] = 0
         save_state(attempts)
         sys.exit(0)
@@ -237,16 +237,19 @@ def main():
     attempts[key] = count
     save_state(attempts)
 
-    if count < MAX_WARNINGS + 1:
-        remaining = MAX_WARNINGS + 1 - count
+    if count == 1:
         if MODE == "allowlist":
-            print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  BLOCKED domain not in allowlist: {domain} (attempt {count}/3)", file=sys.stderr)
+            print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  BLOCKED domain not in allowlist: {domain} (attempt 1/3)", file=sys.stderr)
         else:
-            print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  BLOCKED domain in blocklist: {domain} (attempt {count}/3, matched: {detail})", file=sys.stderr)
-        print(f"[AntiVibe Safety Guard] Retry {remaining} more time(s) to confirm this domain is intentional.", file=sys.stderr)
+            print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  BLOCKED domain in blocklist: {domain} (attempt 1/3, matched: {detail})", file=sys.stderr)
+        print(f"[AntiVibe Safety Guard] This domain is not permitted.", file=sys.stderr)
+        sys.exit(2)
+    elif count == 2:
+        print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  BLOCKED again (attempt 2/3): {domain}", file=sys.stderr)
+        print(f"[AntiVibe Safety Guard] ASK THE USER: \\"Do you want to allow requests to '{domain}'? It is not in the approved domain list.\\". If they confirm, retry once more.", file=sys.stderr)
         sys.exit(2)
     else:
-        print(f"[AntiVibe Safety Guard] \\u2705 Allowed domain after 3 confirmations: {domain}", file=sys.stderr)
+        print(f"[AntiVibe Safety Guard] \\u2705 User confirmed. Allowing domain: {domain}", file=sys.stderr)
         attempts[key] = 0
         save_state(attempts)
         sys.exit(0)
@@ -378,14 +381,16 @@ def main():
     attempts[key] = count
     save_state(attempts)
 
-    if count < MAX_WARNINGS + 1:
-        remaining = MAX_WARNINGS + 1 - count
-        print(f"[AntiVibe Supply Chain Guard] \\u26a0\\ufe0f  BLOCKED package(s) on supply chain blocklist: {names} (attempt {count}/3)", file=sys.stderr)
+    if count == 1:
+        print(f"[AntiVibe Supply Chain Guard] \\u26a0\\ufe0f  BLOCKED package(s) on supply chain blocklist: {names} (attempt 1/3)", file=sys.stderr)
         print(f"[AntiVibe Supply Chain Guard] These packages have known supply chain attacks (compromised, sabotaged, or protestware).", file=sys.stderr)
-        print(f"[AntiVibe Supply Chain Guard] Retry {remaining} more time(s) to confirm this install is intentional.", file=sys.stderr)
+        sys.exit(2)
+    elif count == 2:
+        print(f"[AntiVibe Supply Chain Guard] \\u26a0\\ufe0f  BLOCKED again (attempt 2/3): {names}", file=sys.stderr)
+        print(f"[AntiVibe Supply Chain Guard] ASK THE USER: \\"Do you want to install '{names}'? These packages are on the supply chain blocklist due to known compromises.\\". If they confirm, retry once more.", file=sys.stderr)
         sys.exit(2)
     else:
-        print(f"[AntiVibe Supply Chain Guard] \\u2705 Allowed after 3 confirmations: {names}", file=sys.stderr)
+        print(f"[AntiVibe Supply Chain Guard] \\u2705 User confirmed. Allowing install: {names}", file=sys.stderr)
         attempts[key] = 0
         save_state(attempts)
         sys.exit(0)

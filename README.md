@@ -4,13 +4,13 @@
 
 You're using Claude Code but you can't see what MCP servers are active, which skills are loaded, whether your teammates' config matches yours, or what your agents are doing. Setup lives in scattered dotfiles and tribal knowledge. Claude Code ToolBox gives you one visual hub to manage it all — plus multi-agent teams that debate, plan, and code together.
 
-**2,000+ installs** · VS Code extension **`1.0.39`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
+**2,000+ installs** · VS Code extension **`1.0.40`** · JetBrains plugin **`0.6.20`** · macOS, Windows, Linux · [MIT](LICENSE)
 
 **Install:** [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=amitchorasiya.claude-code-toolbox-vscode) · [`vscode:` deep link](vscode:extension/amitchorasiya.claude-code-toolbox-vscode) · JetBrains: [Search Marketplace](https://plugins.jetbrains.com/search?search=Claude+Code+ToolBox) · [`jetbrains://` install (opens IDE)](jetbrains://Plugins?action=install&pluginId=com.amitchorasiya.claude.code.toolbox) · [IntelliJ sources & build](packages/claude-code-toolbox-intellij/)
 
 > ### New: AntiVibe Safety Guards — destructive commands + domain whitelisting + supply chain protection
 >
-> **AntiVibe Safety Guards** installs Claude Code hooks that **block** (or warn on) destructive shell commands (`rm -rf`, `git push --force`, `git reset --hard`, `DROP TABLE`, `curl | sh`, and 30+ more patterns), **enforce domain whitelisting** for all web requests (prevents data exfiltration to unknown domains), and **block installation of known-compromised packages** (`event-stream`, `node-ipc`, `colors`, `faker`, `ua-parser-js`, `peacenotwar`, `es5-ext`). Pre-configured defaults ship out of the box, but you can fully customize: add/remove destructive patterns, switch between block/warn mode, add your internal domains to the allowlist, edit the supply chain blocklist, or flip to blocklist mode. Installed automatically by One Click Setup. Toggle on/off in the hub.
+> **AntiVibe Safety Guards** installs Claude Code hooks that **block** (or warn on) destructive shell commands (`rm -rf`, `git push --force`, `git reset --hard`, `DROP TABLE`, `curl | sh`, and 30+ more patterns), **enforce domain whitelisting** for all web requests (prevents data exfiltration to unknown domains), and **block installation of known-compromised packages** (`event-stream`, `node-ipc`, `colors`, `faker`, `ua-parser-js`, `peacenotwar`, `es5-ext`). Uses a **triple-confirmation flow**: 1st attempt blocks silently, 2nd attempt instructs Claude to ask the user for permission, 3rd attempt allows if user confirmed. Pre-configured defaults ship out of the box, but you can fully customize: add/remove destructive patterns, switch between block/warn mode, add your internal domains to the allowlist, edit the supply chain blocklist, or flip to blocklist mode. Enable via the hub toggle or command palette.
 
 > ### Token Optimization — reduce token usage 30-60%
 >

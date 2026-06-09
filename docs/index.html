@@ -25,7 +25,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&family=Press+Start+2P&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/site.css?v=39" />
+    <link rel="stylesheet" href="css/site.css?v=40" />
   </head>
   <body>
     <header class="site-header">
@@ -267,6 +267,9 @@
               </p>
             </article>
           </div>
+          <p>
+            <strong>Triple-confirmation flow:</strong> In block mode, all guards use a 3-step confirmation. 1st attempt blocks silently. 2nd attempt tells Claude to <em>ask you</em> for permission. 3rd attempt proceeds only after you confirm. Counter resets after each allow cycle — next occurrence starts fresh. Session-scoped, expires after 1 hour.
+          </p>
           <p>
             <strong>Setup:</strong> AntiVibe Safety Guards must be enabled separately via the hub toggle or command palette (not auto-enabled by One Click Setup). After enabling, close and reopen VS Code for hooks to activate. Fully reversible via Disable.
           </p>

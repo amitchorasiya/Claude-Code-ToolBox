@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.40
+
+- **Triple-confirmation flow.** All three AntiVibe Safety Guards (destructive commands, domain whitelist, supply chain) now use a 3-step confirmation: 1st attempt blocks silently, 2nd attempt instructs Claude to ask the user "Do you want to run this?", 3rd attempt allows only after user confirmation. Counter resets after each allow cycle. Session-scoped state expires after 1 hour.
+- **Consistent AntiVibe branding.** All hook stderr messages now use `[AntiVibe Safety Guard]` / `[AntiVibe Supply Chain Guard]` prefix consistently.
+- Release: **1.0.40** (VS Code).
+
 ## 1.0.39
 
 - **Rename: AntiVibe Safety Guards.** Safety Guards is now branded as **AntiVibe Safety Guards** across all command palette entries, notifications, modals, and hook script banners. Internal setting keys unchanged (no breaking change).
