@@ -1116,6 +1116,34 @@
         </label>
         <button type="button" class="btn icon-gear tmm-gear" id="thinking-machine-settings" title="Thinking Machine Mode settings" aria-label="Thinking Machine Mode settings">⚙</button>
       </div>
+      <div class="thinking-machine-row" aria-label="AntiVibe Safety Guards">
+        <div class="tmm-glyph" title="AntiVibe Safety Guards" aria-hidden="true">
+          <span class="tmm-glyph-main">🛡</span>
+          <span class="tmm-glyph-bolt">⚡</span>
+        </div>
+        <label class="tmm-label" for="safety-guards-cb">
+          <input type="checkbox" id="safety-guards-cb" class="tmm-cb" />
+          <span class="tmm-body">
+            <span class="tmm-title-pill">AntiVibe Safety Guards</span>
+            <span class="tmm-desc">Block destructive commands (<code>rm -rf</code>, <code>git push --force</code>, <code>DROP TABLE</code>), enforce domain whitelisting, and prevent supply chain attacks. Triple-confirmation: blocks twice, asks you on 2nd attempt, allows on 3rd.</span>
+          </span>
+        </label>
+        <button type="button" class="btn icon-gear tmm-gear" id="safety-guards-settings" title="AntiVibe Safety Guards settings" aria-label="AntiVibe Safety Guards settings">⚙</button>
+      </div>
+      <div class="thinking-machine-row" aria-label="Token Optimization">
+        <div class="tmm-glyph" title="Token Optimization" aria-hidden="true">
+          <span class="tmm-glyph-main">💰</span>
+          <span class="tmm-glyph-bolt">📉</span>
+        </div>
+        <label class="tmm-label" for="token-optimization-cb">
+          <input type="checkbox" id="token-optimization-cb" class="tmm-cb" />
+          <span class="tmm-body">
+            <span class="tmm-title-pill">Token Optimization</span>
+            <span class="tmm-desc">Reduce token usage 30-60% with project maps, read deduplication, output compression, .claudeignore, and verbosity control.</span>
+          </span>
+        </label>
+        <button type="button" class="btn icon-gear tmm-gear" id="token-optimization-settings" title="Token Optimization settings" aria-label="Token Optimization settings">⚙</button>
+      </div>
     </div>
     <div class="search-wrap" id="search-wrap">
       <input class="search" type="search" id="q" placeholder="Search servers, skills, or tools…" />
@@ -1179,6 +1207,7 @@
         { ic: "\uD83D\uDE80", t: "Prime session", d: "Awareness scan + context pack (enable Thinking Machine Mode first)", c: "CloudeCodeToolBox.runThinkingMachinePriming" },
         { ic: "\uD83D\uDCE6", t: "Build context pack", d: "Structured bundle for Claude Code (copy)", c: "CloudeCodeToolBox.buildContextPack" },
         { ic: "\uD83D\uDEE1", t: "Readiness summary", d: "Check workspace + instructions + MCP wiring", c: "CloudeCodeToolBox.showIntelligenceReadiness" },
+        { ic: "\uD83D\uDEE1", t: "AntiVibe Safety Guards status", d: "Destructive command guard + domain whitelist + supply chain status", c: "CloudeCodeToolBox.safetyGuards.status" },
         { ic: "\uD83D\uDCDD", t: "Context pack defaults", d: "Git, diagnostics, notepad, open Claude Code after pack", c: "CloudeCodeToolBox.openIntelligenceSettings" },
         { ic: "\uD83D\uDD17", t: "Toolbox CLI repos (GitHub)", d: "MCP port, memory bank, rules converter — pick in quick pick", c: "CloudeCodeToolBox.openIntelligenceToolboxRepos" },
         { ic: "\uD83D\uDCC1", t: "Port MCP (bundled CLI)", d: "Same as npx port; runs Node CLI from the extension", c: "CloudeCodeToolBox.manualPortCursorMcpWithoutNpx" },
@@ -1301,6 +1330,18 @@
     var tcb = $("#thinking-machine-mode-cb");
     if (!tcb || !state) return;
     tcb.checked = state.thinkingMachineModeEnabled === true;
+  }
+
+  function syncSafetyGuardsCheckbox() {
+    var cb = $("#safety-guards-cb");
+    if (!cb || !state) return;
+    if (state.safetyGuardsEnabled != null) cb.checked = state.safetyGuardsEnabled;
+  }
+
+  function syncTokenOptimizationCheckbox() {
+    var cb = $("#token-optimization-cb");
+    if (!cb || !state) return;
+    if (state.tokenOptimizationEnabled != null) cb.checked = state.tokenOptimizationEnabled;
   }
 
   /** Build description with strong/code/em via DOM APIs (avoids innerHTML sinks for static analyzers). */
@@ -1657,6 +1698,30 @@
         vscode.postMessage({ type: "runCommand", command: "CloudeCodeToolBox.openThinkingMachineModeSettings" });
       });
     }
+    var sgCb = $("#safety-guards-cb");
+    if (sgCb) {
+      sgCb.addEventListener("change", function () {
+        vscode.postMessage({ type: "setSafetyGuardsEnabled", value: sgCb.checked });
+      });
+    }
+    var sgSettings = $("#safety-guards-settings");
+    if (sgSettings) {
+      sgSettings.addEventListener("click", function () {
+        vscode.postMessage({ type: "runCommand", command: "CloudeCodeToolBox.safetyGuards.status" });
+      });
+    }
+    var toCb = $("#token-optimization-cb");
+    if (toCb) {
+      toCb.addEventListener("change", function () {
+        vscode.postMessage({ type: "setTokenOptimizationEnabled", value: toCb.checked });
+      });
+    }
+    var toSettings = $("#token-optimization-settings");
+    if (toSettings) {
+      toSettings.addEventListener("click", function () {
+        vscode.postMessage({ type: "runCommand", command: "CloudeCodeToolBox.tokenOptimization.status" });
+      });
+    }
   })();
 
   function isTrustedHubPostMessageOrigin(origin) {
@@ -1669,7 +1734,11 @@
   }
 
   window.addEventListener("message", function (e) {
-    if (!isTrustedHubPostMessageOrigin(e.origin)) return;
+    var validOrigin = false;
+    try { if (e.origin === window.location.origin) validOrigin = true; } catch (err) {}
+    if (e.origin === "http://cloude.toolbox") validOrigin = true;
+    if (typeof e.origin === "string" && e.origin.indexOf("vscode-webview://") === 0) validOrigin = true;
+    if (!validOrigin) return;
     if (!e.data) return;
     if (e.data.type === "state") {
       state = e.data.payload;
@@ -4100,6 +4169,8 @@
     }
     syncIntelAutoScanCheckbox();
     syncThinkingMachineModeCheckbox();
+    syncSafetyGuardsCheckbox();
+    syncTokenOptimizationCheckbox();
     syncHubHostCopy();
 
     if (state.hubLoadError) {

@@ -6,6 +6,8 @@ import com.amitchorasiya.claude.toolbox.intellij.agents.runtime.RunOrchestrator
 import com.amitchorasiya.claude.toolbox.intellij.agents.runtime.RunRegistry
 import com.amitchorasiya.claude.toolbox.intellij.http.RegistryHttp
 import com.amitchorasiya.claude.toolbox.intellij.http.SkillsShHttp
+import com.amitchorasiya.claude.toolbox.intellij.intelligence.SafetyGuardsService
+import com.amitchorasiya.claude.toolbox.intellij.intelligence.TokenOptimizationService
 import com.amitchorasiya.claude.toolbox.intellij.mcp.McpHubActions
 import com.amitchorasiya.claude.toolbox.intellij.mcp.McpRegistryInstall
 import com.amitchorasiya.claude.toolbox.intellij.settings.ToolboxSettings
@@ -198,6 +200,28 @@ object HubMessageHandler {
                         err == "cancelled" -> { }
                         else -> notify(project, err, NotificationType.WARNING)
                     }
+                }
+                HubStateService.postFullState(project, postToWebView)
+            }
+
+            "setSafetyGuardsEnabled" -> {
+                val enable = root.get("value")?.asBoolean == true
+                SafetyGuardsService.setEnabled(enable)
+                if (enable) {
+                    notify(project, "AntiVibe Safety Guards enabled. Close and reopen the IDE for hooks to take effect.", NotificationType.INFORMATION)
+                } else {
+                    notify(project, "AntiVibe Safety Guards disabled. Hooks removed.", NotificationType.INFORMATION)
+                }
+                HubStateService.postFullState(project, postToWebView)
+            }
+            "setTokenOptimizationEnabled" -> {
+                val enable = root.get("value")?.asBoolean == true
+                val base = project.basePath?.let { java.nio.file.Path.of(it) }
+                TokenOptimizationService.setEnabled(enable, base)
+                if (enable) {
+                    notify(project, "Token Optimization enabled. Close and reopen the IDE for hooks to take effect.", NotificationType.INFORMATION)
+                } else {
+                    notify(project, "Token Optimization disabled.", NotificationType.INFORMATION)
                 }
                 HubStateService.postFullState(project, postToWebView)
             }

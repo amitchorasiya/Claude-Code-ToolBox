@@ -3,6 +3,8 @@ package com.amitchorasiya.claude.toolbox.intellij.hub
 import com.amitchorasiya.claude.toolbox.intellij.agents.*
 import com.amitchorasiya.claude.toolbox.intellij.agents.runtime.RunRegistry
 import com.amitchorasiya.claude.toolbox.intellij.agents.runtime.resolveClaudeBin
+import com.amitchorasiya.claude.toolbox.intellij.intelligence.SafetyGuardsService
+import com.amitchorasiya.claude.toolbox.intellij.intelligence.TokenOptimizationService
 import com.amitchorasiya.claude.toolbox.intellij.mcp.McpJson
 import com.amitchorasiya.claude.toolbox.intellij.mcp.McpPaths
 import com.amitchorasiya.claude.toolbox.intellij.mcp.McpStash
@@ -55,6 +57,8 @@ object HubStateService {
 
         o.addProperty("autoScanMcpSkillsOnWorkspaceOpen", settings.getAutoScanMcpSkills())
         o.addProperty("thinkingMachineModeEnabled", settings.getThinkingMachine())
+        o.addProperty("safetyGuardsEnabled", SafetyGuardsService.isEnabled())
+        o.addProperty("tokenOptimizationEnabled", TokenOptimizationService.isEnabled())
 
         // Agent Teams state
         val agents = collectLocalAgents(home, base)
