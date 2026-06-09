@@ -72,6 +72,8 @@ export async function tokenOptimizationStartupCheck(
     return;
   }
   if (context.globalState.get(GLOBAL_ACK) === true) {
+    await runTokenOptimizationEnable();
+    await maybeAutoGenerateProjectMap(cfg);
     return;
   }
   const choice = await vscode.window.showInformationMessage(
@@ -92,4 +94,20 @@ export async function tokenOptimizationStartupCheck(
   } else {
     await revertEnabledFalse();
   }
+}
+
+async function maybeAutoGenerateProjectMap(
+  cfg: vscode.WorkspaceConfiguration
+): Promise<void> {
+  const projectMapEnabled = cfg.get<boolean>(
+    `${TOOLBOX_SETTINGS_PREFIX}.tokenOptimization.projectMap.enabled`,
+    true
+  );
+  if (!projectMapEnabled) return;
+
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders?.length) return;
+
+  const { runGenerateProjectMap } = await import("./tokenOptimizationCommand");
+  await runGenerateProjectMap();
 }

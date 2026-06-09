@@ -83,7 +83,7 @@ export async function openOneClickSetupSettings(): Promise<void> {
  */
 export async function runOneClickSetup(
   context: vscode.ExtensionContext,
-  refreshHub: () => void
+  refreshHub: () => void,
 ): Promise<void> {
   const folder = mcpPaths.getPrimaryWorkspaceFolder();
   if (!folder) {
@@ -318,13 +318,14 @@ export async function runOneClickSetup(
       });
     }
 
-    // --- Safety Guards: enable by default during One Click Setup ---
+    // --- Token Optimization: enable by default during One Click Setup ---
     {
-      const sgEnabled = ws.get<boolean>(`${CFG}.safetyGuards.enabled`, false);
-      if (!sgEnabled) {
-        await ws.update(`${CFG}.safetyGuards.enabled`, true, scope);
-        const { runSafetyGuardsEnable } = await import("../intelligence/safetyGuards/safetyGuardsCommand");
-        await runSafetyGuardsEnable();
+      const toEnabled = ws.get<boolean>(`${CFG}.tokenOptimization.enabled`, false);
+      if (!toEnabled) {
+        await ws.update(`${CFG}.tokenOptimization.enabled`, true, scope);
+        await context.globalState.update("tokenOptimizationActivationAcknowledged", true);
+        const { runTokenOptimizationEnable } = await import("../intelligence/tokenOptimization/tokenOptimizationCommand");
+        await runTokenOptimizationEnable();
       }
     }
 
@@ -358,6 +359,12 @@ export async function runOneClickSetup(
         ? `One Click Setup finished (see terminal(s) for bundled CLIs). Notes: ${notes.join(" · ")}`
         : "One Click Setup finished. Review terminals, Output (config scan), and any opened docs.";
     await vscode.window.showInformationMessage(msg);
+
+    await vscode.window.showWarningMessage(
+      "Claude Code ToolBox: Please close and reopen VS Code for all changes to take effect. Hooks and configuration updates require a fresh VS Code window.",
+      { modal: true },
+      "OK"
+    );
   } catch (e) {
     const m = e instanceof Error ? e.message : String(e);
     vscode.window.showErrorMessage(`One Click Setup failed: ${m}`);

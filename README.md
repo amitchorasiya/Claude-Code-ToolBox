@@ -79,11 +79,11 @@ These are the two **highlighted cards** at the top of the hub’s **Intelligence
 
 ### One Click Setup
 
-**What it does:** After you accept the responsibility warning, it runs the automated sequence you configured under **Settings → Claude Code ToolBox → One Click Setup** (migration tracks: **Cursor → Claude Code** and optional **GitHub Copilot → Claude Code**, each toggled separately). That usually includes **porting Cursor MCP** into VS Code `mcp.json`, **Claude-oriented memory bank** init, **Cursor rules → `CLAUDE.md`**, optional merge of **`.github/copilot-instructions.md`** into **`CLAUDE.md`**, optional **Copilot skills → `.agents`**, optional **`.cursorrules`** merge, **skills** `.cursor` → `.agents` migration, **MCP & Skills awareness** (under **`.claude/`**) with optional block in **`CLAUDE.md`**, **readiness** summary, **Claude Code / MCP config scan**, optional **Claude Code** settings check, optional **auto-scan** enablement, and auto-enables both **Safety Guards** and **Token Optimization**. Bridge steps run via **bundled `node …/cli.mjs`** inside the extension (no `npx` network fetch for that path).
+**What it does:** After you accept the responsibility warning, it runs the automated sequence you configured under **Settings → Claude Code ToolBox → One Click Setup** (migration tracks: **Cursor → Claude Code** and optional **GitHub Copilot → Claude Code**, each toggled separately). That usually includes **porting Cursor MCP** into VS Code `mcp.json`, **Claude-oriented memory bank** init, **Cursor rules → `CLAUDE.md`**, optional merge of **`.github/copilot-instructions.md`** into **`CLAUDE.md`**, optional **Copilot skills → `.agents`**, optional **`.cursorrules`** merge, **skills** `.cursor` → `.agents` migration, **MCP & Skills awareness** (under **`.claude/`**) with optional block in **`CLAUDE.md`**, **readiness** summary, **Claude Code / MCP config scan**, optional **Claude Code** settings check, optional **auto-scan** enablement, and auto-enables **Token Optimization**. AntiVibe Safety Guards must be enabled separately. Bridge steps run via **bundled `node …/cli.mjs`** inside the extension (no `npx` network fetch for that path).
 
 **Why it matters:** “Make this repo Claude-ready” shouldn’t depend on who read which doc. One Click encodes your team’s playbook once; anyone can run the same steps and review the same terminals and file changes.
 
-**Important:** After One Click Setup completes, you will be prompted to **restart VS Code**. Hooks (Safety Guards, Token Optimization) require a restart to take effect.
+**Important:** After One Click Setup completes, you will be prompted to **close and reopen VS Code**. Hooks require a fresh VS Code window to take effect.
 
 ### Thinking Machine Mode
 

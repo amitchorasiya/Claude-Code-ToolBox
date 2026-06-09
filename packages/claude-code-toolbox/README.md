@@ -79,7 +79,7 @@ Claude Code runs arbitrary shell commands, fetches URLs, and installs packages. 
 
 ### One Click Setup Integration
 
-AntiVibe Safety Guards **and** Token Optimization are both **enabled by default** when you run One Click Setup. After setup completes, you'll be prompted to restart VS Code — **restart is required** for hooks to take effect.
+Token Optimization is **enabled by default** when you run One Click Setup. AntiVibe Safety Guards must be enabled separately via the hub toggle or command palette. After enabling, you'll be prompted to **close and reopen VS Code** for hooks to take effect.
 
 ### Commands
 

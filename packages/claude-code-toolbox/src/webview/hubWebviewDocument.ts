@@ -1094,19 +1094,19 @@ export function getHubWebviewHtml(csp: string): string {
         </div>
         <button type="button" class="btn icon-gear ocs-gear" id="one-click-setup-settings" title="One Click Setup defaults" aria-label="One Click Setup settings">⚙</button>
       </div>
-      <div class="thinking-machine-row" aria-label="Safety Guards">
-        <div class="tmm-glyph" title="Safety Guards" aria-hidden="true">
+      <div class="thinking-machine-row" aria-label="AntiVibe Safety Guards">
+        <div class="tmm-glyph" title="AntiVibe Safety Guards" aria-hidden="true">
           <span class="tmm-glyph-main">🛡️</span>
           <span class="tmm-glyph-bolt">🚫</span>
         </div>
         <label class="tmm-label" for="safety-guards-cb">
           <input type="checkbox" id="safety-guards-cb" class="tmm-cb" />
           <span class="tmm-body">
-            <span class="tmm-title-pill">Safety Guards</span>
-            <span class="tmm-desc">Block destructive commands (<code>rm -rf</code>, <code>git push --force</code>, <code>DROP TABLE</code>) and enforce domain whitelisting for web requests. Configurable patterns + overrides. Installed via One Click Setup.</span>
+            <span class="tmm-title-pill">AntiVibe Safety Guards</span>
+            <span class="tmm-desc">Block destructive commands (<code>rm -rf</code>, <code>git push --force</code>, <code>DROP TABLE</code>), enforce domain whitelisting, and prevent supply chain attacks (blocks compromised packages). Configurable patterns + overrides.</span>
           </span>
         </label>
-        <button type="button" class="btn icon-gear tmm-gear" id="safety-guards-settings" title="Safety Guards settings" aria-label="Safety Guards settings">⚙</button>
+        <button type="button" class="btn icon-gear tmm-gear" id="safety-guards-settings" title="AntiVibe Safety Guards settings" aria-label="AntiVibe Safety Guards settings">⚙</button>
       </div>
       <div class="thinking-machine-row" aria-label="Token Optimization">
         <div class="tmm-glyph" title="Token Optimization" aria-hidden="true">
@@ -1192,7 +1192,7 @@ export function getHubWebviewHtml(csp: string): string {
         { ic: "\\uD83D\\uDCCA", t: "Analyze CLAUDE.md tokens", d: "Section breakdown, duplication detection, compression tips", c: "CloudeCodeToolBox.tokenOptimization.analyzeClaudeMd" },
         { ic: "\\uD83D\\uDEAB", t: "Create .claudeignore", d: "Block lockfiles, node_modules, build output from reads", c: "CloudeCodeToolBox.tokenOptimization.createClaudeIgnore" },
         { ic: "\\u2139\\uFE0F", t: "Token Optimization status", d: "Current hooks, project map freshness, settings summary", c: "CloudeCodeToolBox.tokenOptimization.status" },
-        { ic: "\\uD83D\\uDEE1", t: "Safety Guards status", d: "Destructive command guard + domain whitelist status", c: "CloudeCodeToolBox.safetyGuards.status" },
+        { ic: "\\uD83D\\uDEE1", t: "AntiVibe Safety Guards status", d: "Destructive command guard + domain whitelist + supply chain status", c: "CloudeCodeToolBox.safetyGuards.status" },
         { ic: "\\uD83D\\uDEAB", t: "Edit destructive patterns", d: "Customize blocked shell command patterns", c: "CloudeCodeToolBox.safetyGuards.editDestructivePatterns" },
         { ic: "\\uD83C\\uDF10", t: "Edit domain list", d: "Customize allowed/blocked domains for web requests", c: "CloudeCodeToolBox.safetyGuards.editDomainList" },
         { ic: "\\uD83D\\uDD27", t: "Open Claude Code user settings (JSON)", d: "~/.claude/settings.json for MCP, etc.", c: "CloudeCodeToolBox.openClaudeUserSettingsJson" },

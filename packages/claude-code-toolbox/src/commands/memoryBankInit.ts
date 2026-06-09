@@ -1,10 +1,41 @@
 import * as vscode from "vscode";
+import * as path from "node:path";
+import { pathToFileURL } from "node:url";
 import * as mcpPaths from "../mcpPaths";
 
 export type InitMemoryBankOptions = {
   dryRun: boolean;
   cursorRules?: boolean;
 };
+
+/**
+ * Resolve the memory bank ESM module path. Tries standard node_modules first
+ * (works in dev and VSIX with bundled node_modules), then falls back to
+ * the sibling package in the monorepo (dev only).
+ */
+function resolveMemoryBankPath(): string {
+  // Try require.resolve first (works when node_modules is present)
+  try {
+    return require.resolve("cloude-code-memory-bank/lib/init.mjs");
+  } catch { /* not found via standard resolution */ }
+
+  // Fallback: resolve relative to this file's directory (monorepo dev layout)
+  const candidates = [
+    path.resolve(__dirname, "..", "..", "node_modules", "cloude-code-memory-bank", "lib", "init.mjs"),
+    path.resolve(__dirname, "..", "..", "..", "claude-code-memory-bank", "lib", "init.mjs"),
+  ];
+  for (const candidate of candidates) {
+    try {
+      require("node:fs").accessSync(candidate);
+      return candidate;
+    } catch { /* try next */ }
+  }
+
+  throw new Error(
+    "Cannot find package 'cloude-code-memory-bank'. " +
+    "Re-install the extension or run 'npm install' in the extension directory."
+  );
+}
 
 /**
  * Run memory bank init in-process (no npx).
@@ -15,9 +46,11 @@ export async function runInitMemoryBankInProcess(
   opts: InitMemoryBankOptions
 ): Promise<void> {
   try {
+    const modulePath = resolveMemoryBankPath();
+    const moduleUrl = pathToFileURL(modulePath).href;
     // Dynamic import because extension is CJS and memory-bank is ESM
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = await (Function('return import("cloude-code-memory-bank/lib/init.mjs")')() as Promise<{ initMemoryBank: (opts: { cwd: string; dryRun: boolean; claudeCode: boolean; cursorRules: boolean }) => { created: string[]; skipped: string[]; claudeMdMerged: boolean } }>);
+    const mod = await (Function(`return import("${moduleUrl}")`)() as Promise<{ initMemoryBank: (opts: { cwd: string; dryRun: boolean; claudeCode: boolean; cursorRules: boolean }) => { created: string[]; skipped: string[]; claudeMdMerged: boolean } }>);
     const { initMemoryBank } = mod;
 
     const result = initMemoryBank({

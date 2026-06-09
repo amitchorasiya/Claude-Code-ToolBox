@@ -555,6 +555,14 @@ async function syncTeamCommand(
   }
 }
 
+async function showRestartHint(feature: string): Promise<void> {
+  await vscode.window.showWarningMessage(
+    `${feature} enabled — please close and reopen VS Code for hooks to take effect.`,
+    { modal: true },
+    "OK"
+  );
+}
+
 /** Activity bar (Cloude Code ToolBox) — first view */
 export const MCP_SKILLS_HUB_VIEW_ACTIVITY = "cloudeCodeKitMcp";
 /** Secondary sidebar container — webview tab beside Chat (see `package.json` `secondarySidebar`) */
@@ -722,21 +730,31 @@ export class McpSkillsHubViewProvider implements vscode.WebviewViewProvider {
         }
         case "setSafetyGuardsEnabled": {
           const hasWs = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
+          const sgVal = msg.value === true;
           await vscode.workspace.getConfiguration().update(
             "cloude-code-toolbox.safetyGuards.enabled",
-            msg.value === true,
+            sgVal,
             hasWs ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.Global
           );
+          if (sgVal) {
+            await this._ctx.globalState.update("safetyGuardsActivationAcknowledged", true);
+            void showRestartHint("AntiVibe Safety Guards");
+          }
           this._postState();
           break;
         }
         case "setTokenOptimizationEnabled": {
           const hasWs = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
+          const toVal = msg.value === true;
           await vscode.workspace.getConfiguration().update(
             "cloude-code-toolbox.tokenOptimization.enabled",
-            msg.value === true,
+            toVal,
             hasWs ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.Global
           );
+          if (toVal) {
+            await this._ctx.globalState.update("tokenOptimizationActivationAcknowledged", true);
+            void showRestartHint("Token Optimization");
+          }
           this._postState();
           break;
         }

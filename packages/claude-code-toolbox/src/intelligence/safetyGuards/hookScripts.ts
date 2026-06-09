@@ -145,13 +145,40 @@ export function renderDomainWhitelistHookScript(
 
   return `#!/usr/bin/env python3
 ${DOMAIN_WHITELIST_MARKER}
-"""PreToolUse hook: enforces domain allowlist/blocklist for web requests."""
-import json, sys, re
+"""PreToolUse hook: enforces domain allowlist/blocklist for web requests.
+Triple-confirmation: blocks twice, allows on 3rd attempt per domain per session."""
+import json, sys, re, os, tempfile, hashlib, time
 from urllib.parse import urlparse
 
 MODE = "${mode}"
 ALLOWED_DOMAINS = ${allowedJson}
 BLOCKED_DOMAINS = ${blockedJson}
+MAX_WARNINGS = 2
+
+def get_state_file():
+    session_id = os.environ.get("CLAUDE_SESSION_ID", "")
+    if not session_id:
+        session_id = f"pid-{os.getppid()}"
+    state_dir = os.path.join(tempfile.gettempdir(), "cloude-toolbox-safety-guards")
+    os.makedirs(state_dir, exist_ok=True)
+    safe_name = hashlib.sha256(session_id.encode()).hexdigest()[:16]
+    return os.path.join(state_dir, f"domain-{safe_name}.json")
+
+def load_state():
+    path = get_state_file()
+    try:
+        with open(path, "r") as f:
+            data = json.load(f)
+        if time.time() - data.get("ts", 0) > 3600:
+            return {}
+        return data.get("attempts", {})
+    except Exception:
+        return {}
+
+def save_state(attempts):
+    path = get_state_file()
+    with open(path, "w") as f:
+        json.dump({"ts": time.time(), "attempts": attempts}, f)
 
 def extract_domain(url):
     try:
@@ -200,15 +227,29 @@ def main():
         sys.exit(0)
 
     allowed, detail = check_domain(url)
-    if not allowed:
-        domain = extract_domain(url)
-        if MODE == "allowlist":
-            print(f"[AntiVibe Safety Guard] BLOCKED domain not in allowlist: {domain}", file=sys.stderr)
-        else:
-            print(f"[AntiVibe Safety Guard] BLOCKED domain in blocklist: {domain} (matched: {detail})", file=sys.stderr)
-        sys.exit(2)
+    if allowed:
+        sys.exit(0)
 
-    sys.exit(0)
+    domain = extract_domain(url)
+    attempts = load_state()
+    key = domain.lower()
+    count = attempts.get(key, 0) + 1
+    attempts[key] = count
+    save_state(attempts)
+
+    if count < MAX_WARNINGS + 1:
+        remaining = MAX_WARNINGS + 1 - count
+        if MODE == "allowlist":
+            print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  BLOCKED domain not in allowlist: {domain} (attempt {count}/3)", file=sys.stderr)
+        else:
+            print(f"[AntiVibe Safety Guard] \\u26a0\\ufe0f  BLOCKED domain in blocklist: {domain} (attempt {count}/3, matched: {detail})", file=sys.stderr)
+        print(f"[AntiVibe Safety Guard] Retry {remaining} more time(s) to confirm this domain is intentional.", file=sys.stderr)
+        sys.exit(2)
+    else:
+        print(f"[AntiVibe Safety Guard] \\u2705 Allowed domain after 3 confirmations: {domain}", file=sys.stderr)
+        attempts[key] = 0
+        save_state(attempts)
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()
@@ -224,12 +265,14 @@ export function renderSupplyChainHookScript(
   return `#!/usr/bin/env python3
 ${SUPPLY_CHAIN_MARKER}
 """PreToolUse hook: blocks installation of known-compromised packages (supply chain guard).
+Triple-confirmation: blocks twice, allows on 3rd attempt per package per session.
 Intercepts npm install, pip install, yarn add, etc. and checks against a blocklist.
 Cross-platform: works on macOS, Linux, Windows."""
-import json, sys, re
+import json, sys, re, os, tempfile, hashlib, time
 
 BLOCKED_PACKAGES = ${blockedJson}
 MODE = "${mode}"
+MAX_WARNINGS = 2
 
 INSTALL_PATTERNS = [
     r'\\bnpm\\s+(?:install|i|add)\\b',
@@ -240,6 +283,31 @@ INSTALL_PATTERNS = [
     r'\\bgem\\s+install\\b',
     r'\\bcargo\\s+add\\b',
 ]
+
+def get_state_file():
+    session_id = os.environ.get("CLAUDE_SESSION_ID", "")
+    if not session_id:
+        session_id = f"pid-{os.getppid()}"
+    state_dir = os.path.join(tempfile.gettempdir(), "cloude-toolbox-safety-guards")
+    os.makedirs(state_dir, exist_ok=True)
+    safe_name = hashlib.sha256(session_id.encode()).hexdigest()[:16]
+    return os.path.join(state_dir, f"supplychain-{safe_name}.json")
+
+def load_state():
+    path = get_state_file()
+    try:
+        with open(path, "r") as f:
+            data = json.load(f)
+        if time.time() - data.get("ts", 0) > 3600:
+            return {}
+        return data.get("attempts", {})
+    except Exception:
+        return {}
+
+def save_state(attempts):
+    path = get_state_file()
+    with open(path, "w") as f:
+        json.dump({"ts": time.time(), "attempts": attempts}, f)
 
 def extract_packages(command):
     """Extract package names from an install command."""
@@ -304,10 +372,23 @@ def main():
         print("[AntiVibe Supply Chain Guard] These packages have known supply chain vulnerabilities.", file=sys.stderr)
         sys.exit(0)
 
-    print(f"[AntiVibe Supply Chain Guard] \\u26d4 BLOCKED: package(s) on supply chain blocklist: {names}", file=sys.stderr)
-    print("[AntiVibe Supply Chain Guard] These packages have known supply chain attacks (compromised, sabotaged, or protestware).", file=sys.stderr)
-    print("[AntiVibe Supply Chain Guard] Remove from blocklist in VS Code settings to allow.", file=sys.stderr)
-    sys.exit(2)
+    attempts = load_state()
+    key = names.lower()
+    count = attempts.get(key, 0) + 1
+    attempts[key] = count
+    save_state(attempts)
+
+    if count < MAX_WARNINGS + 1:
+        remaining = MAX_WARNINGS + 1 - count
+        print(f"[AntiVibe Supply Chain Guard] \\u26a0\\ufe0f  BLOCKED package(s) on supply chain blocklist: {names} (attempt {count}/3)", file=sys.stderr)
+        print(f"[AntiVibe Supply Chain Guard] These packages have known supply chain attacks (compromised, sabotaged, or protestware).", file=sys.stderr)
+        print(f"[AntiVibe Supply Chain Guard] Retry {remaining} more time(s) to confirm this install is intentional.", file=sys.stderr)
+        sys.exit(2)
+    else:
+        print(f"[AntiVibe Supply Chain Guard] \\u2705 Allowed after 3 confirmations: {names}", file=sys.stderr)
+        attempts[key] = 0
+        save_state(attempts)
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()

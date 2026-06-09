@@ -98,6 +98,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   import("./intelligence/safetyGuards/safetyGuardsActivation").then(
     (m) => void m.safetyGuardsStartupCheck(context)
   );
+  import("./intelligence/tokenOptimization/tokenOptimizationActivation").then(
+    (m) => void m.tokenOptimizationStartupCheck(context)
+  );
   void maybeShowAutoScanDefaultMigrationToast(context);
 
   /* Agent Dashboard (Phase 1) — construct the controller but do not start it
